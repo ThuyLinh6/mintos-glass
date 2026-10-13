@@ -1,0 +1,121 @@
+// =============================================================================
+// tests/fixtures/gtk-standard-style-classes.txt        (Task T13 · Agent 7 · QA)
+// -----------------------------------------------------------------------------
+// 84 style class CHUẨN của GTK 3.24, trích BẰNG MÁY từ:
+//   GNOME/gtk @ ref 3.24.42, tệp gtk/gtkstylecontext.h
+//   mẫu: #define GTK_STYLE_CLASS_<TEN> "<gia-tri>"
+//
+// TẠI SAO TỆP NÀY TỒN TẠI
+// GTK 3.24 KHÔNG phơi application-id cho CSS (đã kiểm: chuỗi `application_id`
+// xuất hiện 0 lần trong gtk/gtkapplicationwindow.c @3.24.42, 1048 dòng). Nghĩa là
+// MỘT tệp gtk.css dùng chung phục vụ MỌI app GTK3, và không có cách nào scope một
+// selector vào riêng một app. Hệ quả: một rule class CHUẨN GTK viết TRẦN trong một
+// partial "dành riêng cho app X" sẽ âm thầm áp dụng lên MỌI app GTK3 khác.
+//
+// Danh sách này là bằng chứng có thẩm quyền để phân biệt:
+//   - class CHUẨN GTK  -> viết trần trong partial app là RÒ RỈ, phải scope
+//   - class RIÊNG của app (do app tự gtk_style_context_add_class) -> viết trần
+//     không sao, vì không app nào khác thêm class đó
+//
+// ĐÃ ÁP DỤNG VÀ BẮT ĐƯỢC MỘT LỖI THẬT: tools/lint/nemo_selectors.py của T09 có
+// GENERIC_GTK_CLASSES gồm 19 mục (danh sách tự tuyển chọn). GTK thật có 84. Khoảng
+// trống 65 class đó là lý do `.dim-label` — CHUẨN GTK tại gtkstylecontext.h:166
+// GTK_STYLE_CLASS_DIM_LABEL, và được Adwaita style tại theme/Adwaita/_common.scss:217
+// — lọt qua kiểm tra `no-bare-generic` và được _apps-nemo.scss phát ra TRẦN.
+// Ba class trần còn lại của partial đó (floating-bar, places-treeview,
+// treeview-drop-indicator) KHÔNG nằm trong danh sách này và đã xác minh là do chính
+// Nemo thêm (nemo-floating-bar.c:257, nemo-places-tree-view.c:32,
+// nemo-tree-view-drag-dest.c:206) -> KHÔNG rò rỉ. Chỉ một lỗi thật, không phải bốn.
+//
+// CÁCH TÁI TẠO danh sách này (không cần tin tệp này):
+//   gh api "repos/GNOME/gtk/contents/gtk/gtkstylecontext.h?ref=3.24.42" \
+//     -H "Accept: application/vnd.github.raw" \
+//     | grep -oE '#define GTK_STYLE_CLASS_\w+ "[^"]+"' | grep -oE '"[^"]+"' | tr -d '"' | sort -u
+//
+// Marker comment là `//`. Tên class không chứa `#` hay `//` nên cắt comment an toàn.
+// =============================================================================
+
+accelerator
+arrow
+background
+bottom
+button
+calendar
+cell
+check
+combobox-entry
+context-menu
+csd
+cursor-handle
+default
+destructive-action
+dim-label
+dnd
+dock
+entry
+error
+expander
+flat
+frame
+grip
+header
+highlight
+horizontal
+image
+info
+inline-toolbar
+insertion-cursor
+label
+left
+level-bar
+linked
+list
+list-row
+mark
+menu
+menubar
+menuitem
+message-dialog
+monospace
+needs-attention
+notebook
+osd
+overshoot
+pane-separator
+paper
+popover
+popup
+primary-toolbar
+progressbar
+pulse
+question
+radio
+raised
+read-only
+right
+rubberband
+scale
+scale-has-marks-above
+scale-has-marks-below
+scrollbar
+scrollbars-junction
+separator
+sidebar
+slider
+spinbutton
+spinner
+statusbar
+subtitle
+suggested-action
+title
+titlebar
+toolbar
+tooltip
+top
+touch-selection
+trough
+undershoot
+vertical
+view
+warning
+wide

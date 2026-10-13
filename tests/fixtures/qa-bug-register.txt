@@ -1,0 +1,111 @@
+// =============================================================================
+// tests/fixtures/qa-bug-register.txt              (Task T13 · Agent 7 · QA)
+// -----------------------------------------------------------------------------
+// SỔ BUG MÁY ĐỌC ĐƯỢC của đợt QA này. Mỗi dòng là một bug đã xác minh, có bằng
+// chứng tái hiện được, có mức nghiêm trọng, có agent sở hữu và có bản sửa nhỏ nhất
+// được đề xuất.
+//
+// Tệp này tồn tại vì hai lý do:
+//   1. Bug chuyển về đúng agent sở hữu phải kèm bằng chứng + cách tái hiện, không
+//      phải một câu mô tả. QA KHÔNG tự sửa sản phẩm của agent khác.
+//   2. Để trạng thái bug không trôi: tests/lint/test_css_sanity.py kiểm tra định
+//     dạng tệp này, và mỗi bug phải chỉ tới bằng chứng TỒN TẠI THẬT trong repo.
+//
+// ĐỊNH DẠNG mỗi dòng dữ liệu (phân cách bằng " | ", đúng 8 cột):
+//   <ID> | <SEVERITY> | <COMPONENT> | <OWNER> | <STATUS> | <EVIDENCE> | <REPRO> | <TÓM TẮT>
+//
+//   ID        : QA-<số>, tăng đơn điệu, không tái sử dụng
+//   SEVERITY  : P0 | P1 | P2 | P3   (định nghĩa ở cuối tệp)
+//   COMPONENT : thành phần bị lỗi
+//   OWNER     : task/agent phải sửa (QA không tự sửa)
+//   STATUS    : OPEN | FIXED | WONT-FIX | BLOCKED
+//   EVIDENCE  : đường dẫn tệp trong repo (PHẢI tồn tại) — bằng chứng tĩnh
+//   REPRO     : lệnh tái hiện chạy được trong sandbox này
+//   TÓM TẮT   : một dòng, phải nói rõ HỆ QUẢ chứ không chỉ triệu chứng
+//
+// Marker comment là `//`. Không cột nào chứa `//` nên cắt comment an toàn.
+// =============================================================================
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 1 — CỔNG CHẤT LƯỢNG KHÔNG THẬT SỰ CHẶN (nghiêm trọng nhất của đợt QA này)
+// ---------------------------------------------------------------------------
+
+QA-01 | P1 | CI workflow (.github/workflows/ci.yml, job `tests`) | T01 · Agent A (Platform/DevEx) | OPEN | .github/workflows/ci.yml | env -u MINTOS_TOOLCHAIN HOME=/tmp/cihome /usr/bin/python3 -m unittest discover -s tests -t . | Job `tests` KHÔNG cài SCSS compiler (chỉ job `scss` cài, mà `tests` không `needs: [scss]`). Trên runner thật nên 67/322 bài SKIP âm thầm và job vẫn XANH: 52 bài skip "cần libsass…" + 15 bài "không có trình biên dịch SCSS…". Toàn bộ phần kiểm chứng stylesheet của T04/T05/T09 (test_st_properties, test_cinnamon_coverage, test_assets, test_nemo_selectors) KHÔNG CHẠY trong CI. Hệ quả: cổng chất lượng chính của dự án báo xanh mà không hề kiểm tra thứ quan trọng nhất nó được lập ra để kiểm tra. Sửa nhỏ nhất: thêm đúng 2 dòng cài compiler vào job `tests` giống job `scss` đang làm.
+
+QA-12 | P3 | Makefile target `lint` | T01 · Agent A (Platform/DevEx) | OPEN | Makefile | grep -A1 '^lint:' Makefile | `make lint` = `tokens-check safety`, tức chỉ chạy 2 trong 9 lint có trong tools/lint/. Bảy lint còn lại (assets, icon_theme, wallpapers, settings_arch, css_sanity, st_properties, nemo_selectors) chỉ được chạy GIÁN TIẾP qua `make test`. Ngoài ra 4 lint chưa có test nào gọi thẳng `main()`/exit-code của chúng (icon_theme, wallpapers, settings_arch, nemo_selectors) — nghĩa là một lint có `main()` hỏng vẫn có thể "xanh". Hệ quả: `make lint` xanh không có nghĩa là mọi quy tắc đã được kiểm. Sửa nhỏ nhất: thêm các lint còn thiếu vào target `lint`.
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 2 — RÒ RỈ SELECTOR RA NGOÀI PHẠM VI APP (lỗi thật, đã xác minh bằng nguồn GTK)
+// ---------------------------------------------------------------------------
+
+QA-03 | P2 | src/gtk-3.0/sass/_apps-nemo.scss | T09 · Agent F (Apps) | OPEN | src/gtk-3.0/sass/_apps-nemo.scss | python3 tools/lint/css_sanity.py | Partial dành riêng cho Nemo phát ra `.dim-label` và `label.dim-label` ở dạng TRẦN với `color: rgba(255,255,255,0.44); opacity: 1`. `dim-label` là CLASS CHUẨN GTK (gtkstylecontext.h:166 `GTK_STYLE_CLASS_DIM_LABEL`), được Adwaita style (theme/Adwaita/_common.scss:217 `opacity: 0.55`), và riêng cinnamon-settings đã dùng 9 lần. Vì GTK 3.24 không phơi application-id cho CSS (0 lần `application_id` trong gtk/gtkapplicationwindow.c) nên MỘT gtk.css phục vụ MỌI app: rule này sẽ đổi màu mọi dim-label trong MỌI app GTK3 và ghi đè cơ chế opacity của Adwaita. Ngoài ra giá trị `rgba(255,255,255,0.44)` là chữ TRẮNG — khi D-2 mở khoá theme Light nó sẽ vô hình trên nền sáng. LƯU Ý ĐÃ LOẠI TRỪ 3 TRƯỜNG HỢP: `.floating-bar`, `.places-treeview`, `.treeview-drop-indicator` cũng phát ra trần nhưng là class do CHÍNH Nemo thêm (nemo-floating-bar.c:257, nemo-places-tree-view.c:32, nemo-tree-view-drag-dest.c:206) nên KHÔNG rò rỉ. Chỉ có MỘT lỗi thật, không phải bốn. Sửa nhỏ nhất: xoá 2 selector trần, giữ `.nemo-window .dim-label` (đã có sẵn trong cùng rule), và chuyển quyết định dim-label toàn hệ thống sang T06.
+
+QA-04 | P2 | tools/lint/nemo_selectors.py · GENERIC_GTK_CLASSES | T09 · Agent F (Apps) | OPEN | tests/fixtures/gtk-standard-style-classes.txt | python3 -c "import sys,pathlib;sys.path.insert(0,'tools/lint');import st_properties as sp,nemo_selectors as ns;g=set(sp.load_fixture(pathlib.Path('tests/fixtures/gtk-standard-style-classes.txt')));o={c.lstrip('.') for c in ns.GENERIC_GTK_CLASSES};print(len(o),len(g),len(g-o))" | Đây là NGUYÊN NHÂN GỐC của QA-03. Danh sách class chung của lint T09 có 19 mục do tác giả tự liệt kê; GTK 3.24 định nghĩa 84 class chuẩn trong gtkstylecontext.h. Thiếu 68 class, trong đó có `dim-label`, nên bài `no-bare-generic` không bắt được. Sửa nhỏ nhất: nạp danh sách từ tests/fixtures/gtk-standard-style-classes.txt (đã trích bằng máy từ header upstream, kèm lệnh tái tạo trong header của fixture) thay vì giữ danh sách viết tay. Ba mục `decoration`/`headerbar`/`switch` của T09 KHÔNG có trong header — chúng là CSS NODE NAME, vẫn hợp lệ để coi là chung nhưng nên tách thành nhóm riêng cho rõ.
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 3 — TOKEN GENERATED CÓ GIÁ TRỊ SAI (hiện là TIỀM ẨN, chưa gây hỏng CSS)
+// ---------------------------------------------------------------------------
+
+QA-05 | P2 | tools/tokens/generate.py → cả ba _tokens.scss | T02 · Agent B (Design Systems) | OPEN | src/cinnamon/tokens/_tokens.scss | grep -nF '$mg-font-weight-' src/cinnamon/tokens/_tokens.scss src/gtk-3.0/sass/_tokens.scss src/gtk-4.0/sass/_tokens.scss | Generator emit `$mg-font-weight-regular: 400px`, `-medium: 500px`, `-bold: 700px` trong CẢ BA tệp token. `font-weight` KHÔNG nhận đơn vị độ dài; `500px` là CSS không hợp lệ. ĐÃ KIỂM VÀ XÁC NHẬN ĐANG Ở TRẠNG THÁI TIỀM ẨN chứ không phải đang hỏng: 0 lần `font-weight: <số>px` trong cinnamon.css đã biên dịch, và cả 54 declaration font-weight đều dùng giá trị hợp lệ (300/400/500/700/800/bold/normal) — vì các agent tiêu thụ đã né token này và tự dùng literal (có ghi chú tại _00-globals.scss:181-183 và _apps-nemo.scss:47). Nên mức là P2 chứ không phải P1. Rủi ro thật: đây là DESIGN SYSTEM đã công bố, bất kỳ ai viết `font-weight: $mg-font-weight-medium` sẽ sinh CSS hỏng mà không lint nào hiện có bắt được. Sửa nhỏ nhất: emit số trần cho `font.weight.*`.
+
+QA-06 | P3 | tools/tokens/generate.py → cả ba _tokens.scss | T02 · Agent B (Design Systems) | OPEN | src/cinnamon/tokens/_tokens.scss | grep -nF -- '-pt:' src/cinnamon/tokens/_tokens.scss | `$mg-font-size-sm-pt: 9px` và `$mg-font-size-lg-pt: 12px`: tên token nói POINT nhưng giá trị là PIXEL. 9pt = 12px nên hai bậc này cách nhau đúng hệ số chuyển đổi, tức rất dễ có người đã nhập pt mà generator gắn nhãn px. Cũng ở trạng thái TIỀM ẨN (giá trị px bản thân nó hợp lệ cho font-size). Sửa nhỏ nhất: đổi tên bỏ hậu tố `-pt`, hoặc convert đúng pt→px.
+
+QA-07 | P3 | tools/tokens/generate.py → cả ba _tokens.scss | T02 · Agent B (Design Systems) | OPEN | src/cinnamon/tokens/_tokens.scss | grep -nF '$mg-blur-MAX' src/cinnamon/tokens/_tokens.scss | Hai HẰNG KIỂM TRA NỘI BỘ bị emit thành design token: `$mg-blur-MAX-ALLOWED: 6px` và `$mg-blur-MAX-SURFACE-PX: 240000px`. Chúng là ngưỡng của `check_blur_cap`, không phải giá trị thiết kế; `240000px` vô nghĩa nếu ai đó đem dùng. Tên còn sai quy ước kebab-case (chữ HOA) so với mọi token khác. Sửa nhỏ nhất: loại hai key này khỏi đầu ra stylesheet (giữ trong JSON để validator dùng).
+
+QA-08 | P2 | tools/tokens/generate.py · design/tokens/40-motion.json | T02 · Agent B (Design Systems) | OPEN | design/tokens/40-motion.json | ! grep -qF '$mg-duration-' src/cinnamon/tokens/_tokens.scss | `40-motion.json` TỒN TẠI, có nội dung thật (6 duration: instant/fast/base/menu/slow/dialog; 3 easing; map `cinnamon_transition`), được generate.py NẠP và TÍNH VÀO LOCK, nhưng KHÔNG token `$mg-duration-*`/`$mg-easing-*` nào được sinh ra. Nguyên nhân xác minh bằng đọc mã: generate.py chỉ flatten `10-primitives.json` và `30-component.json` (cộng `20-semantic-<scheme>.json` theo từng scheme), không flatten `40-motion.json`. HỆ QUẢ NGHIÊM TRỌNG HƠN MỘT TOKEN THIẾU: mỗi theme phải tự định nghĩa hằng tạm (src/cinnamon/overrides/_00-globals.scss:237-242 có 6 hằng `$mg-duration-*`), tức là CÓ NHIỀU NGUỒN SỰ THẬT cho cùng một khái niệm — đúng điều mà nguyên tắc "không tạo nguồn sự thật thứ hai" cấm. Sửa nhỏ nhất: thêm `flatten(data["40-motion.json"])` vào vòng build, kèm nhánh đơn vị (ms cho GTK, TRẦN cho Cinnamon vì St yêu cầu transition-duration không đơn vị).
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 4 — TÍCH HỢP: thành phần tồn tại nhưng KHÔNG được nối vào thứ gì ship được
+// ---------------------------------------------------------------------------
+
+QA-09 | P2 | GTK3 theme (thiếu src/gtk-3.0/sass/gtk.scss) | T06 · Agent E (GTK core) | BLOCKED | src/gtk-3.0/sass/_apps-nemo.scss | ls src/gtk-3.0/sass/ | Entry point `src/gtk-3.0/sass/gtk.scss` KHÔNG tồn tại nên: (a) tiêu chí V2 (`dist/MintOS-Glass/gtk-3.0/gtk.css`) FAIL — mà V2 là điều kiện để theme hiện trong picker của Cinnamon Settings; (b) `_apps-nemo.scss` (624 dòng) và `_apps-mint.scss` (371 dòng) là PARTIAL MỒ CÔI — css_sanity xác nhận không entry point nào import tới, nên 995 dòng style Nemo + app Mint KHÔNG nằm trong bất kỳ CSS nào được ship; (c) ~95% diện mạo System Settings không giao được vì Settings không có hook cấp cửa sổ. Đánh dấu BLOCKED chứ không phải OPEN vì đây là task chưa bắt đầu, không phải task làm sai. Điều kiện gỡ: T06 tạo `gtk.scss` với 2 dòng `@import "apps-nemo"; @import "apps-mint";` (T09 đã đề nghị đúng 2 dòng này).
+
+QA-10 | P2 | Makefile target `scss` | T01/T04 · Agent A/C | OPEN | Makefile | make scss; ls dist 2>&1 | Target được mô tả là "Biên dịch SCSS -> CSS" nhưng thân target chỉ `echo "TODO(T04): $(SASS) src/cinnamon/cinnamon.scss dist/MintOS-Glass/cinnamon/cinnamon.css"` — KHÔNG biên dịch và KHÔNG tạo `dist/`. Hai guard SKIP phía trên (thiếu compiler / thiếu entry file) là đúng, nhưng khi cả hai điều kiện ĐỀU THOẢ (entry tồn tại, compiler có sẵn) thì target vẫn chỉ in TODO. Hệ quả: mô tả và hành vi lệch nhau; người đóng gói chạy `make scss` sẽ tưởng đã có CSS trong `dist/`. Đã kiểm: sau `make scss`, `dist/` không tồn tại. Sửa nhỏ nhất: thay dòng echo bằng lời gọi compiler thật và tạo thư mục dist.
+
+QA-11 | P3 | Đóng gói / ISO readiness | T12 + T14 · Agent I/K | BLOCKED | Makefile | find . -name '*.sh' -not -path './.git/*' \| wc -l | Chưa có gì để Agent 8 đóng gói: 0 tệp `.sh`, 0 target `dist`/`release`/`install`/`package` trong Makefile, không có `src/theme-meta/`, và 0 tệp cấu hình mặc định (không gschema/dconf/.desktop/xml). Ghi nhận là BLOCKED theo đúng tiến độ (T12/T14 chưa bắt đầu), KHÔNG phải lỗi của task nào. Nhưng phải nói rõ trong bàn giao: trạng thái hiện tại là "tài nguyên sẵn sàng để đóng gói", CHƯA phải "sẵn sàng đóng gói".
+
+QA-13 | P3 | src/libadwaita/tokens.css và src/gtk-4.0/sass/_tokens.scss | T10 · Agent G (GTK4/libadwaita) | BLOCKED | src/libadwaita/tokens.css | ! grep -rq '@import' src/libadwaita/ src/gtk-4.0/ | `src/libadwaita/tokens.css` không được tệp nào import; `src/gtk-4.0/sass/` chỉ có mỗi `_tokens.scss`, không có entry point. T10 bị chặn bởi T00 (chưa xác minh được libadwaita trên Mint 22.3 cần thư mục `libadwaita-1.5/` với những tệp nào). Đúng tiến độ, không phải lỗi. Ghi lại để người đóng gói không tưởng GTK4/libadwaita đã được hỗ trợ.
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 5 — TÀI LIỆU MÂU THUẪN VỚI TRẠNG THÁI REPO (rủi ro tuân thủ giấy phép)
+// ---------------------------------------------------------------------------
+
+QA-02 | P2 | NOTICE.md | T01 · Agent A (Platform/DevEx) | OPEN | NOTICE.md | sed -n '3p;11,13p' NOTICE.md; ls LICENSE src/cinnamon/vendor/cinnamon-6.6-sass \| head -3 | NOTICE.md dòng 3 viết "Trạng thái: **chưa vendor bất kỳ mã bên thứ ba nào**" và dòng ~12 viết "⚠️ File `LICENSE` **chưa** được thêm". CẢ HAI ĐỀU SAI so với repo hiện tại: `LICENSE` (GPL-3.0) tồn tại, và `src/cinnamon/vendor/cinnamon-6.6-sass/` có 23 tệp (22 SCSS + VENDOR.md) kèm SHA-256 từng tệp. Chính NOTICE.md đặt quy tắc "mỗi lần thêm mã vendor phải cập nhật ở đây **trong cùng commit**" — quy tắc đó đã bị vi phạm ở T04. Hệ quả: đây là vấn đề TUÂN THỦ GIẤY PHÉP, không chỉ là tài liệu cũ. Cinnamon là GPL-2.0-or-later, src/st là LGPL-2.1-or-later (xem ADR-007); một bản phân phối/ISO mà sổ đăng ký nguồn gốc tuyên bố "không có mã bên thứ ba" trong khi có 22 tệp vendor là một tuyên bố sai về xuất xứ. Sửa nhỏ nhất: chép bảng đã có sẵn trong `src/cinnamon/vendor/cinnamon-6.6-sass/VENDOR.md` vào sổ đăng ký của NOTICE.md và xoá hai câu đã lỗi thời.
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 6 — ĐÃ ĐIỀU TRA VÀ KẾT LUẬN KHÔNG PHẢI LỖI (ghi lại để không điều tra lại)
+// ---------------------------------------------------------------------------
+
+QA-N01 | P3 | cinnamon.css kích thước khác nhau giữa 2 phép đo | — | WONT-FIX | tools/lint/st_properties.py | python3 -c "import sys,sass;sys.path.insert(0,'tools/lint');import st_properties as sp;a=sass.compile(filename='src/cinnamon/cinnamon.scss');b,_=sp.compile_css();print(len(a),len(b))" | `sass.compile(filename=…)` cho 94.349 B còn `sp.compile_css()` cho 93.018 B, chênh 1.331 B. ĐÃ XÁC MINH KHÔNG PHẢI lỗi tái lập: `compile_css()` truyền `output_style="expanded"` còn lời gọi trần dùng mặc định (`nested`). Hai output style khác nhau thì kích thước khác nhau là đúng. Ghi lại vì con số này dễ bị hiểu nhầm là build không xác định.
+
+QA-N02 | P3 | check_blur_cap có vẻ không bắt blur vượt trần | — | WONT-FIX | tools/tokens/generate.py | xem REPRO trong báo cáo QA | Lần thử ĐẦU cho kết quả "bơm blur=99 mà check_blur_cap trả 0 lỗi", trông như guard hỏng. NGUYÊN NHÂN LÀ TEST SAI, không phải guard sai: vòng lặp bơm 99 vào MỌI key `blur.*` kể cả `blur.MAX_ALLOWED`, nên trần cũng thành 99 và không gì vượt nó. Làm lại đúng (giữ MAX_ALLOWED=6, chỉ bơm blur.none/sm/md/lg=99) thì guard trả VỀ ĐÚNG 8 LỖI. Kết luận: tiêu chí P8 ĐẠT. Ghi lại để không ai "sửa" một guard đang hoạt động.
+
+QA-N03 | P3 | 7 selector trần trong _apps-nemo.scss | — | WONT-FIX | src/gtk-3.0/sass/_apps-nemo.scss | python3 tools/lint/css_sanity.py | Phát hiện ban đầu là "7 selector class trần". Sau khi đối chiếu với 84 class chuẩn GTK và xác minh từng class trong mã nguồn Nemo thì 6/7 KHÔNG phải lỗi: `.floating-bar`, `.places-treeview`, `.treeview-drop-indicator` (+ các biến thể :hover/:selected) là class do chính Nemo thêm nên không app nào khác khớp. Chỉ `.dim-label` là lỗi thật (QA-03). Ghi lại để tránh thổi phồng mức nghiêm trọng.
+
+
+// ---------------------------------------------------------------------------
+// ĐỊNH NGHĨA MỨC NGHIÊM TRỌNG (theo yêu cầu của Agent 7)
+// ---------------------------------------------------------------------------
+// P0 Critical : không khởi động được desktop, huỷ dữ liệu, hoặc làm hệ thống
+//               không thể dùng an toàn.                -> ĐỢT NÀY: 0 bug P0.
+// P1 High     : chức năng quan trọng hỏng, cấu hình không khôi phục được, hoặc lỗi
+//               ảnh hưởng rộng.                          -> 1 bug (QA-01).
+// P2 Medium   : một thành phần chính có lỗi đáng kể nhưng còn đường dùng khác.
+//                                                                -> 6 bug.
+// P3 Low      : lệch thẩm mỹ, lỗi nhỏ, ít ảnh hưởng.     -> 5 bug + 3 mục N.
+//
+// QA-01 được xếp P1 (không phải P0) vì nó KHÔNG phá desktop; nhưng nó phá CỔNG
+// KIỂM TRA, nghĩa là mọi bug khác có thể lọt qua mà không ai biết. Trong một dự án
+// chưa từng chạy trên máy thật, cổng tĩnh là lớp phòng thủ duy nhất đang hoạt động,
+// nên một cổng báo xanh giả là nghiêm trọng.
+//
+// KHÔNG có bug nào được nâng lên P0/P1 chỉ vì khác biệt thẩm mỹ hoặc vì suy luận
+// mà không có bằng chứng. Ba mục QA-N* là những thứ đã điều tra và KẾT LUẬN KHÔNG
+// PHẢI LỖI — giữ lại để không tốn công điều tra lần hai, và để không ai "sửa" một
+// thứ đang đúng.

@@ -1,0 +1,566 @@
+// =============================================================================
+// tests/fixtures/cinnamon-6.6-selectors.txt
+// -----------------------------------------------------------------------------
+// Toàn bộ selector mà theme GỐC của Cinnamon 6.6 sinh ra. Đây là chốt chặn cho
+// ràng buộc E6: theme Cinnamon của bên thứ ba phải HOÀN CHỈNH, vì St chỉ nạp
+// CSS của Mint làm `fallback_stylesheet` KHÔNG cascade (src/st/st-theme.c, doc
+// của PROP_FALLBACK_STYLESHEET: chỉ áp dụng khi stylesheet của người dùng không
+// trả về property nào, và phải đặt `important`). Thiếu một selector nghĩa là
+// widget đó MẤT STYLE HOÀN TOÀN, chứ không "rơi về theme gốc".
+//
+// MARKER COMMENT CỦA FILE NÀY LÀ `//`, KHÔNG PHẢI `#`.
+// Lý do: selector CSS dùng `#` cho ID (`#notification`, `#Tooltip`,
+// `#LookingGlassDialog`, `#altTabPopup`, `#panel:highlight`,
+// `.expo-workspace-thumbnail-frame#active`). Nếu dùng `#` làm comment thì 25
+// selector ID bị ăn mất. tools/lint/st_properties.py:load_fixture() đọc theo
+// `//`.
+//
+// CÁCH SINH (tái lập được):
+//   1. Lấy pristine vendor sass ở src/cinnamon/vendor/cinnamon-6.6-sass/
+//      (Cinnamon tag 6.6.9, commit 806c1a4e8cd23e528d3446b9e3cf5a3c7a3ddf18 —
+//      xem VENDOR.md cùng thư mục).
+//   2. Biên dịch `vendor/cinnamon-6.6-sass/cinnamon.scss` bằng libsass
+//      (pysassc) output_style=expanded — cùng toolchain Mint dùng để build.
+//   3. Tách selector bằng CHÍNH hai hàm mà lint dùng:
+//          st_properties.parse_rules(css)  rồi  st_properties.split_selectors(sel)
+//      rồi khử trùng lặp và sắp xếp. PHẢI dùng đúng hai hàm đó: bản đầu tiên
+//      của fixture này sinh bằng regex `^([^@\s/][^{}]*)\{` với re.M, và vì
+//      `[^{}]` không loại trừ dấu xuống dòng nên nó nuốt cả `}` của rule trước
+//      -> 439 mục bị bẩn thành dạng `'} #Tooltip'`. Đã sửa.
+//
+// Kết quả: 527 selector duy nhất.
+//
+// KIỂM TRA: tests/lint/test_cinnamon_coverage.py và
+//           python3 tools/lint/st_properties.py --check coverage
+// Test tự SKIP (không phải PASS) nếu môi trường không có trình biên dịch SCSS.
+//
+// CẬP NHẬT khi đổi ref vendor: chạy lại 3 bước trên với ref mới rồi ghi ref mới
+// vào header này.
+// =============================================================================
+#LookingGlassDialog
+#Tooltip
+#altTabPopup
+#appmenu-search-entry
+#appmenu-search-entry .capslock-warning
+#appmenu-search-entry StIcon.peek-password
+#appmenu-search-entry StLabel.hint-text
+#appmenu-search-entry:focus
+#appmenu-search-entry:insensitive
+#menu-search-entry
+#menu-search-entry .capslock-warning
+#menu-search-entry StIcon.peek-password
+#menu-search-entry StLabel.hint-text
+#menu-search-entry:focus
+#menu-search-entry:insensitive
+#notification
+#notification-actions
+#notification-body
+#notification.multi-line-notification
+#overview
+#panel:highlight
+#virtual-keyboard
+.applet-box
+.applet-box.vertical
+.applet-box:highlight
+.applet-box:hover
+.applet-cornerbar
+.applet-cornerbar-box
+.applet-cornerbar-box:hover > .applet-cornerbar
+.applet-cornerbar.vertical
+.applet-label
+.applet-separator
+.applet-separator-line
+.applet-separator-line-vertical
+.applet-separator.vertical
+.appmenu-application-button
+.appmenu-application-button-description
+.appmenu-application-button-label
+.appmenu-application-button-selected
+.appmenu-application-button-selected:highlighted
+.appmenu-application-button:highlighted
+.appmenu-applications-box
+.appmenu-background .popup-menu-content
+.appmenu-categories-applications-box
+.appmenu-categories-applications-box:top
+.appmenu-category-button
+.appmenu-category-button-greyed
+.appmenu-category-button-greyed StIcon
+.appmenu-category-button-label
+.appmenu-category-button-selected
+.appmenu-category-button:hover
+.appmenu-main-box
+.appmenu-right-box
+.appmenu-search-box
+.appmenu-search-entry-icon
+.appmenu-sidebar
+.appmenu-sidebar .appmenu-system-button
+.appmenu-sidebar .appmenu-system-button-lock:hover
+.appmenu-sidebar .appmenu-system-button-logout:hover
+.appmenu-sidebar .appmenu-system-button-shutdown
+.appmenu-sidebar .appmenu-system-button-shutdown:hover
+.appmenu-sidebar-button
+.appmenu-sidebar-button:hover
+.appmenu-system-box
+.appmenu-system-button
+.appmenu-system-button-lock:hover
+.appmenu-system-button-logout:hover
+.appmenu-system-button-shutdown
+.appmenu-system-button-shutdown:hover
+.audio-device-selection-dialog
+.audio-device-selection-dialog .audio-selection-box
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device .audio-selection-device-box
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device .audio-selection-device-icon
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device:active
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device:checked
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device:focus
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device:hover
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device:insensitive
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device:selected
+.calendar
+.calendar-change-month-back
+.calendar-change-month-back:hover
+.calendar-change-month-back:rtl
+.calendar-change-month-back:rtl:hover
+.calendar-change-month-forward
+.calendar-change-month-forward:hover
+.calendar-change-month-forward:rtl
+.calendar-change-month-forward:rtl:hover
+.calendar-day-base
+.calendar-day-base:hover
+.calendar-day-event-dot
+.calendar-day-event-dot-box
+.calendar-day-heading
+.calendar-event-button
+.calendar-event-button:hover
+.calendar-event-color-strip
+.calendar-event-countdown
+.calendar-event-countdown:current
+.calendar-event-countdown:imminent
+.calendar-event-countdown:soon
+.calendar-event-row-content
+.calendar-event-summary
+.calendar-event-time-future
+.calendar-event-time-past
+.calendar-event-time-present
+.calendar-event-time-present:all-day
+.calendar-events-date-label
+.calendar-events-main-box
+.calendar-events-main-box .separator
+.calendar-events-no-events-button
+.calendar-events-no-events-button:hover
+.calendar-events-no-events-icon
+.calendar-events-no-events-label
+.calendar-events-scrollbox
+.calendar-main-box
+.calendar-month-label
+.calendar-nonwork-day
+.calendar-not-today:selected
+.calendar-other-month-day
+.calendar-today
+.calendar-today-date-label
+.calendar-today-day-label
+.calendar-today-home-button
+.calendar-today-home-button-enabled
+.calendar-today-home-button-enabled:hover
+.calendar-today-home-button:hover
+.calendar-today:hover
+.calendar-work-day
+.candidate-box
+.candidate-box:hover
+.candidate-box:selected
+.candidate-index
+.candidate-page-button
+.candidate-page-button-box
+.candidate-page-button-icon
+.candidate-page-button-next
+.candidate-page-button-previous
+.candidate-popup-boxpointer
+.candidate-popup-content
+.caps-lock-warning-label
+.check-box CinnamonGenericContainer
+.check-box StBin
+.check-box-2 StBin
+.check-box-2 StBoxLayout
+.check-box-2:checked StBin
+.check-box-2:focus StBin
+.check-box-2:focus:checked StBin
+.check-box:checked StBin
+.check-box:focus StBin
+.check-box:focus:checked StBin
+.cinnamon-link
+.cinnamon-link:hover
+.desklet-drag-placeholder
+.desklet-header
+.desklet-with-borders
+.desklet-with-borders-and-header
+.desklet:highlight
+.device-box .device-icon
+.device-box .device-labels
+.device-box .device-labels .primary-label
+.device-box .device-labels .status-label
+.dialog
+.dialog .confirm-dialog-title
+.dialog .dialog-button
+.dialog .dialog-button:active
+.dialog .dialog-button:active:default
+.dialog .dialog-button:active:destructive-action
+.dialog .dialog-button:checked
+.dialog .dialog-button:checked:default
+.dialog .dialog-button:checked:destructive-action
+.dialog .dialog-button:default
+.dialog .dialog-button:destructive-action
+.dialog .dialog-button:focus
+.dialog .dialog-button:hover
+.dialog .dialog-button:hover:default
+.dialog .dialog-button:hover:destructive-action
+.dialog .dialog-button:insensitive
+.dialog .dialog-button:insensitive:default
+.dialog .dialog-button:insensitive:destructive-action
+.dialog .dialog-content-box
+.dialog-list
+.dialog-list .dialog-list-box
+.dialog-list .dialog-list-box .dialog-list-item
+.dialog-list .dialog-list-box .dialog-list-item .dialog-list-item-description
+.dialog-list .dialog-list-box .dialog-list-item .dialog-list-item-title
+.dialog-list .dialog-list-scrollview
+.dialog-list .dialog-list-title
+.end-session-dialog
+.end-session-dialog .dialog-content-box
+.end-session-dialog .dialog-list
+.end-session-dialog .dialog-list .dialog-list-title
+.expo-background
+.expo-workspace-thumbnail-frame
+.expo-workspace-thumbnail-frame#active
+.expo-workspaces-name-entry
+.expo-workspaces-name-entry .capslock-warning
+.expo-workspaces-name-entry StIcon.peek-password
+.expo-workspaces-name-entry StLabel.hint-text
+.expo-workspaces-name-entry:focus
+.expo-workspaces-name-entry:insensitive
+.flashspot
+.grouped-window-list-badge
+.grouped-window-list-button-label
+.grouped-window-list-item-box
+.grouped-window-list-item-box .progress
+.grouped-window-list-item-box.bottom
+.grouped-window-list-item-box.left
+.grouped-window-list-item-box.left StBin
+.grouped-window-list-item-box.right
+.grouped-window-list-item-box.right StBin
+.grouped-window-list-item-box.top
+.grouped-window-list-item-box:active
+.grouped-window-list-item-box:focus
+.grouped-window-list-item-box:hover
+.grouped-window-list-item-demands-attention
+.grouped-window-list-item-label
+.grouped-window-list-notifications-badge
+.grouped-window-list-notifications-badge-label
+.grouped-window-list-number-label
+.grouped-window-list-thumbnail-alert
+.grouped-window-list-thumbnail-label
+.grouped-window-list-thumbnail-menu
+.grouped-window-list-thumbnail-menu .item-box
+.grouped-window-list-thumbnail-menu .item-box:first-child
+.grouped-window-list-thumbnail-menu .item-box:last-child
+.grouped-window-list-thumbnail-menu .item-box:outlined
+.grouped-window-list-thumbnail-menu .item-box:outlined:first-child
+.grouped-window-list-thumbnail-menu .item-box:outlined:last-child
+.grouped-window-list-thumbnail-menu .item-box:selected
+.grouped-window-list-thumbnail-menu .item-box:selected:first-child
+.grouped-window-list-thumbnail-menu .item-box:selected:first-child:last-child
+.grouped-window-list-thumbnail-menu .item-box:selected:last-child
+.grouped-window-list-thumbnail-menu .item-box:selected:only-child
+.grouped-window-list-thumbnail-menu .separator
+.grouped-window-list-thumbnail-menu .thumbnail
+.grouped-window-list-thumbnail-menu > StBoxLayout
+.horizontal .candidate-page-button-box
+.info-osd
+.lightbox
+.magnifier-zoom-region
+.magnifier-zoom-region.full-screen
+.media-keys-osd
+.media-keys-osd .level
+.media-keys-osd .level-bar
+.media-keys-osd .level:ltr
+.media-keys-osd .level:rtl
+.media-keys-osd > *
+.media-keys-osd StIcon
+.media-keys-osd StLabel:ltr
+.media-keys-osd StLabel:rtl
+.menu
+.menu-application-button
+.menu-application-button-label
+.menu-application-button-selected
+.menu-application-button-selected:highlighted
+.menu-application-button:highlighted
+.menu-applications-box
+.menu-applications-inner-box:ltr
+.menu-applications-inner-box:rtl
+.menu-categories-box
+.menu-category-button
+.menu-category-button-greyed
+.menu-category-button-greyed StIcon
+.menu-category-button-label
+.menu-category-button-selected
+.menu-category-button:hover
+.menu-favorites-box
+.menu-favorites-button
+.menu-favorites-button:hover
+.menu-search-box
+.menu-search-entry-icon
+.menu-selected-app-box
+.menu-selected-app-description
+.menu-selected-app-title
+.message-dialog-content
+.message-dialog-content .message-dialog-caption
+.message-dialog-content .message-dialog-description
+.message-dialog-content .message-dialog-title
+.message-dialog-content .message-dialog-title.lightweight
+.nm-menu-item-icons
+.notification
+.notification-applet-padding
+.notification-button
+.notification-button:active
+.notification-button:focus
+.notification-button:hover
+.notification-button:insensitive
+.notification-icon-button
+.notification-icon-button:active
+.notification-icon-button:focus
+.notification-icon-button:hover
+.notification-icon-button:insensitive
+.notification-with-image
+.overview-empty-placeholder
+.panel-bottom
+.panel-bottom .workspace-switcher
+.panel-dummy
+.panel-dummy:entered
+.panel-launchers
+.panel-launchers .launcher
+.panel-launchers .launcher:hover
+.panel-launchers.vertical
+.panel-launchers.vertical .launcher
+.panel-left
+.panel-right
+.panel-top
+.panel-top .workspace-switcher
+.panelCenter
+.panelCenter.vertical
+.panelCenter:dnd
+.panelLeft
+.panelLeft.vertical
+.panelLeft.vertical:ltr
+.panelLeft.vertical:rtl
+.panelLeft:dnd
+.panelLeft:ltr
+.panelLeft:rtl
+.panelRight.vertical
+.panelRight.vertical:ltr
+.panelRight.vertical:rtl
+.panelRight:dnd
+.panelRight:ltr
+.panelRight:rtl
+.photoframe-box
+.pie-timer
+.polkit-dialog-user-combo
+.polkit-dialog-user-combo:active
+.polkit-dialog-user-combo:checked
+.polkit-dialog-user-combo:focus
+.polkit-dialog-user-combo:hover
+.polkit-dialog-user-combo:insensitive
+.polkit-dialog-user-combo:selected
+.polkit-dialog-user-layout
+.popup-alternating-menu-item:alternate
+.popup-combo-menu
+.popup-combobox-item
+.popup-device-menu-item
+.popup-device-menu-item .popup-inactive-menu-item
+.popup-device-menu-item:insensitive
+.popup-menu-arrow
+.popup-menu-content
+.popup-menu-icon
+.popup-menu-item
+.popup-menu-item:active
+.popup-menu-item:insensitive
+.popup-separator-menu-item
+.popup-slider-menu-item
+.popup-sub-menu
+.popup-sub-menu .popup-menu-item
+.popup-sub-menu .popup-menu-item:active
+.popup-sub-menu .popup-menu-item:first-child
+.popup-sub-menu .popup-menu-item:first-child:last-child
+.popup-sub-menu .popup-menu-item:last-child
+.popup-sub-menu .popup-menu-item:only-child
+.popup-sub-menu StScrollBar
+.popup-sub-menu StScrollBar StBin#trough
+.popup-sub-menu StScrollBar StBin#vhandle
+.popup-subtitle-menu-item
+.prompt-dialog
+.prompt-dialog .dialog-content-box
+.prompt-dialog-error-label
+.prompt-dialog-info-label
+.prompt-dialog-null-label
+.prompt-dialog-password-entry
+.prompt-dialog-password-entry .capslock-warning
+.prompt-dialog-password-entry StIcon.peek-password
+.prompt-dialog-password-entry StLabel.hint-text
+.prompt-dialog-password-entry:focus
+.prompt-dialog-password-entry:insensitive
+.prompt-dialog-password-layout
+.radiobutton CinnamonGenericContainer
+.radiobutton StBin
+.radiobutton:checked StBin
+.radiobutton:focus StBin
+.radiobutton:focus:checked StBin
+.resize-popup
+.ripple-box
+.ripple-box:rtl
+.ripple-pointer-location
+.run-dialog .dialog-content-box
+.run-dialog-completion-box
+.run-dialog-description
+.run-dialog-description.error
+.run-dialog-entry
+.run-dialog-entry .capslock-warning
+.run-dialog-entry StIcon.peek-password
+.run-dialog-entry StLabel.hint-text
+.run-dialog-entry:focus
+.run-dialog-entry:insensitive
+.separator
+.slider
+.sound-player .slider
+.sound-player > StBoxLayout:first-child
+.sound-player StButton
+.sound-player StButton StIcon
+.sound-player StButton:active
+.sound-player StButton:active:small
+.sound-player StButton:checked:small
+.sound-player StButton:focus
+.sound-player StButton:focus:small
+.sound-player StButton:hover
+.sound-player StButton:hover:small
+.sound-player StButton:insensitive
+.sound-player StButton:insensitive:small
+.sound-player StButton:selected:small
+.sound-player StButton:small
+.sound-player StButton:small StIcon
+.sound-player-generic-coverart
+.sound-player-overlay
+.sound-player-overlay > StBoxLayout
+.sound-player-overlay StBin > StBoxLayout
+.sound-player-overlay StBoxLayout
+.spacer-box
+.spacer-box.edit-mode
+.spacer-box:highlight
+.switcher-arrow
+.switcher-list
+.switcher-list .item-box
+.switcher-list .item-box:outlined
+.switcher-list .item-box:selected
+.switcher-list .thumbnail
+.switcher-list .thumbnail-box
+.switcher-list-item-container
+.switcher-preview-backdrop
+.system-status-icon
+.systray
+.thumbnail-scroll-gradient-left
+.thumbnail-scroll-gradient-right
+.tile-preview
+.toggle-switch
+.toggle-switch:checked
+.user-icon
+.user-icon StIcon
+.user-icon StIcon.highlighted
+.user-icon.user-avatar
+.user-widget.horizontal
+.user-widget.vertical
+.user-widget.vertical .user-widget-label
+.vertical .candidate-page-button-box
+.vkeyboard-key
+.vkeyboard-key StIcon
+.vkeyboard-key-container
+.vkeyboard-key.enter-key
+.vkeyboard-key.escape-key
+.vkeyboard-key.escape-key:active
+.vkeyboard-key.escape-key:checked
+.vkeyboard-key.escape-key:focus
+.vkeyboard-key.escape-key:hover
+.vkeyboard-key.hide-key
+.vkeyboard-key.hide-key:active
+.vkeyboard-key.hide-key:checked
+.vkeyboard-key.hide-key:focus
+.vkeyboard-key.hide-key:hover
+.vkeyboard-key.modifier-key
+.vkeyboard-key.modifier-key:checked
+.vkeyboard-key.modifier-key:hover
+.vkeyboard-key.modifier-key:latched
+.vkeyboard-key.non-alpha-key
+.vkeyboard-key.non-alpha-key:active
+.vkeyboard-key.non-alpha-key:checked
+.vkeyboard-key.non-alpha-key:focus
+.vkeyboard-key.non-alpha-key:hover
+.vkeyboard-key.shift-key-lowercase
+.vkeyboard-key.shift-key-lowercase:active
+.vkeyboard-key.shift-key-lowercase:checked
+.vkeyboard-key.shift-key-lowercase:focus
+.vkeyboard-key.shift-key-lowercase:hover
+.vkeyboard-key.shift-key-uppercase
+.vkeyboard-key:active
+.vkeyboard-key:checked
+.vkeyboard-key:focus
+.vkeyboard-key:hover
+.vkeyboard-subkeys
+.window-border
+.window-caption
+.window-caption:focus
+.window-close
+.window-close-area
+.window-list-box
+.window-list-box.vertical
+.window-list-box:highlight
+.window-list-item-box
+.window-list-item-box .progress
+.window-list-item-box.bottom
+.window-list-item-box.bottom StLabel
+.window-list-item-box.left
+.window-list-item-box.left StBin
+.window-list-item-box.right
+.window-list-item-box.right StBin
+.window-list-item-box.top
+.window-list-item-box.top StLabel
+.window-list-item-box:focus
+.window-list-item-box:hover
+.window-list-item-demands-attention
+.window-list-preview
+.wireless-active:insensitive
+.word-suggestions
+.workspace-add-button
+.workspace-add-button:hover
+.workspace-button
+.workspace-button.vertical
+.workspace-button:hover
+.workspace-button:outlined
+.workspace-button:outlined:hover
+.workspace-button:shaded
+.workspace-close-button
+.workspace-graph
+.workspace-graph .workspace
+.workspace-graph .workspace .windows
+.workspace-graph .workspace:active
+.workspace-graph .workspace:active .windows
+.workspace-overview-background-shade
+.workspace-switch-osd
+.workspace-switch-osd-indicator
+.workspace-switch-osd-indicator-box
+.workspace-switch-osd-indicator:active
+.workspace-thumbnails
+.workspace-thumbnails-background
+StScrollBar StBin#trough
+StScrollBar StButton#hhandle
+StScrollBar StButton#hhandle:hover
+StScrollBar StButton#vhandle
+StScrollBar StButton#vhandle:hover
+StScrollView StScrollBar
+StScrollView.vfade
+stage

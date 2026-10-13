@@ -1,0 +1,223 @@
+// =============================================================================
+// tests/fixtures/st-allowed-properties.txt
+// Danh sách thuộc tính CSS mà St (thư viện widget của Cinnamon) THẬT SỰ parse.
+// -----------------------------------------------------------------------------
+// Đây là FIXTURE ĐÓNG BĂNG, không sinh tự động trong CI, vì nó phải được suy ra
+// từ MÃ NGUỒN C của Cinnamon chứ không phải từ CSS của ta.
+//
+// NGUỒN (Cinnamon tag 6.6.9, commit 806c1a4e8cd23e528d3446b9e3cf5a3c7a3ddf18,
+//        lấy qua codeload.github.com/linuxmint/Cinnamon — xem
+//        src/cinnamon/vendor/cinnamon-6.6-sass/VENDOR.md):
+//   (a) 40 literal trong `strcmp(decl->property->stryng->str, "...")` và
+//       `g_str_has_prefix(property_name, "...")` của src/st/st-theme-node.c
+//       và src/st/st-theme-node-drawing.c.
+//   (b) 63 chuỗi thuộc tính truyền vào các getter chung của StThemeNode
+//       (`st_theme_node_get_length/get_color/get_double/get_shadow/lookup_*`,
+//       và dạng JS `themeNode.get_length('...')`) — quét 350 file .c/.h/.js
+//       trong src/, js/, files/usr/share/cinnamon/. Các thuộc tính `-foo-bar`
+//       riêng của widget nằm ở đây, ví dụ:
+//         js/ui/barLevel.js:96-102  -> -barlevel-height,
+//                                      -barlevel-background-color,
+//                                      -barlevel-active-background-color,
+//                                      -barlevel-amplify-color,
+//                                      -barlevel-amplify-separator-width
+//         js/ui/slider.js           -> -slider-*
+//         js/ui/expoThumbnail.js:1717 -> -cinnamon-close-overlap
+//         applets/calendar@cinnamon.org/calendar.js:545 -> max-rows
+//   (c) Họ thuộc tính dispatch theo TIỀN TỐ, xác minh bằng cách ĐỌC HÀM:
+//         do_border_property()  src/st/st-theme-node.c:1244-1300
+//           -> border[-left|-right|-top|-bottom][-color|-width]
+//              border-radius[-topleft|-topright|-bottomright|-bottomleft]
+//         khối `g_str_has_prefix(property_name, "background")` :1880-2140
+//           -> background[-color|-image|-position|-repeat|-size|
+//                         -gradient-direction|-gradient-start|-gradient-end]
+//         padding / margin + -left/-right/-top/-bottom   :1690-1692, 1546-1634
+//         width height min-width min-height max-width max-height :1694-1704
+//   (d) Một số thuộc tính chỉ có trong CSS gốc của Cinnamon 6.6 mà không tìm
+//       được handler bằng (a)-(c) — GIỮ LẠI vì Mint ship chúng và theme gốc
+//       chạy được; đánh dấu "stock-only" bên dưới.
+//
+// LOẠI TRỪ CÓ CHỦ ĐÍCH (đã chứng minh là khai báo CHẾT trong St):
+//   opacity      — chuỗi "opacity" không tồn tại trong src/st/st-theme-node.c.
+//                  grep toàn bộ src/st/ chỉ trúng src/st/st-texture-cache.c:84
+//                  và :859, là TÊN GObject property của texture cache, không
+//                  phải thuộc tính CSS. Theme gốc Cinnamon 6.6 vẫn viết
+//                  `.appmenu-category-button-greyed StIcon { opacity: 0.5; }`
+//                  (widgets/_startmenu.scss) → KHÔNG có tác dụng.
+//                  Tầng override của ta thay bằng alpha thật trên `color`.
+//
+// CẤM THEO CHÍNH SÁCH (dù St có hỗ trợ thật) — xem tools/lint/st_properties.py:
+//   -blur               (st-theme-node.c:2132) — chi phí GPU->CPU readback mỗi
+//                       lần paint trong src/st/st-background-effect.c; chưa đo
+//                       được trên máy Mint thật (T00 chưa chạy). Không ship.
+//   background-bumpmap  (st-theme-node.c:2064) — cần asset bumpmap, Phase 2.
+//
+// CẬP NHẬT LẠI FIXTURE NÀY khi đổi ref vendor: chạy lại quy trình ở
+// src/cinnamon/vendor/cinnamon-6.6-sass/VENDOR.md rồi trích (a)+(b)+(c) từ ref mới.
+// =============================================================================
+
+// --- (d) stock-only: có trong CSS gốc của Cinnamon 6.6, không tìm thấy handler
+//          bằng (a)-(c). Giữ lại vì theme gốc chạy được trên Mint 22.3.
+-arrow-box-shadow
+-active-window-background
+-active-window-border
+-inactive-window-background
+-inactive-window-border
+-cinnamon-caption-spacing
+-st-vfade-offset
+border-style
+
+// --- (a)+(b)+(c): đã xác minh bằng mã nguồn
+-active-window-background
+-active-window-border
+-arrow-background-color
+-arrow-base
+-arrow-border-color
+-arrow-border-radius
+-arrow-border-width
+-arrow-box-shadow
+-arrow-rise
+-barlevel-active-background-color
+-barlevel-amplify-color
+-barlevel-amplify-separator-width
+-barlevel-background-color
+-barlevel-height
+-bottom
+-bottomleft
+-bottomright
+-boxpointer-gap
+-bumpmap
+-cinnamon-caption-spacing
+-cinnamon-close-overlap
+-color
+-gradient-direction
+-gradient-end
+-gradient-height
+-gradient-start
+-image
+-inactive-window-background
+-inactive-window-border
+-left
+-margin-horizontal
+-panel-corner-background-color
+-panel-corner-inner-border-color
+-panel-corner-inner-border-width
+-panel-corner-outer-border-color
+-panel-corner-outer-border-width
+-panel-corner-radius
+-pie-background-color
+-pie-border-color
+-pie-border-width
+-position
+-repeat
+-right
+-size
+-slider-active-background-color
+-slider-active-border-color
+-slider-background-color
+-slider-border-color
+-slider-border-width
+-slider-handle-radius
+-slider-height
+-st-background-image-shadow
+-st-hfade-offset
+-st-icon-style
+-st-vfade-offset
+-top
+-topleft
+-topright
+-width
+background
+background-color
+background-gradient-direction
+background-gradient-end
+background-gradient-start
+background-image
+background-position
+background-repeat
+background-size
+border
+border-bottom
+border-bottom-color
+border-bottom-width
+border-color
+border-image
+border-left
+border-left-color
+border-left-width
+border-radius
+border-radius-bottomleft
+border-radius-bottomright
+border-radius-topleft
+border-radius-topright
+border-right
+border-right-color
+border-right-width
+border-spacing
+border-style
+border-top
+border-top-color
+border-top-width
+border-width
+box-shadow
+caret-color
+caret-size
+color
+error-color
+font
+font-family
+font-feature-settings
+font-size
+font-style
+font-variant
+font-weight
+height
+icon-shadow
+icon-size
+letter-spacing
+link-color
+margin
+margin-bottom
+margin-from-right-edge-of-screen
+margin-left
+margin-right
+margin-top
+max-height
+max-rows
+max-size
+max-width
+min-height
+min-size
+min-width
+outline
+outline-bottom
+outline-bottom-color
+outline-bottom-width
+outline-color
+outline-left
+outline-left-color
+outline-left-width
+outline-right
+outline-right-color
+outline-right-width
+outline-top
+outline-top-color
+outline-top-width
+outline-width
+padding
+padding-bottom
+padding-left
+padding-right
+padding-top
+selected-color
+selection-background-color
+spacing
+spacing-columns
+spacing-rows
+success-color
+text-align
+text-decoration
+text-shadow
+transition-duration
+warning-color
+width

@@ -1,0 +1,278 @@
+// =============================================================================
+// tests/fixtures/cinnamon-settings-hooks.txt        (Task T17 · Agent 6)
+// -----------------------------------------------------------------------------
+// Bản ghi MÁY ĐỌC ĐƯỢC về mọi điểm mà theme có thể (và KHÔNG thể) tác động lên
+// System Settings của Cinnamon 6.6. Đây là hợp đồng giữa tài liệu
+// (docs/design-system/settings-architecture.md, docs/proposals/control-center.md)
+// và bằng chứng. tools/lint/settings_arch.py kiểm tra hai chiều: mọi mục ở đây
+// phải xuất hiện trong tài liệu, và tài liệu không được tuyên bố hook nào ngoài
+// danh sách này.
+//
+// NGUỒN DUY NHẤT: linuxmint/Cinnamon @ 6.6.9,
+//   commit 806c1a4e8cd23e528d3446b9e3cf5a3c7a3ddf18
+//   files/usr/share/cinnamon/
+// Nguồn GTK: GNOME/gtk @ 3.24.42, các tệp gtk/gtkbuilder.c và gtk/gtkwidget.c.
+//
+// Lý do phải có tệp này: lần khảo sát ĐẦU (T09) kết luận "cinnamon-settings không
+// có hook riêng, 1 kết quả duy nhất, 0 widget name" và ghi thẳng kết luận đó vào
+// comment của _apps-mint.scss. Kết luận thực chất thì đúng nhưng SỐ LIỆU sai, vì
+// lần quét đó chỉ đi qua modules/** mà bỏ sót cinnamon-settings.py và bin/**.
+// Một bản ghi có cấu trúc + lint đối chiếu khiến loại trôi dạt đó bị bắt ngay.
+//
+// ĐỊNH DẠNG mỗi dòng dữ liệu (phân cách bằng khoảng trắng, tên không chứa space):
+//   <KIND> <name> <evidence> <STATUS>
+//
+// KIND:
+//   HOOK-CLASS    = GTK style class RIÊNG của app  -> CSS nhắm bằng .name
+//   HOOK-NAME     = widget name RIÊNG của app      -> CSS nhắm bằng #name
+//   GENERIC-CLASS = class GTK CHUNG, không riêng   -> KHÔNG phải hook của app
+//   UIID          = id trong file GtkBuilder .ui   -> KHÔNG phải hook CSS ở GTK3
+//   LOCK          = CSS do CHÍNH APP nạp ở priority cao hơn theme
+//   TIER          = một tầng trang của Settings
+//   APPLET        = applet bundled liên quan tới Control Center
+//
+// STATUS: OPEN (theme style được) | LOCKED-600 (không ghi đè được) |
+//         NOT-A-HOOK | INFO
+// -----------------------------------------------------------------------------
+// Marker comment là `//`. Tên hook và đường dẫn bằng chứng KHÔNG chứa `//` nên
+// việc cắt comment theo `//` là an toàn — khác với fixture selector Cinnamon của
+// T04, nơi `#` vừa là comment vừa là CSS ID selector và đã gây ra 425 dương tính
+// giả. Ở đây KHÔNG dùng `#` làm marker comment vì `#` là tiền tố của widget name.
+// =============================================================================
+
+
+// ---------------------------------------------------------------------------
+// HOOK THẬT — chỉ có 3. Đây là TOÀN BỘ bề mặt mà theme có thể nhắm riêng vào
+// cinnamon-settings. Mọi thứ khác là widget GTK chung (việc của T06).
+// ---------------------------------------------------------------------------
+HOOK-CLASS cs-category-view          cinnamon-settings.py:288                 OPEN
+HOOK-CLASS night-light-temperature   modules/cs_nightlight.py:50              LOCKED-600
+HOOK-NAME  c_box                     bin/SettingsWidgets.py:286               OPEN
+
+// Chi tiết của HOOK-CLASS cs-category-view: cùng chỗ đó app gắn THÊM class `view`
+// (cinnamon-settings.py:289) lên CHÍNH widget ấy, và widget ấy là
+// self.side_view_sw = builder.get_object("side_view_sw") — một GtkScrolledWindow.
+// Tức là sidebar danh mục. Selector dùng được: `.cs-category-view` hoặc
+// `.cs-category-view.view`. Không cần (và không nên) đoán thêm trạng thái nào.
+GENERIC-CLASS view                 cinnamon-settings.py:289                 GENERIC-CLASS
+
+// Chi tiết của HOOK-NAME c_box: bin/SettingsWidgets.py:283-289
+//   c_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+//   c_box.set_vexpand(False)
+//   c_box.set_name("c_box")
+//   self.sidePage.add_widget(c_box)
+// Đây là CCModule.process() — tức c_box là CONTAINER ĐỰNG panel nạp từ gói NGOÀI
+// cinnamon-control-center qua Gio extension point "cinnamon-control-center-1"
+// (bin/capi.py:27-57, nạp .so từ /usr/lib/<triplet>/cinnamon-control-center-1/panels).
+// => #c_box là cách DUY NHẤT để theme chạm tới vùng chứa 3 trang Network / Color /
+//    Graphics Tablet, vốn không phải code Python của cinnamon-settings.
+// Lưu ý: đây là `Gtk.Box.set_name()` = `gtk_widget_set_name()` THẬT, khác với
+// builder id (xem nhóm UIID bên dưới).
+
+
+// ---------------------------------------------------------------------------
+// CLASS GTK CHUNG xuất hiện trong cinnamon-settings — KHÔNG phải hook riêng.
+// Liệt kê để KHÔNG AI tưởng chúng là điểm tuỳ biến của app này: style chúng là
+// style MỌI app GTK khác, nên thuộc T06 và phải cân nhắc toàn hệ thống.
+// Số lần là kết quả quét toàn bộ 21.213 dòng Python của cinnamon-settings.
+// ---------------------------------------------------------------------------
+GENERIC-CLASS dim-label              8-lần-trên-6-module                      GENERIC-CLASS
+GENERIC-CLASS view                   7-lần-trên-6-tệp                         GENERIC-CLASS
+GENERIC-CLASS linked                 3-lần                                    GENERIC-CLASS
+GENERIC-CLASS inline-toolbar         modules/cs_backgrounds.py:220;bin/XkbSettings.py:166 GENERIC-CLASS
+GENERIC-CLASS primary-toolbar        cinnamon-settings.ui;xlet-settings.py:153 GENERIC-CLASS
+GENERIC-CLASS raised                 cinnamon-settings.ui:72,107              GENERIC-CLASS
+GENERIC-CLASS image-button           cinnamon-settings.ui:73                  GENERIC-CLASS
+GENERIC-CLASS gtkstyle-fallback      bin/ChooserButtonWidgets.py:81           GENERIC-CLASS
+GENERIC-CLASS destructive-action     bin/KeybindingWidgets.py:365             GENERIC-CLASS
+
+
+// ---------------------------------------------------------------------------
+// BẪY: GtkBuilder `id` KHÔNG phải widget name trong GTK3.
+//
+// cinnamon-settings.ui có 17 object có id. Trông rất giống hook CSS (`#search_box`,
+// `#top_bar`, `#content_box`…) nhưng KHÔNG phải. Bằng chứng:
+//   gtk/gtkbuilder.c:606-612  object_set_name() -> gtk_buildable_set_name()
+//   gtk/gtkbuilder.c:620      _gtk_builder_add_object() gọi object_set_name(object, id)
+//   gtk/gtkwidget.c:14043     iface->set_name = gtk_widget_buildable_set_name
+//   gtk/gtkwidget.c:14053-14058  gtk_widget_buildable_set_name() chỉ làm
+//                             g_object_set_qdata_full(..., quark_builder_set_name, ...)
+//                             -> KHÔNG gọi gtk_widget_set_name()
+// CSS của GTK khớp `#name` theo WIDGET NAME, nên các id này vô hình với CSS.
+// (GTK4 thì builder id CÓ thành widget name — bẫy này liên quan tới T10.)
+// ---------------------------------------------------------------------------
+UIID main_box                        cinnamon-settings.ui                     NOT-A-HOOK
+UIID top_bar                         cinnamon-settings.ui                     NOT-A-HOOK
+UIID toolbutton1                     cinnamon-settings.ui                     NOT-A-HOOK
+UIID header_stack                    cinnamon-settings.ui                     NOT-A-HOOK
+UIID hbox2                           cinnamon-settings.ui                     NOT-A-HOOK
+UIID search_box                      cinnamon-settings.ui;cinnamon-settings.py:301-304 NOT-A-HOOK
+UIID box2                            cinnamon-settings.ui                     NOT-A-HOOK
+UIID button_back                     cinnamon-settings.ui                     NOT-A-HOOK
+UIID image1                          cinnamon-settings.ui                     NOT-A-HOOK
+UIID stack_switcher                  cinnamon-settings.ui                     NOT-A-HOOK
+UIID main_stack                      cinnamon-settings.ui;cinnamon-settings.py:281 NOT-A-HOOK
+UIID side_view_sw                    cinnamon-settings.ui;cinnamon-settings.py:285 NOT-A-HOOK
+UIID viewport2                       cinnamon-settings.ui                     NOT-A-HOOK
+UIID category_box                    cinnamon-settings.ui;cinnamon-settings.py:285 NOT-A-HOOK
+UIID content_box_sw                  cinnamon-settings.ui                     NOT-A-HOOK
+UIID viewport1                       cinnamon-settings.ui                     NOT-A-HOOK
+UIID content_box                     cinnamon-settings.ui                     NOT-A-HOOK
+
+// Ô TÌM KIẾM LÀ THẬT — không được làm giả, cũng không cần làm mới.
+// cinnamon-settings.py:301-304:
+//   self.search_entry = self.builder.get_object("search_box")   (GtkEntry)
+//   self.search_entry.set_placeholder_text(_("Search"))
+//   self.search_entry.connect("changed", self.onSearchTextChanged)
+//   self.search_entry.connect("icon-press", self.onClearSearchBox)
+// và :522 strip_accents(search_entry.get_text().lower()) để lọc theo keywords của
+// từng module; :395 và :746 grab_focus(). Vì là GtkEntry thường không tên riêng nên
+// chỉ style được như entry CHUNG (T06), không nhắm riêng được.
+UIID search_box-is-real-search       cinnamon-settings.py:301-304,522         INFO
+
+// themes.ui (trang Appearance) cũng chỉ có builder id -> cùng bẫy, KHÔNG phải hook.
+UIID page_simplified                 themes.ui                                NOT-A-HOOK
+UIID color_label                     themes.ui                                NOT-A-HOOK
+UIID mixed_button                    themes.ui                                NOT-A-HOOK
+UIID dark_button                     themes.ui                                NOT-A-HOOK
+UIID light_button                    themes.ui                                NOT-A-HOOK
+UIID color_box                       themes.ui                                NOT-A-HOOK
+UIID customize_button                themes.ui                                NOT-A-HOOK
+UIID style_combo                     themes.ui                                NOT-A-HOOK
+
+
+// ---------------------------------------------------------------------------
+// LOCK: CSS do CHÍNH APP nạp, ở priority CAO HƠN theme.
+//
+// modules/cs_nightlight.py:31-53 — app tự dựng Gtk.CssProvider và nạp:
+//   @define-color ORANGE_100 #fff4e9;
+//   @define-color ORANGE_500 #f37329;
+//   @define-color base_color white;
+//   @define-color bg_color shade (@base_color, 0.96);
+//   .night-light-temperature trough {
+//       padding-top: 2px; padding-bottom: 2px;
+//       background-image: linear-gradient(to right,
+//                         mix(@bg_color, @ORANGE_100, 0.5), @ORANGE_500);
+//   }
+// rồi: context.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)  (=600)
+//
+// Theme nạp ở GTK_STYLE_PROVIDER_PRIORITY_THEME (=200). GTK 3.24 KHÔNG có
+// !important — đã kiểm: chuỗi "important" xuất hiện 0 lần trong gtkcssparser.c,
+// gtkcssprovider.c, gtkstylecascade.c @ 3.24.42. Nên priority là TUYỆT ĐỐI.
+//
+// HỆ QUẢ KHÔNG SỬA ĐƯỢC: slider nhiệt độ màu ở trang Night Light sẽ LUÔN là dải
+// trắng -> cam trên nền Dark Glass. Đây là provider DUY NHẤT app tự nạp (đã grep
+// toàn bộ cinnamon-settings) nên lock chỉ giới hạn ở widget này.
+//
+// ĐƯỜNG THOÁT DUY NHẤT (chưa làm, cần duyệt): nạp cùng khối đó ở
+// GTK_STYLE_PROVIDER_PRIORITY_USER (=800) qua ~/.config/gtk-3.0/gtk.css. Cùng cơ
+// chế T09 đã đề xuất cho phần bị Nemo khoá. Thuộc T12, KHÔNG thuộc theme.
+LOCK night-light-trough-gradient     modules/cs_nightlight.py:31-53           LOCKED-600
+
+// Cùng họ với lock trên nhưng ở phía NEMO, ghi lại để đối chiếu: cơ chế priority
+// 600 thắng 200 là GIỐNG HỆT nhau. Đã phân tích ở docs/testing/nemo-checklist.md.
+LOCK nemo-style-application-css      nemo:gresources/nemo-style-application.css LOCKED-600
+
+
+// ---------------------------------------------------------------------------
+// TIER: ba tầng trang của System Settings. Đây là phát hiện kiến trúc quan trọng
+// nhất của T17 — "System Settings" KHÔNG phải một app đồng nhất.
+// ---------------------------------------------------------------------------
+TIER tier-1-python-modules           31-module;modules/cs_*.py                INFO
+TIER tier-2-c-panels                 3-panel;bin/capi.py:27-57                INFO
+TIER tier-3-standalone-launchers     9-trang-cs-*+6-trang-icon-ngoài         INFO
+
+// TIER 1 — 31 module Python, là trang THẬT của cinnamon-settings:
+//   accessibility actions applets backgrounds calendar default desklets desktop
+//   display effects extensions fonts general gestures hotcorner info keyboard
+//   mouse nightlight notifications panel power privacy screensaver sound startup
+//   themes thunderbolt user windows workspaces
+// Giao diện dựng bằng widget GTK chung (Gtk.Box/TreeView/ListBox/Scale/Switch/…)
+// nên style được QUA T06, không cần và không thể nhắm riêng (trừ .cs-category-view).
+TIER tier-1-count                    31-tệp-modules/cs_*.py                 INFO
+
+// TIER 2 — 3 panel C, KHÔNG phải code của cinnamon-settings.
+// CONTROL_CENTER_MODULES (cinnamon-settings.py:70-75) khai báo:
+//   Network         mod_id=network  icon=cs-network  category=hardware
+//   Color           mod_id=color    icon=cs-color    category=hardware
+//   Graphics Tablet mod_id=wacom    icon=cs-tablet   category=hardware
+// bin/capi.py:27 đăng ký Gio.io_extension_point_register("cinnamon-control-center-1")
+// rồi nạp .so từ /usr/lib, /usr/lib64, /usr/lib/<multiarch>,
+// /usr/lib/<machine>/cinnamon-control-center-1/panels.
+// Nếu gói cinnamon-control-center KHÔNG cài thì capi.py:57/65 in ra
+// "Could not load/find <id> module; is the cinnamon-control-center package installed?"
+// và trang đó BIẾN MẤT — không phải lỗi của theme.
+// Theme chỉ chạm được vùng chứa qua #c_box (xem HOOK-NAME ở trên).
+TIER tier-2-count                    3-panel-cinnamon-settings.py:70-75     INFO
+TIER tier-2-package                  cinnamon-control-center                  INFO
+
+// TIER 3 — launcher sang app KHÁC, mỗi app một UI riêng, theme KHÔNG kiểm soát.
+// STANDALONE_MODULES (cinnamon-settings.py:77+), cột executable:
+//   Bluetooth      -> blueberry HOẶC blueman-manager        icon=cs-bluetooth  category=hardware
+//   Printers       -> system-config-printer                 icon=cs-printer    category=hardware
+//   Users & Groups -> cinnamon-settings-users               icon=cs-user-accounts category=admin
+//   Login Window   -> pkexec lightdm-settings (hoặc gdm-settings / lightdm-gtk-greeter-settings-pkexec)
+//                                                             icon=cs-login     category=admin
+//   Firewall       -> gufw HOẶC firewall-config             icon=cs-firewall   category=admin
+//   Languages      -> mintlocale                            icon=cs-language   category=prefs
+//   Input Method   -> mintlocale-im                         icon=cs-input-method category=prefs
+//   Driver Manager -> cinnamon-driver-manager               icon=cs-drivers    category=admin
+//   Software Sources-> pkexec mintsources                   icon=cs-sources    category=admin
+//   System Info    -> mintreport ; System Admin -> pkexec mintsysadm
+//   Nvidia Settings-> nvidia-settings ; Fingerprints -> fingwit
+//   Package Mgmt   -> dnfdragora / gpk-application / octopi / pamac-manager / yumex
+//   Online Accounts-> gnome-online-accounts-gtk ; Disks -> org.gnome.DiskUtility
+// HỆ QUẢ TRỰC TIẾP CHO YÊU CẦU CỦA NGƯỜI DÙNG: trong danh sách trang ưu tiên
+// (Appearance, Display, Keyboard, Mouse, Sound, Network, Bluetooth, Power,
+//  Backgrounds, Notifications, Windows, Workspaces, Users) thì
+//   Network   = TIER 2 (panel C của gói khác)
+//   Bluetooth = TIER 3 (blueberry — app khác)
+//   Users     = TIER 1 (cs_user.py) NHƯNG "Users and Groups" = TIER 3
+// Ba trang được yêu cầu ưu tiên lại là ba trang theme KHÔNG sở hữu.
+TIER tier-3-count                    9-trang-dùng-icon-cs-*                   INFO
+
+
+// ---------------------------------------------------------------------------
+// APPLET bundled — thành phần THẬT có thể tái sử dụng cho Control Center.
+// Tất cả nằm trong files/usr/share/cinnamon/applets/ của CHÍNH Cinnamon, không
+// phải cinnamon-spices-applets, nên KHÔNG cần cài thêm gì.
+// Quyết định của người dùng 2026-10-13: KHÔNG build applet mới ở vòng này;
+// chỉ style applet có sẵn + giao đề xuất.
+// ---------------------------------------------------------------------------
+APPLET sound@cinnamon.org            applet.js:84-VolumeSlider-extends-PopupMenu.PopupSliderMenuItem INFO
+APPLET power@cinnamon.org            applet.js:220-BrightnessSlider;:13-org.cinnamon.SettingsDaemon.Power.Screen INFO
+APPLET network@cinnamon.org          applet.js                                    INFO
+APPLET notifications@cinnamon.org    applet.js                                    INFO
+APPLET nightlight@cinnamon.org       applet.js:7-NightLightSwitch-extends-Applet.IconApplet INFO
+APPLET bluetooth                     KHÔNG-CÓ-applet-bundled                      INFO
+
+// Chi tiết đã xác minh cho từng applet:
+//  sound@cinnamon.org:84   class VolumeSlider extends PopupMenu.PopupSliderMenuItem
+//                    :16   const Slider = imports.ui.slider
+//                    :224  this.applet._output.volume = … ; :225 push_volume()
+//                    :120-122 removeActor/addActor(this._slider, {span:-1, expand:true})
+//                    => điều khiển âm lượng THẬT, có chọn đầu ra.
+//  power@cinnamon.org:13   const BrightnessBusName = "org.cinnamon.SettingsDaemon.Power.Screen"
+//                    :220  class BrightnessSlider extends PopupMenu.PopupSliderMenuItem
+//                    :272  _updateBrightnessLabel ; :279 _proxy.connectSignal('Changed', …)
+//                    :309-312 chuẩn hoá min/max brightness rồi _setBrightness(0..100)
+//                    => ĐỘ SÁNG LÀ CÓ THẬT VÀ ĐÃ CÓ SẴN, không cần viết mới.
+//  nightlight@cinnamon.org:7  class NightLightSwitch extends Applet.IconApplet
+//                    :16-26 tự thêm mục "Configure..." vào context menu
+//  bluetooth: đã grep toàn bộ files/usr/share/cinnamon/applets/ — KHÔNG có applet
+//                    bluetooth nào. Hai chỗ nhắc "bluetooth" là network@cinnamon.org
+//                    và power@cinnamon.org, chỉ là kiểm tra kiểu thiết bị, không phải
+//                    công tắc Bluetooth. Trên Mint, Bluetooth là `blueberry` (gói
+//                    riêng) hiện qua systray, và trong Settings nó là launcher TIER 3.
+//                    => Nút Bluetooth trong Control Center SẼ PHẢI gọi blueberry hoặc
+//                       rfkill/bluez trực tiếp. KHÔNG được vẽ một nút chỉ đổi màu.
+APPLET bluetooth-requires-external   blueberry-hoặc-rfkill/bluez              INFO
+
+// St class mà popup của các applet trên dùng — T04 ĐÃ style sẵn TOÀN BỘ:
+//   .popup-menu-item{:active,:focus,:insensitive} .popup-menu-content
+//   .popup-separator-menu-item .popup-slider-menu-item .slider
+//   .toggle-switch{,:checked} .toggle-switch-us .toggle-switch-intl
+//   .popup-subtitle-menu-item .popup-menu-arrow .popup-menu-icon
+// => "Style applet có sẵn" phần lớn ĐÃ XONG từ T04. Phần còn thiếu là bố cục gom
+//    nhóm — thứ chỉ applet mới quyết định được, CSS không làm được.
+APPLET st-classes-already-styled     src/cinnamon/overrides/_40-windowlist-gwl.scss;_50-dialogs-osd-notif.scss INFO

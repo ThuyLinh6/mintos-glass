@@ -234,3 +234,47 @@ thì chưa đọc mã. Nếu trên máy thật hoá ra desktop không render SVG
 pipeline render ra PNG/JPEG — `render-png.sh` trong allow-list là chỗ mô tả pipeline
 đó cho **agent đóng gói ISO**, chạy lúc build chứ **không** chạy trên máy người
 dùng. Khi đó phải khai báo độ phân giải thật đã sinh ra, **không khai khống**.
+
+---
+
+## 7. Đóng gói — vị trí trên đĩa và ràng buộc cho agent đóng gói (T12/T14)
+
+### 7.1 Thư mục đích
+
+| Trong repo | Ghi chú |
+|---|---|
+| `src/wallpapers/*.svg` | 4 tệp SVG |
+| `src/wallpapers/MANIFEST.md` | **không cần ship** — tài liệu nội bộ |
+
+**Chưa xác minh thư mục đích đúng**, và **không tuyên bố** đã biết. Có hai khả
+năng, và việc chọn thuộc T12:
+
+1. Một thư mục nền hệ thống (cần root — **trái** với ADR-002 và với ràng buộc
+   "không sửa file hệ thống").
+2. Thư mục nền của người dùng, rồi đăng ký qua `gnome-background-properties` XML.
+   Đã xác minh Cinnamon **có** `parse_xml_backgrounds_list()`
+   (`cs_backgrounds.py:537`) nên đường XML là có thật.
+
+Nếu chọn đường 2 thì mới đúng các ràng buộc của dự án. **T16 không tự quyết** vì
+chưa đọc đủ mã để biết thư mục nào được quét ở mức người dùng.
+
+### 7.2 Không có gì để render
+
+Cả 4 tệp là SVG vector nên **không cần** pipeline raster, **không cần** công cụ ảnh
+trên máy người dùng và trên máy build. Nếu kiểm chứng trên máy thật cho thấy
+desktop không render SVG (xem mục 6 — đường vẽ nền thật **chưa** đọc mã), thì lúc
+đó mới cần `render-png.sh`, và phải khai báo **độ phân giải thật đã sinh ra**,
+không khai khống.
+
+### 7.3 Hoàn tác
+
+Xoá các tệp wallpaper đã chép, và gỡ mục đăng ký trong XML nếu có. Không package,
+không schema, không file hệ thống.
+
+### 7.4 Cập nhật
+
+Thêm wallpaper mới: theo `docs/design-system/wallpaper-spec.md` mục 8. Ràng buộc
+cứng: nền không vượt quá `#1c1e22`, và **phải chạy
+`tools/lint/wallpapers.py -v` rồi ghi số đo vào MANIFEST.md** — vì nhãn icon desktop
+bị Nemo khoá màu nên wallpaper là đòn bẩy tương phản duy nhất (mục 3.1).
+Lint này **không cần compiler SCSS** nên chạy được trong pipeline build ISO.

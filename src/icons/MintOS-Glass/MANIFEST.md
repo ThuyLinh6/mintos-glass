@@ -307,3 +307,74 @@ Không có máy Mint nên **không thể** xác nhận, và **không tuyên bố
 16px cho nét ~1px, có thể mờ. Đây là lý do cần kiểm bằng mắt trên máy thật trước
 khi coi bộ icon này là xong — và là lý do tập lõi giữ hình **đơn giản, ít chi
 tiết** thay vì vẽ cầu kỳ.
+
+---
+
+## 9. Đóng gói — vị trí trên đĩa và ràng buộc cho agent đóng gói (T12/T14)
+
+Phần này viết cho **agent đóng gói**, không phải cho người dùng cuối.
+
+### 9.1 Thư mục đích
+
+| Trong repo | Trên máy người dùng |
+|---|---|
+| `src/icons/MintOS-Glass/` (toàn bộ, giữ nguyên cấu trúc con) | `~/.local/share/icons/MintOS-Glass/` |
+
+**Cả thư mục phải được chép nguyên khối**, gồm `index.theme` và cả 9 thư mục con.
+Thiếu `index.theme` thì thư mục chỉ là một đống SVG vô danh — hệ thống không nhận
+diện đó là icon theme.
+
+Đường đích là **thư mục người dùng, không cần root**, đúng ADR-002 (cùng gốc với
+`~/.local/share/themes/MintOS-Glass` của Cinnamon/GTK theme). Đây là một trong hai
+đường ghi duy nhất mà tooling của dự án được phép chạm; `tools/lint/safety_paths.py`
+của Agent 1 khoá điều đó.
+
+### 9.2 Sau khi chép
+
+Cần chạy `gtk-update-icon-cache` trên thư mục theme. **T15 không tự chạy** lệnh nào
+và **không** yêu cầu người dùng cài thêm gì — `gtk-update-icon-cache` thuộc gói
+`gtk` vốn đã có trên Mint 22.3. Việc quyết định chạy lúc cài hay lúc build ISO là
+của T12.
+
+**Chưa xác minh** (không có máy Mint): liệu bộ nạp icon có yêu cầu cache file để
+nhận diện theme, hay chỉ cần `index.theme`. Không tuyên bố.
+
+### 9.3 Chọn làm theme mặc định
+
+Là gsetting `org.cinnamon.desktop.interface icon-theme` → `MintOS-Glass`. Khoá này
+đã được T12 liệt kê trong work-breakdown. **T15 không tự ghi gsetting** — tài liệu
+chỉ nêu tên khoá.
+
+### 9.4 Cấu trúc đã sẵn sàng để đóng gói, nhưng CHƯA có gì được đóng gói
+
+Cần nói rõ ranh giới: T15 giao **module tài nguyên** ở trạng thái repo — đúng cấu
+trúc, đúng tên, có kiểm tra tự động. T15 **không** tạo `.deb`, không tạo tarball
+release, không viết installer, không dựng ISO. Đó là T12/T14.
+
+**Chưa có trong phạm vi T15** (agent đóng gói phải biết để không tưởng là đã có):
+- không có file `.desktop` hay XML đăng ký theme
+- không có pipeline render PNG (`render-png.sh` nằm trong allow-list nhưng **chưa
+  được tạo**, vì theme thuần SVG không cần nó — **không khai là đã có**)
+- không có cơ chế chọn theme lúc first-boot
+
+### 9.5 Hoàn tác
+
+Xoá thư mục `~/.local/share/icons/MintOS-Glass/`. **Không có gì khác để dọn**:
+không package đã cài, không file hệ thống đã sửa, không schema đã thêm, không
+cache nằm ngoài thư mục đó (nếu `gtk-update-icon-cache` sinh `icon-theme.cache` thì
+nó nằm **trong** thư mục theme và bị xoá cùng).
+
+Sau khi xoá, gsetting `icon-theme` sẽ trỏ tới một theme không tồn tại → hệ thống
+rơi về theme mặc định. **Chưa xác minh** Cinnamon xử lý trường hợp đó êm hay cần
+đặt lại gsetting trước; thứ tự an toàn là **đặt lại gsetting rồi mới xoá thư mục**.
+
+### 9.6 Cập nhật tài nguyên
+
+Thêm/sửa icon: theo quy trình ở `docs/design-system/icon-spec.md` mục 9. Ràng buộc
+cứng cho mọi lần cập nhật:
+
+- mọi màu phải tra ngược được về token (lint `colors-are-token-values`)
+- `index.theme` phải khớp **hai chiều** với thư mục thật (lint `directories-two-way`)
+- icon `-symbolic` phải đơn sắc (lint `symbolic-monochrome`)
+- phải chạy `tools/lint/icon_theme.py` — lint này **không cần compiler SCSS** nên
+  chạy được ở bất kỳ đâu có Python 3, kể cả trong pipeline build ISO

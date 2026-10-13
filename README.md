@@ -253,25 +253,60 @@ Không tuyên bố “build package thành công” cho tới khi `dist/` đư�
 
 ---
 
-## 8. Tạo ISO
+## 8. Tạo ISO — MintOS Glass ISO Customizer
 
-**Chưa triển khai.** Repository hiện không chứa bất kỳ thành phần nào của một quy
-trình tạo ISO: không cấu hình Cubic/live-build, không script tạo ISO, không preseed,
-không cấu hình mặc định cho người dùng mới, không workflow phát hành.
+Công cụ **MintOS Glass ISO Customizer** đã được triển khai tại
+`tools/iso_customizer/` (chi tiết: [docs/ISO_CUSTOMIZER.md](docs/ISO_CUSTOMIZER.md)).
+Nó lấy ISO Linux Mint 22.3 gốc, staging theme Cinnamon Dark Glass + icon + wallpaper
+thành gói Debian và (khi máy build đủ công cụ) remaster thành ISO mới trong workspace
+riêng, giữ nguyên ISO nguồn. **Chưa có ISO MintOS Glass thật nào được tạo/boot/cài thử**:
+môi trường phát triển hiện tại thiếu `xorriso`/squashfs-tools và chưa có ISO Mint thật,
+nên build thật đang dừng ở trạng thái `BLOCKED` có kiểm soát; theme GTK vẫn thiếu nên
+ISO (khi build được) vẫn bị ghi rõ là chưa hoàn chỉnh.
 
-Điều kiện còn thiếu trước khi nói tới ISO (chi tiết và lộ trình dự kiến — **chưa xác minh** —
-ở [docs/BUILD-AND-ISO.md](docs/BUILD-AND-ISO.md) mục 4):
+### Cách dùng (từ thư mục gốc repo)
 
-1. Theme GTK 3 hoàn chỉnh (T06/T08) và phần Nemo/Mint apps được nối vào (T09) —
-   hiện theme chưa đủ điều kiện xuất hiện trong bộ chọn của Cinnamon Settings (V2 chưa đạt).
-2. Trình cài đặt/rollback đã drill thành công trên máy thật (T12, tiêu chí R1–R10).
-3. Đóng gói `dist/` + kiểm thử runtime đủ 50 tiêu chí trong `tests/manual/PROTOCOL.md`
-   trên Linux Mint 22.3 thật (hiện 36/50 tiêu chí đang BLOCKED vì chưa có máy đích).
-4. Quyết định cơ chế đưa theme vào ISO (gói hệ thống hay cấu hình mặc định) — chưa chốt,
-   và mọi phương án đều phải giữ nguyên tắc không phá vỡ khả năng rollback.
+```bash
+# 1) Kiểm tra môi trường build (mã thoát 3 = chưa sẵn sàng remaster):
+python3 -m tools.iso_customizer check-environment
 
-Không có lệnh tạo ISO nào để chạy ở thời điểm này; mọi lệnh ISO trong tài liệu
-BUILD-AND-ISO đều được đánh dấu là kế hoạch.
+# 2) Kiểm tra ISO nguồn + đối chiếu checksum chính thức bạn tự lấy từ Linux Mint:
+python3 -m tools.iso_customizer inspect-source /path/to/linuxmint-22.3-cinnamon-64bit.iso \
+  --expected-sha256 <checksum-chinh-thuc>
+
+# 3) Build (extract → tích hợp → nén lại → repack giữ boot, rồi tự kiểm tra mức 1–3):
+python3 -m tools.iso_customizer build \
+  --source /path/to/linuxmint-22.3-cinnamon-64bit.iso \
+  --output /path/to/mintos-glass-22.3.iso
+#    --dry-run        chỉ validate + staging + gói .deb + manifest (không repack)
+#    --allow-partial  tiếp tục dù thiếu theme GTK (manifest vẫn ghi blocked)
+#    --force          cho phép ghi đè file đầu ra đã tồn tại
+
+# 4) Kiểm tra ISO đầu ra theo 5 mức (1–3 chạy thật, 4–5 báo NOT TESTED):
+python3 -m tools.iso_customizer validate /path/to/mintos-glass-22.3.iso
+
+make iso            # trợ giúp CLI
+make iso-check-env  # kiểm tra môi trường
+```
+
+- **Yêu cầu build:** máy Linux, Python ≥ 3.11, SCSS compiler (libsass hoặc dart-sass),
+  `xorriso`, `unsquashfs`/`mksquashfs`, `glib-compile-schemas`; đĩa trống ≥ ~4× ISO nguồn.
+  Công cụ không tự cài gói, không tự leo quyền, không cần Internet khi đã có ISO nguồn.
+- **Đầu ra & log:** ISO tại `--output`; workspace `build-iso-workspaces/mintos-glass-build-<id>/`
+  chứa `manifest.json`, `logs/build.log`, cây `staging/`, gói `package/mintos-glass-theme.deb`.
+  Build lỗi không tự xóa workspace. Dọn dẹp an toàn:
+  `python3 -m tools.iso_customizer clean --workspace <workspace> --confirm DELETE`.
+- **Giữ nguyên ISO nguồn:** checksum trước/sau được so trong manifest (`source_unchanged`);
+  rollback của build = xóa workspace và dùng lại ISO gốc.
+- **Xác minh:** `validate` báo riêng File/Structure/Content/Boot/Installation.
+  Qua 3 mức đầu không có nghĩa là ISO boot/cài được — hai mức cuối vẫn `NOT TESTED`.
+- **Khắc phục lỗi thường gặp:** thiếu công cụ → `check-environment` thoát 3 (cài trên máy
+  build, xem ISO_CUSTOMIZER mục 2); ISO bị từ chối → đối chiếu đúng bản 22.3 64-bit và
+  checksum; bị từ chối ghi đè → đổi `--output` hoặc `--force`.
+
+Điều kiện còn thiếu trước khi phát hành ISO: công cụ remaster trên máy đích + ISO Mint
+22.3 chính thức, theme GTK hoàn chỉnh (T06/T08/T09), và Boot/Installation validation
+trên VM (live session, người dùng mới, rollback) — xem ISO_CUSTOMIZER mục 11.
 
 ---
 
@@ -355,7 +390,8 @@ Cinnamon 6.6 thật; `design/tokens/00-meta.json` ghi `verified_on_target: false
 - Theme GTK 3 lõi (T06: `gtk.scss`, `_colors.scss`, `_common.scss`…), tài nguyên GTK 3 (T07),
   khung cửa sổ muffin (T08: `_decorations.scss`), GTK 4/libadwaita (T10).
   Hệ quả: chưa có `gtk-3.0/gtk.css`, theme chưa đạt V2, chưa áp dụng được GTK theme.
-- Trình cài đặt/rollback CLI (T12), đóng gói `dist/` và phát hành (T14), ISO.
+- Trình cài đặt/rollback CLI cho máy người dùng (T12) và đóng gói phát hành `dist/` (T14).
+  Công cụ ISO Customizer đã có nhưng chưa build/boot/cài thử được ISO thật (mục 8).
 - Biến thể Light Glass (token có, `emit: false`), biến thể blur thật, dock Plank,
   Control Center dạng applet (mới là đề xuất).
 
@@ -400,4 +436,6 @@ GPL-3.0-or-later — xem [LICENSE](LICENSE). Mã vendor từ Cinnamon
 `src/cinnamon/vendor/cinnamon-6.6-sass/VENDOR.md`; xem thêm
 `docs/adr/ADR-007-licensing.md`. Lưu ý QA-02 ở mục 12: `NOTICE.md` cần được cập nhật
 cho khớp trạng thái vendor hiện tại.
+n tại.
+hớp trạng thái vendor hiện tại.
 n tại.

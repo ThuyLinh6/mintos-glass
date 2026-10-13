@@ -40,6 +40,12 @@ test: ## Chạy test Tầng 1 (offline, stdlib unittest)
 check: lint test ## everything — cổng CI chính
 	@echo "OK — make check xanh"
 
+iso: ## In trợ giúp MintOS Glass ISO Customizer
+	$(PYTHON) -m tools.iso_customizer --help
+
+iso-check-env: ## Kiểm tra môi trường build ISO (exit 3 nếu chưa sẵn sàng remaster)
+	$(PYTHON) -m tools.iso_customizer check-environment
+
 clean: ## Xoá file generated (token sẽ được sinh lại)
 	rm -f src/cinnamon/tokens/_tokens.scss src/gtk-3.0/sass/_tokens.scss \
 	      src/gtk-4.0/sass/_tokens.scss src/libadwaita/tokens.css \

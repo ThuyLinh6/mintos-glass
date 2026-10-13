@@ -13,6 +13,11 @@ build/
 *.tmp
 .sass-cache/
 
+# ISO Customizer: workspace build va ISO la san pham lon, khong commit
+build-iso-workspaces/
+*.iso
+*.iso.sha256
+
 # KHÔNG ignore dist/ và các file *_tokens.scss:
 # A8 — file generated được commit để người dùng không cần toolchain sass.
 # CI target `make tokens-check` đảm bảo chúng không lệch src/.

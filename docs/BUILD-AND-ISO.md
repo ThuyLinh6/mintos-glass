@@ -19,7 +19,7 @@ Tài liệu này trả lời hai câu hỏi thường bị hiểu nhầm nhất 
 - [1. Bản đồ quy trình build dự kiến và phần đã có](#1-bản-đồ-quy-trình-build-dự-kiến-và-phần-đã-có)
 - [2. Build đã xác minh (chạy được hôm nay)](#2-build-đã-xác-minh-chạy-được-hôm-nay)
 - [3. Đóng gói package — chưa triển khai](#3-đóng-gói-package--chưa-triển-khai)
-- [4. Tạo ISO — chưa triển khai](#4-tạo-iso--chưa-triển-khai)
+- [4. Tạo ISO — đã có công cụ, chưa build được ISO thật](#4-tạo-iso--đã-có-công-cụ-chưa-build-được-iso-thật)
 - [5. Xác minh kết quả build](#5-xác-minh-kết-quả-build)
 - [6. Việc phải làm tiếp theo (cho người đóng góp)](#6-việc-phải-làm-tiếp-theo-cho-người-đóng-góp)
 
@@ -171,14 +171,26 @@ cho đường dẫn nhạy cảm trong `plan/06-git-workflow.md`.
 
 ---
 
-## 4. Tạo ISO — chưa triển khai
+## 4. Tạo ISO — đã có công cụ, chưa build được ISO thật
 
-### 4.1 Trạng thái hiện tại: không có gì để chạy
+### 4.1 Trạng thái hiện tại
 
-Đã kiểm tra toàn repository: **0** tệp script shell, **0** cấu hình Cubic/live-build/
-`mint-iso`, **0** preseed/kickstart, **0** cấu hình mặc định cho người dùng mới,
-**0** workflow release. Dự án hiện là một **theme đang phát triển**, không phải
-một bản dựng hệ điều hành. Không tồn tại lệnh tạo ISO đúng sự thật để ghi vào đây.
+Công cụ **MintOS Glass ISO Customizer** (`tools/iso_customizer/`, tài liệu đầy đủ:
+[ISO_CUSTOMIZER.md](ISO_CUSTOMIZER.md)) đã triển khai pipeline
+validate → staging → gói `.deb` → remaster bằng `xorriso`/squashfs → validate 5 mức,
+kèm 18 unit test và chạy thử bằng fixture ISO tổng hợp. Lệnh thật:
+
+```bash
+python3 -m tools.iso_customizer check-environment
+python3 -m tools.iso_customizer inspect-source /path/to/linuxmint-22.3-cinnamon-64bit.iso
+python3 -m tools.iso_customizer build --source <iso-goc> --output <iso-moi>
+python3 -m tools.iso_customizer validate <iso-moi>
+```
+
+Giới hạn hiện tại: môi trường phát triển thiếu `xorriso`, `unsquashfs`, `mksquashfs`
+nên build thật dừng `BLOCKED` (mã thoát 3, giữ workspace); chưa có ISO Mint 22.3 thật
+để qua File/Structure/Content trên ISO thật, và Boot/Installation vẫn `NOT TESTED`.
+Không tuyên bố đã tạo ISO thành công cho tới khi có file ISO thật + log + boot thử.
 
 ### 4.2 Vì sao chưa thể làm ISO (điều kiện còn thiếu)
 

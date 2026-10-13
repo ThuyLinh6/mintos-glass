@@ -346,18 +346,62 @@ evsidebarthumbnails treeview.view {
 
 
 // =============================================================================
-// 9. cinnamon-settings (Trung tâm điều khiển) — KHÔNG CÓ HOOK RIÊNG
+// 9. cinnamon-settings (Trung tâm điều khiển) — hook RẤT HẠN CHẾ
 // =============================================================================
-// Bằng chứng: Cinnamon 6.6.9, commit 806c1a4e8cd23e528d3446b9e3cf5a3c7a3ddf18,
-// quét toàn bộ files/usr/share/cinnamon/cinnamon-settings/**/*.py:
-//   1 kết quả DUY NHẤT: modules/cs_backgrounds.py:220
-//                       add_class(..., "inline-toolbar")  <- class GTK CHUNG
-//   0 widget name riêng, 0 CSS node name riêng.
+// ĐÍNH CHÍNH (Agent 6, sau khi quét lại toàn bộ): bằng chứng ở bản đầu của mục này
+// SAI về số liệu. Bản đầu ghi "1 kết quả DUY NHẤT ... 0 widget name riêng". Nguyên
+// nhân: lần quét đó chỉ đi qua modules/**, bỏ sót cinnamon-settings.py và bin/**.
 //
-// => KHÔNG có cách nào trong GTK3 CSS để nhận ra cửa sổ cinnamon-settings.
-//    Giao diện của nó do widget GTK chung quyết định (T06).
-//    GHI CHÚ cho T12 (cấu hình): một số thứ trong cinnamon-settings là GSETTING
-//    chứ không phải CSS, nên không thuộc phạm vi theme. Không giả vờ style được.
+// QUÉT LẠI THẬT — Cinnamon 6.6.9, commit 806c1a4e8cd23e528d3446b9e3cf5a3c7a3ddf18,
+// toàn bộ files/usr/share/cinnamon/cinnamon-settings/**/*.py, mẫu
+// add_class / remove_class / set_name / set_css_name:
+//   27 hook trên 18 tệp. Trong đó RIÊNG cho app này:
+//     cinnamon-settings.py:288   add_class("cs-category-view")   <- CSS CLASS riêng
+//     bin/SettingsWidgets.py:286 Gtk.Box.set_name("c_box")       <- WIDGET NAME riêng
+//     modules/cs_nightlight.py:50 add_class("night-light-temperature")
+//   Còn lại là class GTK CHUNG: "view" (7 lần), "dim-label" (8 lần),
+//   "linked" (3), "inline-toolbar" (2), "primary-toolbar" (2), "gtkstyle-fallback".
+//
+// KẾT LUẬN THỰC CHẤT CỦA BẢN ĐẦU VẪN ĐÚNG, chỉ có số liệu là sai:
+//   KHÔNG có hook ở CẤP CỬA SỔ (không widget name/class nào trên top-level window),
+//   nên GTK3 CSS KHÔNG có cách nào scope một selector chung vào riêng cửa sổ
+//   cinnamon-settings. Giao diện của nó vẫn do widget GTK chung quyết định (T06).
+//
+// BA hook có thật thì dùng được, nhưng rất hẹp:
+//   .cs-category-view  -> cái SCROLLED WINDOW chứa sidebar danh mục (gắn kèm .view)
+//                         cinnamon-settings.py:285-289
+//   #c_box             -> cái Gtk.Box ĐỰNG 3 panel C nạp từ gói NGOÀI
+//                         cinnamon-control-center (network/color/wacom), xem
+//                         bin/capi.py:27-57 và bin/SettingsWidgets.py:283-289
+//   .night-light-temperature
+//                      -> BỊ KHOÁ. cs_nightlight.py:51-53 tự nạp Gtk.CssProvider ở
+//                         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION (600) với
+//                         `background-image: linear-gradient(... white -> #f37329)`.
+//                         Theme ở 200, GTK 3.24 KHÔNG có !important (đã kiểm: chuỗi
+//                         "important" xuất hiện 0 lần trong gtkcssparser.c /
+//                         gtkcssprovider.c / gtkstylecascade.c @ 3.24.42) nên KHÔNG
+//                         ghi đè được. => Slider nhiệt độ màu ở trang Night Light
+//                         sẽ LUÔN là dải trắng-cam trên nền Dark Glass. Đây là
+//                         provider duy nhất app tự nạp (đã grep toàn bộ), nên lock
+//                         chỉ giới hạn ở widget này. GHI RÕ giới hạn, không giả vờ
+//                         sửa được.
+//
+// MỘT BẪY GTK3 ĐÃ XÁC MINH, rất dễ nhầm: 17 `id` trong cinnamon-settings.ui
+// (#main_box, #top_bar, #search_box, #category_box, #content_box, ...) KHÔNG phải
+// là hook CSS. gtkbuilder.c:620 gọi object_set_name() -> gtk_buildable_set_name(),
+// và với GtkWidget thì gtkwidget.c:14053-14058 cài đặt nó bằng
+//   g_object_set_qdata_full(..., quark_builder_set_name, ...)
+// tức chỉ lưu qdata, KHÔNG gọi gtk_widget_set_name(). Nên CSS `#search_box` KHÔNG
+// khớp. (GTK4 thì CÓ — bẫy này liên quan tới T10.)
+//
+// Ô TÌM KIẾM là THẬT, không cần và không được làm giả: builder object "search_box"
+// (GtkEntry), cinnamon-settings.py:301-304 set_placeholder_text("Search") +
+// connect("changed", onSearchTextChanged) + connect("icon-press", onClearSearchBox),
+// lọc trực tiếp theo từ khoá của từng module. Nhưng vì là GtkEntry thường không tên
+// riêng nên chỉ style được như một entry chung (T06).
+//
+// GHI CHÚ cho T12 (cấu hình): một số thứ trong cinnamon-settings là GSETTING chứ
+// không phải CSS, nên không thuộc phạm vi theme. Không giả vờ style được.
 
 
 // =============================================================================

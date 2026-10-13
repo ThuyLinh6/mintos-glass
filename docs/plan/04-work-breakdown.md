@@ -361,6 +361,78 @@ T01 (scaffold+CI) ──► T02 (tokens+generator) ──┬──► T03 (spike
 - **Done khi:** người dùng mới làm theo README và cài + rollback thành công mà không cần đọc mã nguồn;
   `dist/` build ra theme dir đúng chuẩn; có tag và artifact.
 
+### T15 · Icon theme hệ thống (MintOS-Glass)
+- **Owner:** Agent D (Visual/Assets)
+- **Phụ thuộc:** T02 (token màu). Phối hợp: Agent C (icon trên panel/applet),
+  Agent E (icon trong app GTK), Agent F (icon thư mục/ổ đĩa/tệp trong Nemo).
+- **Lý do task này chưa từng có trong plan:** bản work-breakdown gốc chỉ có T05
+  (asset SVG cho Cinnamon theme) và T07 (asset cho GTK3) — cả hai là asset *của
+  theme*, không phải **icon theme cấp hệ thống** dùng chung cho menu, dock, Nemo,
+  Settings, desktop, hộp thoại chọn tệp. Đây là phạm vi Agent D được giao bổ sung
+  nên phải có allow-list riêng, nếu không sẽ xung đột với quy tắc "một file, một
+  owner".
+- **Được phép tạo:**
+  ```
+  src/icons/MintOS-Glass/index.theme
+  src/icons/MintOS-Glass/**/*.svg
+  src/icons/MintOS-Glass/MANIFEST.md
+  src/icons/MintOS-Glass/render-png.sh        (chỉ tạo, KHÔNG chạy trên máy người dùng)
+  docs/design-system/icon-spec.md
+  tools/lint/icon_theme.py
+  tests/fixtures/icon-theme-core.txt
+  tests/lint/test_icon_theme.py
+  ```
+- **Cấm:** `src/cinnamon/**` (việc chọn icon theme là gsetting
+  `org.cinnamon.desktop.interface icon-theme`, thuộc T12; style icon trên panel đi
+  qua `overrides/` của T04), `src/gtk-*/**`, `design/tokens/**`,
+  `src/icons/**/index.theme` của theme khác.
+- **Done khi:**
+  1. `index.theme` hợp lệ theo Icon Theme Spec của freedesktop: có `[Icon Theme]`
+     với `Name`, `Inherits`, `Directories`; **mọi thư mục liệt kê trong
+     `Directories` phải tồn tại thật** và **mọi thư mục tồn tại phải được liệt kê**
+     (không khai báo khả năng mà tài nguyên không đáp ứng).
+  2. Chuỗi `Inherits` đảm bảo **không icon nào biến mất** khi theme thiếu: kế thừa
+     một theme chắc chắn có trên Mint rồi tới `hicolor`.
+  3. Tên icon lấy từ **`Icon=` trong file `.desktop` thật** của từng app (đã xác
+     minh từ mã nguồn), không đặt tên theo trí nhớ.
+  4. Icon `*-symbolic` phải **đơn sắc** (một màu, không gradient, không nhiều màu)
+     để GTK tô lại được theo màu chữ.
+  5. SVG well-formed (`xml.etree`), có `viewBox`, không tham chiếu URL ngoài,
+     không `<script>`/`<image>`/`<filter>`.
+  6. Màu trong SVG tra ngược được về token, cùng cơ chế đã áp dụng ở T05.
+  7. Có `MANIFEST.md` ghi: icon nào đã có, icon nào **chưa** có và fallback về đâu,
+     nguồn tên icon, và giấy phép của mọi thành phần bên thứ ba.
+
+---
+
+### T16 · Wallpaper và tài nguyên hình ảnh dùng chung
+- **Owner:** Agent D (Visual/Assets)
+- **Phụ thuộc:** T02 (token màu)
+- **Được phép tạo:**
+  ```
+  src/wallpapers/**
+  src/wallpapers/MANIFEST.md
+  docs/design-system/wallpaper-spec.md
+  tools/lint/wallpapers.py
+  tests/lint/test_wallpapers.py
+  ```
+- **Cấm:** `src/cinnamon/**`, `src/gtk-*/**`, `src/icons/**`, `design/tokens/**`
+- **Done khi:**
+  1. Wallpaper là **SVG vector tự vẽ** (không tải từ Internet, không nhúng URL
+     ngoài, không dùng tài nguyên không có quyền phân phối). SVG scale vô hạn nên
+     một tệp phục vụ mọi độ phân giải; nếu cần raster thì `render-png.sh` mô tả
+     pipeline chứ **không chạy trên máy người dùng**.
+  2. Có biến thể Dark Glass, và ghi rõ biến thể Light Glass sẽ thêm khi D-2 mở khoá.
+  3. Nền wallpaper phải đủ tối để **nhãn icon desktop đạt ≥ 3:1** — đo bằng
+     `tools/lint/contrast.py`, không đoán. Đây là điểm giao nhau với Done #3 của T09:
+     T09 đã đo nhãn desktop trên wallpaper *mô hình* ba mức chói; T16 cung cấp
+     wallpaper *thật* để đo lại.
+  4. Không xung đột thị giác với icon desktop: vùng giữa màn hình không có chi tiết
+     gắt, điểm nhấn nằm lệch khỏi khu vực icon.
+  5. `MANIFEST.md` ghi nguồn + giấy phép của từng tệp.
+
+---
+
 ## 2. Phân công theo agent (tóm tắt)
 
 | Agent | Vai trò | Task | Số file sở hữu |
@@ -368,7 +440,7 @@ T01 (scaffold+CI) ──► T02 (tokens+generator) ──┬──► T03 (spike
 | A | Platform / DevEx | T01, T13(hỗ trợ) | 20 |
 | B | Design Systems | T02 | 16 |
 | C | Cinnamon shell | T03, T04 | 22 |
-| D | Visual / Assets | T05, T07 | 2 nhóm asset |
+| D | Visual / Assets | T05, T07, T15, T16 | 4 nhóm asset (Cinnamon SVG, GTK3 asset, icon theme, wallpaper) |
 | E | GTK core + WM | T06, T08 | 10 |
 | F | Apps (Nemo/Mint) | T09 | 7 |
 | G | GTK4 / libadwaita | T10 | 11 |

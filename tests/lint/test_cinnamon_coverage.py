@@ -290,8 +290,20 @@ class TestAssets(unittest.TestCase):
 
     def test_assets_are_pending_t05_not_silently_absent(self):
         """T05 (Agent D) sở hữu src/cinnamon/assets/. Test này KHÔNG fail vì thiếu
-        file — nó chỉ xác nhận trạng thái để không ai tưởng asset đã có."""
-        existing = sorted(p.name for p in (REPO / "src" / "cinnamon" / "assets").glob("*")
+        file — nó chỉ xác nhận trạng thái để không ai tưởng asset đã có.
+
+        CẬP NHẬT KHI T05 HẠ CÁNH: test này từng skip vì assets/ chưa tồn tại. Giờ
+        15 tệp SVG đã có nên nó chạy thật và PASS.
+
+        SỬA MỘT CHỖ: glob đổi từ `*` sang `*.svg`. Lý do là xung đột thật giữa hai
+        allow-list — allow-list của T05 BẮT BUỘC đặt `src/cinnamon/assets/MANIFEST.md`
+        trong CHÍNH thư mục assets/, nên glob `*` đếm được 16 tệp và báo
+        `16 != 15`. EXPECTED_ASSETS chỉ chứa tên `.svg`, nên đếm riêng SVG mới đúng
+        ý định ban đầu. Đây là sửa tối thiểu ở phía T04 (cùng một tác giả), KHÔNG
+        phải nới lỏng kiểm tra: MANIFEST.md vẫn được
+        tests/lint/test_assets.py kiểm tra hai chiều.
+        """
+        existing = sorted(p.name for p in (REPO / "src" / "cinnamon" / "assets").glob("*.svg")
                           ) if (REPO / "src" / "cinnamon" / "assets").is_dir() else []
         missing = sorted(a for a in EXPECTED_ASSETS
                          if not (REPO / "src" / "cinnamon" / a).exists())

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="Chụp màn hình">
+  <!-- MintOS Glass · T15 · lưới 24x24 · màu từ src/cinnamon/tokens/_tokens.scss -->
+  <rect x="2" y="2" width="20" height="20" rx="5.5" ry="5.5" fill="#2a2c31"/>
+  <rect x="5.4" y="8.2" width="13.2" height="9.4" rx="1.8" ry="1.8" fill="none" stroke="#eceef1" stroke-width="1.6"/>
+  <path d="M9.4 8.2l1-1.6h3.2l1 1.6" fill="none" stroke="#eceef1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="12" cy="12.9" r="2.6" fill="none" stroke="#eceef1" stroke-width="1.6"/>
+</svg>

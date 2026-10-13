@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="Lỗi">
+  <!-- MintOS Glass · T15 · lưới 24x24 · màu từ src/cinnamon/tokens/_tokens.scss -->
+  <circle cx="12" cy="12" r="7.6" fill="none" stroke="#ff5f57" stroke-width="1.5"/>
+  <path d="M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6" fill="none" stroke="#0b0c0e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

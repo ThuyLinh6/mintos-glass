@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="Trình soạn thảo văn bản (xed)">
+  <!-- MintOS Glass · T15 · lưới 24x24 · màu từ src/cinnamon/tokens/_tokens.scss -->
+  <rect x="2" y="2" width="20" height="20" rx="5.5" ry="5.5" fill="#3b9dff"/>
+  <path d="M7.6 16.6l.9-3.3 6.2-6.2a1.7 1.7 0 0 1 2.4 2.4l-6.2 6.2z" fill="none" stroke="#0b0c0e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M7.2 17.9h4.1" fill="none" stroke="#0b0c0e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

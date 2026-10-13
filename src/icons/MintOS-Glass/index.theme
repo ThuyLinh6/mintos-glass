@@ -1,0 +1,135 @@
+[Icon Theme]
+Name=MintOS-Glass
+Comment=MintOS Glass icon theme. SVG-first, drawn on a 24x24 grid, colours taken from the MintOS Glass design tokens. Inherits Mint-Y so no icon ever disappears.
+# ---------------------------------------------------------------------------
+# Inherits là CHUỖI FALLBACK, không phải trang trí.
+#
+# Theme này chỉ có 75 icon cốt lõi (xem MANIFEST.md). Mọi icon KHÁC — hàng nghìn
+# icon của app bên thứ ba, icon panel, icon mimetype hiếm — sẽ được lấy từ chuỗi
+# kế thừa. Icon Theme Spec của freedesktop quy định việc tìm kiếm đi lần lượt qua
+# các theme trong Inherits rồi mới tới hicolor, nên một icon thiếu ở đây KHÔNG
+# BAO GIỜ làm app mất biểu tượng.
+#
+# `Mint-Y` đứng ĐẦU vì nó chắc chắn có mặt trên Linux Mint 22.3 (là icon theme
+# mặc định), và chính nó lại khai báo Inherits=Adwaita,gnome,hicolor
+# (đã đọc từ usr/share/icons/Mint-Y/index.theme của linuxmint/mint-y-icons
+#  @ master). Ta vẫn liệt kê tường minh Adwaita, gnome, hicolor thay vì dựa vào
+# tính bắc cầu, để theme này không vỡ nếu cài trên bản phân phối khác không có
+# Mint-Y. `hicolor` là chốt chặn cuối và luôn tồn tại theo spec.
+#
+# HỆ QUẢ THIẾT KẾ: vì fallback hoạt động, ta KHÔNG cần (và không nên) sao chép
+# hàng nghìn icon chỉ để "cho đủ". Chỉ vẽ những icon quyết định nhận diện thị
+# giác của MintOS Glass, phần còn lại kế thừa. Đây là lý do theme này nhỏ mà vẫn
+# dùng được ngay.
+# ---------------------------------------------------------------------------
+Inherits=Mint-Y,Adwaita,gnome,hicolor
+
+# ---------------------------------------------------------------------------
+# CHỈ liệt kê thư mục THẬT SỰ tồn tại và CÓ icon.
+# Tiêu chí Done #1 của T15: mọi thư mục trong Directories phải tồn tại thật, và
+# mọi thư mục tồn tại phải được liệt kê. Khai báo khống một thư mục sẽ khiến
+# gtk-update-icon-cache và bộ nạp icon của GTK báo lỗi; khai báo thiếu sẽ khiến
+# icon trong thư mục đó vô hình dù tệp có tồn tại.
+# tools/lint/icon_theme.py kiểm tra hai chiều bằng os.walk, không đọc bằng mắt.
+#
+# Cấu trúc `scalable/<context>` và `symbolic/<context>` theo convention của các
+# icon theme SVG-only (Mint-Y dùng `<context>/<size>` vì nó là theme raster nhiều
+# kích thước; theme này thuần SVG nên dùng `scalable/`).
+# ---------------------------------------------------------------------------
+Directories=scalable/apps,scalable/places,scalable/devices,scalable/mimetypes,scalable/actions,scalable/status,symbolic/actions,symbolic/places,symbolic/status
+
+# ---------------------------------------------------------------------------
+# THƯ MỤC SCALABLE — Type=Scalable với MinSize/MaxSize.
+#
+# Một tệp SVG phục vụ MỌI kích thước từ 16 tới 512. Đây là cách thoả mãn tiêu
+# chí "hỗ trợ các kích thước hiển thị phổ biến" mà KHÔNG phải sinh 8 bản raster
+# cho mỗi icon, và không cần thư mục `@2x` (Mint-Y cần `@2x` + `Scale=2` vì nó
+# là raster; SVG thì scale không mất nét nên không cần).
+#
+# Size=24 là kích thước DANH ĐỊNH, khớp lưới thiết kế 24x24 của bộ icon này.
+# GTK dùng nó để chọn ứng viên gần nhất rồi scale trong khoảng Min/MaxSize.
+#
+# Context phải khớp ngữ nghĩa thư mục: bộ nạp icon dùng Context để lọc ứng viên
+# khi tìm theo tên, nên đặt sai Context sẽ làm icon không được chọn dù có tệp.
+# ---------------------------------------------------------------------------
+
+[scalable/apps]
+Size=24
+Context=Apps
+Type=Scalable
+MinSize=16
+MaxSize=512
+
+[scalable/places]
+Size=24
+Context=Places
+Type=Scalable
+MinSize=16
+MaxSize=512
+
+[scalable/devices]
+Size=24
+Context=Devices
+Type=Scalable
+MinSize=16
+MaxSize=512
+
+[scalable/mimetypes]
+Size=24
+Context=Mimetypes
+Type=Scalable
+MinSize=16
+MaxSize=512
+
+[scalable/actions]
+Size=24
+Context=Actions
+Type=Scalable
+MinSize=16
+MaxSize=512
+
+[scalable/status]
+Size=24
+Context=Status
+Type=Scalable
+MinSize=16
+MaxSize=512
+
+# ---------------------------------------------------------------------------
+# THƯ MỤC SYMBOLIC — Size=16, MinSize=16, MaxSize=256.
+#
+# Giữ đúng cặp giá trị mà Mint-Y dùng cho `apps/symbolic` và `status/symbolic`
+# (đã đọc từ index.theme thật của Mint-Y), để hành vi chọn icon khớp với thứ mà
+# GTK/Cinnamon trên Mint vốn đã xử lý đúng.
+#
+# Icon `*-symbolic` phải ĐƠN SẮC: GTK tô lại chúng theo màu chữ của widget bằng
+# cách dùng KÊNH ALPHA của ảnh, không dùng màu gốc. Nên mọi hình trong thư mục
+# này vẽ bằng đúng một màu đen thuần, không gradient, không màu thứ hai. Nếu vi
+# phạm, icon sẽ bị tô thành một khối đặc mất chi tiết.
+# tools/lint/icon_theme.py bài `symbolic-monochrome` khoá ràng buộc này.
+#
+# CHỈ có actions, places, status. KHÔNG khai báo symbolic/apps, symbolic/devices,
+# symbolic/mimetypes vì các thư mục đó chưa có icon — GTK sẽ tự fallback sang
+# Mint-Y, vốn có đủ bộ symbolic.
+# ---------------------------------------------------------------------------
+
+[symbolic/actions]
+Size=16
+Context=Actions
+Type=Scalable
+MinSize=16
+MaxSize=256
+
+[symbolic/places]
+Size=16
+Context=Places
+Type=Scalable
+MinSize=16
+MaxSize=256
+
+[symbolic/status]
+Size=16
+Context=Status
+Type=Scalable
+MinSize=16
+MaxSize=256

@@ -1,0 +1,175 @@
+// =============================================================================
+// tests/fixtures/icon-theme-core.txt          (Task T15 · Agent D · Visual/Assets)
+// -----------------------------------------------------------------------------
+// Tập icon LÕI mà icon theme MintOS-Glass bắt buộc phải có. Đây là hợp đồng giữa
+// T15 và `tools/lint/icon_theme.py`.
+//
+// Marker comment là `//` (theo quy ước fixture của repo, dùng chung loader với
+// `st_properties.load_fixture`). Tên icon không bao giờ chứa `#` nên không có rủi
+// ro cắt cụt như fixture selector Cinnamon từng gặp.
+//
+// Định dạng mỗi dòng có nghĩa:  <context>/<tên-icon>
+// -----------------------------------------------------------------------------
+// NGUYÊN TẮC CHỌN TÊN: lấy từ `Icon=` trong file `.desktop` THẬT của từng app,
+// đã trích từ mã nguồn, KHÔNG đặt tên theo trí nhớ. Đây là tiêu chí Done #3 của
+// T15. Bảng nguồn:
+//
+//   linuxmint/nemo @6.6.4        nemo.desktop.in                Icon=system-file-manager
+//   linuxmint/xed @master        org.x.editor.desktop.in.in     Icon=accessories-text-editor
+//   linuxmint/pix @master        pix.desktop.in                 Icon=pix
+//   linuxmint/xplayer @master    xplayer.desktop.in.in.in       Icon=xplayer
+//   linuxmint/xreader @master    xreader.desktop.in.in          Icon=xreader
+//   linuxmint/xviewer @master    xviewer.desktop.in.in          Icon=xviewer
+//   linuxmint/mintupdate         mintupdate.desktop             Icon=mintupdate
+//   linuxmint/mintinstall        mintinstall.desktop            Icon=mintinstall
+//                                mintinstall-fp-handler.desktop Icon=software-properties-mint
+//   linuxmint/Cinnamon @6.6.9    cinnamon-settings.desktop      Icon=preferences-desktop
+//
+// ĐÍNH CHÍNH một giả định phổ biến: cinnamon-settings dùng `preferences-desktop`,
+// KHÔNG phải `preferences-system`. Nếu đặt theo trí nhớ thì Settings sẽ fallback
+// về Mint-Y và mất nhận diện thương hiệu mà không ai biết vì sao.
+//
+// GHI CHÚ VỀ `pix`: `pix.desktop.in` khai báo `Icon=pix`, nhưng trong quá trình
+// khảo sát còn thấy các file `.extension.desktop.in` của pix dùng những tên khác
+// (`system-file-manager`, `brasero`, `video-x-generic`, `document-print`,
+// `file-catalog-symbolic`, `desktop`). Đó là icon của TỪNG EXTENSION, không phải
+// của app chính, nên không nằm trong tập lõi — chúng fallback về Mint-Y.
+//
+// Cinnamon Settings có 31 file `cinnamon-settings-*.desktop`, mỗi file một icon
+// `cs-*` riêng (cs-actions, cs-applets, cs-backgrounds, ...). Bộ 31 icon đó
+// CHƯA nằm trong tập lõi — xem MANIFEST.md mục "Chưa có và fallback".
+// -----------------------------------------------------------------------------
+// CÁC TÊN KHÔNG lấy từ .desktop mà từ Icon Naming Spec của freedesktop
+// (utilities-terminal, web-browser, multimedia-*, accessories-document-viewer,
+//  applets-screenshooter, folder-*, user-*, drive-*, text-x-generic, ...).
+// Đây là tên CHUẨN mà mọi app GTK và chính Nemo dùng khi xin icon, nên bắt buộc
+// phải có để theme không fallback về Mint-Y ở những chỗ dễ thấy nhất.
+// -----------------------------------------------------------------------------
+
+
+// ---------------------------------------------------------------------------
+// APPS — 16 icon. Mỗi app icon là một squircle 20x20 (lề 2px trong lưới 24) có
+// màu nền riêng và glyph bên trong. CẶP glyph/nền đều đã ĐO đạt >= 3:1
+// (WCAG 1.4.11 cho đối tượng đồ hoạ) bằng tools/lint/contrast.py — không đoán.
+// ---------------------------------------------------------------------------
+apps/system-file-manager
+apps/preferences-desktop
+apps/utilities-terminal
+apps/accessories-text-editor
+apps/web-browser
+apps/xplayer
+apps/multimedia-video-player
+apps/xviewer
+apps/multimedia-photo-viewer
+apps/xreader
+apps/accessories-document-viewer
+apps/pix
+apps/mintupdate
+apps/mintinstall
+apps/software-properties-mint
+apps/applets-screenshooter
+
+
+// ---------------------------------------------------------------------------
+// PLACES — 14 icon. Đây là bộ icon xuất hiện trong SIDEBAR CỦA NEMO, nên nó là
+// chỗ giao nhau trực tiếp với T09 (Agent F). Yêu cầu 3.3 của Nemo nói sidebar
+// phải có Home, Desktop, Documents, Downloads, Pictures, Music, Videos, ổ đĩa,
+// Network — những mục đó Nemo dựng từ XDG user-dirs và xin icon theo tên chuẩn
+// freedesktop. Theme KHÔNG quyết định DANH SÁCH vị trí (đó là user-dirs của
+// người dùng), chỉ quyết định HÌNH của chúng.
+// ---------------------------------------------------------------------------
+places/folder
+places/folder-open
+places/user-home
+places/user-desktop
+places/folder-documents
+places/folder-download
+places/folder-pictures
+places/folder-music
+places/folder-videos
+places/folder-templates
+places/folder-publicshare
+places/network-workgroup
+places/user-trash
+places/user-trash-full
+
+
+// ---------------------------------------------------------------------------
+// DEVICES — 7 icon. Ổ đĩa, USB, ổ quang, thẻ nhớ, máy in: xuất hiện trong
+// sidebar Nemo khi cắm thiết bị (yêu cầu 3.6 của Nemo về drives/removable).
+// ---------------------------------------------------------------------------
+devices/computer
+devices/drive-harddisk
+devices/drive-harddisk-system
+devices/drive-removable-media
+devices/drive-optical
+devices/media-flash
+devices/printer
+
+
+// ---------------------------------------------------------------------------
+// MIMETYPES — 9 icon. Loại tệp phổ biến trong list view của Nemo và trong hộp
+// thoại chọn tệp. Tất cả dùng chung một hình tấm giấy để người dùng đọc được
+// "đây là tài liệu", rồi phân biệt loại bằng MÀU của nét nội dung.
+// ---------------------------------------------------------------------------
+mimetypes/text-x-generic
+mimetypes/text-x-script
+mimetypes/application-pdf
+mimetypes/image-x-generic
+mimetypes/audio-x-generic
+mimetypes/video-x-generic
+mimetypes/application-x-executable
+mimetypes/package-x-generic
+mimetypes/x-office-document
+
+
+// ---------------------------------------------------------------------------
+// ACTIONS — 11 icon. Nút trên toolbar của Nemo và của app GTK nói chung.
+// ---------------------------------------------------------------------------
+actions/document-new
+actions/document-open
+actions/document-save
+actions/edit-delete
+actions/edit-find
+actions/edit-copy
+actions/edit-paste
+actions/list-add
+actions/list-remove
+actions/window-close
+actions/view-refresh
+
+
+// ---------------------------------------------------------------------------
+// STATUS — 4 icon hộp thoại. Yêu cầu 3.5 của Nemo nói phải tôn trọng hộp thoại
+// xác nhận xoá và thao tác quan trọng: ba icon dialog-warning / dialog-error /
+// dialog-question chính là hình của những hộp thoại đó.
+// ---------------------------------------------------------------------------
+status/dialog-information
+status/dialog-warning
+status/dialog-error
+status/dialog-question
+
+
+// ---------------------------------------------------------------------------
+// SYMBOLIC — 14 icon. BẮT BUỘC ĐƠN SẮC: GTK tô lại icon symbolic theo màu chữ
+// của widget bằng KÊNH ALPHA, không dùng màu gốc. Vẽ nhiều màu sẽ khiến icon bị
+// tô thành một khối đặc mất chi tiết. Lint khoá bằng bài `symbolic-monochrome`.
+//
+// CHỈ làm symbolic cho actions/places/status — ba nhóm xuất hiện trong panel,
+// menu và toolbar, tức là những chỗ GTK hay yêu cầu bản symbolic nhất. KHÔNG làm
+// symbolic cho apps/devices/mimetypes: Mint-Y có đủ và fallback sẽ cung cấp.
+// ---------------------------------------------------------------------------
+symbolic/actions/document-new-symbolic
+symbolic/actions/document-open-symbolic
+symbolic/actions/edit-delete-symbolic
+symbolic/actions/edit-find-symbolic
+symbolic/actions/list-add-symbolic
+symbolic/actions/list-remove-symbolic
+symbolic/actions/window-close-symbolic
+symbolic/actions/view-refresh-symbolic
+symbolic/status/dialog-information-symbolic
+symbolic/status/dialog-warning-symbolic
+symbolic/status/dialog-error-symbolic
+symbolic/places/folder-symbolic
+symbolic/places/user-trash-symbolic
+symbolic/places/user-home-symbolic

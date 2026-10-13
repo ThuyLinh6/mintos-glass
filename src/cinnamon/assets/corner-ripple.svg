@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 52 52" role="img" aria-label="Gợn sóng góc nóng">
+  <!-- MintOS Glass · T05 · màu lấy từ src/cinnamon/tokens/_tokens.scss, xem MANIFEST.md -->
+  <defs>
+    <radialGradient id="mgRipple" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="52">
+      <stop offset="0"    stop-color="#3ddc97" stop-opacity="0.55"/>
+      <stop offset="0.45" stop-color="#3ddc97" stop-opacity="0.16"/>
+      <stop offset="1"    stop-color="#3ddc97" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <path d="M0 0 L52 0 A52 52 0 0 1 0 52 Z" fill="url(#mgRipple)"/>
+  <path d="M0 0 L52 0 A52 52 0 0 1 0 52" fill="none"
+        stroke="#3ddc97" stroke-opacity="0.16" stroke-width="1.5"/>
+</svg>

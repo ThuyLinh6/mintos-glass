@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="img" aria-label="Kéo cửa sổ vào đây để đóng">
+  <!-- MintOS Glass · T05 · màu lấy từ src/cinnamon/tokens/_tokens.scss, xem MANIFEST.md -->
+  <rect x="0.5" y="0.5" width="47" height="47" rx="13" ry="13"
+        fill="#0b0c0e" fill-opacity="0.55"
+        stroke="#ffffff" stroke-opacity="0.12" stroke-width="1"/>
+  <g fill="none" stroke="#ffffff" stroke-opacity="0.92"
+     stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M15 17.5 H33"/>
+    <path d="M20.2 17.5 V15.2 a1.8 1.8 0 0 1 1.8 -1.8 h4 a1.8 1.8 0 0 1 1.8 1.8 V17.5"/>
+    <path d="M18.1 17.5 L19.9 33.4 a2.2 2.2 0 0 0 2.2 2 h3.8 a2.2 2.2 0 0 0 2.2 -2 L29.9 17.5"/>
+    <path d="M22.1 21.6 V31.4"/>
+    <path d="M25.9 21.6 V31.4"/>
+  </g>
+</svg>

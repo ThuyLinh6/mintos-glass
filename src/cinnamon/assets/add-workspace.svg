@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="35" height="200" viewBox="0 0 35 200" role="img" aria-label="Thêm vùng làm việc">
+  <!-- MintOS Glass · T05 · màu lấy từ src/cinnamon/tokens/_tokens.scss, xem MANIFEST.md -->
+  <rect x="1.5" y="1.5" width="32" height="197" rx="9" ry="9"
+        fill="#ffffff" fill-opacity="0.07"
+        stroke="#ffffff" stroke-opacity="0.12" stroke-width="1.5"/>
+  <path d="M17.5 89 V111 M6.5 100 H28.5"
+        fill="none" stroke="#ffffff" stroke-opacity="0.66" stroke-width="2.4"
+        stroke-linecap="round"/>
+</svg>

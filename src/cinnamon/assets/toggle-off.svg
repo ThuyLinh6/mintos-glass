@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="46" height="26" viewBox="0 0 46 26" role="img" aria-label="Công tắc tắt">
+  <!-- MintOS Glass · T05 · màu lấy từ src/cinnamon/tokens/_tokens.scss, xem MANIFEST.md -->
+  <rect x="1" y="1" width="44" height="24" rx="12" ry="12"
+        fill="#ffffff" fill-opacity="0.12"
+        stroke="#ffffff" stroke-opacity="0.36" stroke-width="1.5"/>
+  <circle cx="13.5" cy="13" r="8.6" fill="#eceef1"/>
+</svg>

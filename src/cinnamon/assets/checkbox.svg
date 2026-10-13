@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" role="img" aria-label="Hộp kiểm đã chọn">
+  <!-- MintOS Glass · T05 · màu lấy từ src/cinnamon/tokens/_tokens.scss, xem MANIFEST.md -->
+  <rect x="1.75" y="1.75" width="16.5" height="16.5" rx="5" ry="5"
+        fill="#3ddc97" stroke="#3ddc97" stroke-width="1.5"/>
+  <path d="M5.9 10.3 L8.7 13.1 L14.2 7.0"
+        fill="none" stroke="#0b0c0e" stroke-width="2.1"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

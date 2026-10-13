@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" role="img" aria-label="Nút chọn đơn chưa chọn">
+  <!-- MintOS Glass · T05 · màu lấy từ src/cinnamon/tokens/_tokens.scss, xem MANIFEST.md -->
+  <circle cx="10" cy="10" r="8.25"
+          fill="#17181c" stroke="#ffffff" stroke-opacity="0.36" stroke-width="1.5"/>
+</svg>

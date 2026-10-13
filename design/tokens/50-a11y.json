@@ -1,0 +1,190 @@
+{
+  "_doc": "Tiếp cận (a11y). contrast.py dùng file này để quyết định PASS/FAIL. Mô hình: vì bề mặt glass là BÁN TRONG SUỐT trên wallpaper không biết trước, ta đo trên bề mặt đã composite với backdrop XẤU NHẤT.",
+  "contrast_targets": {
+    "body-text": 4.5,
+    "large-text": 3.0,
+    "ui-component": 3.0
+  },
+  "worst_case_backdrop": {
+    "dark": "#ffffff",
+    "light": "#000000",
+    "_doc": "Dark theme: glass tối trên wallpaper trắng => bề mặt sáng lên => chữ sáng mất tương phản. Light theme: ngược lại."
+  },
+  "contrast_pairs": {
+    "dark": [
+      {
+        "text": "text.primary",
+        "on": "surface.solid",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.primary",
+        "on": "surface.elevated.1",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.primary",
+        "on": "surface.elevated.2",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.primary",
+        "on": "surface.base",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.primary",
+        "on": "surface.glass.high",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.primary",
+        "on": "surface.glass.mid",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.secondary",
+        "on": "surface.solid",
+        "min": "large-text",
+        "role": "text"
+      },
+      {
+        "text": "text.secondary",
+        "on": "surface.elevated.2",
+        "min": "large-text",
+        "role": "text"
+      },
+      {
+        "text": "text.on-accent",
+        "on": "surface.selected",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.on-accent",
+        "on": "status.accent",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.link",
+        "on": "surface.solid",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.inverse",
+        "on": "status.badge",
+        "min": "large-text",
+        "role": "text"
+      },
+      {
+        "ui": "border.subtle",
+        "on": "surface.solid",
+        "min": "ui-component",
+        "role": "decorative",
+        "_note": "WCAG 1.4.11 không áp dụng: đường kẻ trang trí, không phải ranh giới duy nhất để nhận diện control."
+      },
+      {
+        "ui": "border.focus",
+        "on": "surface.solid",
+        "min": "ui-component",
+        "role": "ui"
+      },
+      {
+        "ui": "status.accent",
+        "on": "surface.solid",
+        "min": "ui-component",
+        "role": "ui"
+      },
+      {
+        "ui": "border.control",
+        "on": "surface.solid",
+        "min": "ui-component",
+        "role": "ui"
+      },
+      {
+        "ui": "border.control",
+        "on": "surface.sunken",
+        "min": "ui-component",
+        "role": "ui"
+      }
+    ],
+    "light": [
+      {
+        "text": "text.primary",
+        "on": "surface.solid",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.primary",
+        "on": "surface.base",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.primary",
+        "on": "surface.glass.high",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.secondary",
+        "on": "surface.solid",
+        "min": "large-text",
+        "role": "text"
+      },
+      {
+        "text": "text.on-accent",
+        "on": "status.accent",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "text": "text.link",
+        "on": "surface.solid",
+        "min": "body-text",
+        "role": "text"
+      },
+      {
+        "ui": "border.subtle",
+        "on": "surface.solid",
+        "min": "ui-component",
+        "role": "decorative",
+        "_note": "WCAG 1.4.11 không áp dụng: đường kẻ trang trí, không phải ranh giới duy nhất để nhận diện control."
+      },
+      {
+        "ui": "status.accent",
+        "on": "surface.solid",
+        "min": "ui-component",
+        "role": "ui"
+      },
+      {
+        "ui": "border.control",
+        "on": "surface.solid",
+        "min": "ui-component",
+        "role": "ui"
+      }
+    ]
+  },
+  "min_target_px": "size.hit-target-min",
+  "min_icon_px": "size.icon-sm",
+  "focus_visible_required": true,
+  "high_contrast_variant_required": {
+    "value": true,
+    "note": "E22: libadwaita bỏ qua TOÀN BỘ theme nếu thiếu base-hc.css khi user bật high-contrast."
+  },
+  "reduce_motion_respected": true,
+  "_roles": {
+    "text": "chữ — bắt buộc đạt ngưỡng (WCAG 1.4.3)",
+    "ui": "ranh giới/trạng thái cần để nhận diện control — bắt buộc 3:1 (WCAG 1.4.11)",
+    "decorative": "chỉ trang trí — báo cáo, KHÔNG chặn build"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "_doc": "Motion. QUAN TRỌNG: St/Cinnamon chỉ hỗ trợ transition-duration (E36) — KHÔNG có transition-timing-function. Vì vậy 'easing' chỉ áp dụng cho GTK3/GTK4; generator đánh dấu rõ.",
+
+  "duration": {
+    "instant": 0,
+    "fast": 90,
+    "base": 160,
+    "menu": 180,
+    "slow": 240,
+    "dialog": 300
+  },
+  "_duration_unit": "ms",
+
+  "easing": {
+    "_applies_to": ["gtk-3.0", "gtk-4.0"],
+    "_not_applies_to": ["cinnamon"],
+    "standard": "cubic-bezier(0.2, 0.0, 0.0, 1.0)",
+    "decelerate": "cubic-bezier(0.0, 0.0, 0.2, 1.0)",
+    "accelerate": "cubic-bezier(0.4, 0.0, 1.0, 1.0)"
+  },
+
+  "cinnamon_transition": {
+    "_doc": "Map duration -> transition-duration cho St. Stock Cinnamon 6.6 dùng 100ms/150ms; ta chọn 160ms làm mặc định để khớp 'base'.",
+    "default": "duration.base",
+    "menu": "duration.menu",
+    "panel": "duration.fast"
+  }
+}

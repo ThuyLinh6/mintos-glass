@@ -1,0 +1,64 @@
+{
+  "_doc": "Tầng 2 SEMANTIC — scheme DARK (Phase 1). Accent = mint-green (D-3).",
+  "_scheme": "dark",
+
+  "surface": {
+    "base":        { "ref": "color.gray.900", "alpha": 1.00 },
+    "glass.low":   { "ref": "color.gray.900", "alpha": "opacity.glass-low" },
+    "glass.mid":   { "ref": "color.gray.850", "alpha": "opacity.glass-mid" },
+    "glass.high":  { "ref": "color.gray.800", "alpha": "opacity.glass-high" },
+    "elevated.1":  { "ref": "color.gray.850", "alpha": 0.92 },
+    "elevated.2":  { "ref": "color.gray.800", "alpha": 0.96 },
+    "solid":       { "ref": "color.gray.850", "alpha": 1.00 },
+    "sunken":      { "ref": "color.gray.950", "alpha": 1.00 },
+    "selected":    { "ref": "color.mint.500", "alpha": 1.00 },
+    "hover":       { "ref": "color.gray.0",   "alpha": "opacity.hover" },
+    "active":      { "ref": "color.gray.0",   "alpha": "opacity.active" },
+    "disabled":    { "ref": "color.gray.800", "alpha": 0.60 }
+  },
+
+  "border": {
+    "hairline":  { "ref": "color.gray.0", "alpha": 0.08 },
+    "subtle":    { "ref": "color.gray.0", "alpha": 0.12 },
+    "strong":    { "ref": "color.gray.0", "alpha": 0.20 },
+    "control":   { "ref": "color.gray.0", "alpha": 0.36 },
+    "highlight": { "ref": "color.gray.0", "alpha": 0.10 },
+    "focus":     { "ref": "color.mint.400", "alpha": 0.85 },
+    "accent":    { "ref": "color.mint.500", "alpha": 1.00 }
+  },
+
+  "text": {
+    "primary":   { "ref": "color.gray.0", "alpha": 0.92 },
+    "secondary": { "ref": "color.gray.0", "alpha": 0.66 },
+    "tertiary":  { "ref": "color.gray.0", "alpha": 0.44 },
+    "disabled":  { "ref": "color.gray.0", "alpha": 0.30 },
+    "on-accent": { "ref": "color.gray.950", "alpha": 1.00 },
+    "link":      { "ref": "color.mint.400", "alpha": 1.00 },
+    "inverse":   { "ref": "color.gray.950", "alpha": 0.92 }
+  },
+
+  "status": {
+    "accent":            { "ref": "color.mint.500", "alpha": 1.00 },
+    "accent-hover":      { "ref": "color.mint.400", "alpha": 1.00 },
+    "accent-active":     { "ref": "color.mint.600", "alpha": 1.00 },
+    "accent-subtle":     { "ref": "color.mint.500", "alpha": 0.16 },
+    "success":           { "ref": "color.green.500", "alpha": 1.00 },
+    "warning":           { "ref": "color.amber.500", "alpha": 1.00 },
+    "error":             { "ref": "color.red.500", "alpha": 1.00 },
+    "badge":             { "ref": "color.red.500", "alpha": 1.00 },
+    "badge-text":        { "ref": "color.gray.0", "alpha": 1.00 }
+  },
+
+  "shadow": {
+    "sm": { "x": 0, "y": 1,  "blur": 2,  "color": "color.black", "alpha": 0.30 },
+    "md": { "x": 0, "y": 4,  "blur": 12, "color": "color.black", "alpha": 0.36 },
+    "lg": { "x": 0, "y": 10, "blur": 28, "color": "color.black", "alpha": 0.44 },
+    "xl": { "x": 0, "y": 18, "blur": 48, "color": "color.black", "alpha": 0.52 },
+    "inset-top": { "x": 0, "y": 1, "blur": 0, "inset": true, "color": "color.gray.0", "alpha": 0.08 }
+  },
+
+  "_notes": [
+    "text.on-accent là gray-950 (gần đen), KHÔNG phải trắng: trắng trên mint.500 chỉ đạt ~1.9:1, không qua AA.",
+    "Mọi alpha lấy từ primitives.opacity khi có thể, để đổi một chỗ là đổi toàn hệ."
+  ]
+}

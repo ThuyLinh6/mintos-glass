@@ -1,5 +1,9 @@
 # 04 — Phân rã công việc, thứ tự phụ thuộc, phân công agent
 
+**Trạng thái (cập nhật 2026-10-13):** T02 ✅ xong · T01 🟡 một phần (còn `tools/lint/allowlist.py`
++ `tests/fixtures/task-allowlists.json`) · T13 🟡 một phần (còn `st_properties.py`, `css_sanity.py`) ·
+T00 ⏸ chờ người dùng · còn lại ⏳ chưa bắt đầu. Xem `docs/decisions.md`.
+
 Quy ước:
 - Mỗi task có **ID**, **owner**, **phụ thuộc**, **danh sách file ĐƯỢC PHÉP tạo/sửa (allow-list)** và **điều kiện hoàn thành**.
 - Ngoài allow-list là **cấm**. `tools/lint/allowlist.py` (T01) enforce điều này trong CI — xem `06-git-workflow.md` §5.

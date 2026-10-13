@@ -1,12 +1,15 @@
 # MintOS Glass — Kế hoạch kỹ thuật (Giai đoạn 0: Khảo sát & Lập kế hoạch)
 
-Trạng thái: **DRAFT — chờ xác nhận phạm vi**
-Ngày lập: 2026-10-13
+Trạng thái: **ĐÃ CHỐT PHẠM VI (D-1…D-4) — đang thực thi phần offline**
+Ngày lập: 2026-10-13 · Cập nhật: 2026-10-13
+Quyết định: xem [`../decisions.md`](../decisions.md) · ADR: [`../adr/`](../adr/)
 Nhánh: `arena/0b177d6e-mintos-glass` (từ `main` @ `d010363`)
 Mục tiêu hệ thống: Linux Mint 22.3 "Zena" · Cinnamon 6.6 · **chỉ cải tiến UI, không thay đổi chức năng hệ thống**
 
-> Trong giai đoạn này **không có** mã theme, không có script cài đặt, không có module giả.
-> Toàn bộ nội dung dưới đây là khảo sát + thiết kế + quy trình.
+> **Không có** mã theme, không có stylesheet, không có asset, không có script cài đặt,
+> không có module giả. Phần đã triển khai chỉ gồm: design tokens (dữ liệu), generator + lint
+> (công cụ offline, Python stdlib), test Tầng 1, và CI. Tất cả đều chạy được và có bằng chứng
+> (`make check` → 39 test xanh). Mọi thứ cần máy Linux Mint thật đều đang bị **gate**.
 
 ## Mục lục
 
@@ -41,14 +44,17 @@ Mục tiêu hệ thống: Linux Mint 22.3 "Zena" · Cinnamon 6.6 · **chỉ cả
    `window.background.ssd > decoration > headerbar.titlebar.horizontal.default-decoration > label.title`.
    → Module WM = một phần của module GTK3, không phải module metacity riêng.
 
-## Quyết định cần người dùng xác nhận trước khi triển khai
+## Quyết định phạm vi — ĐÃ CHỐT
 
-Xem cuối tài liệu này và `02-architecture.md` §ADR. Bốn câu hỏi quyết định:
+| ID | Quyết định |
+|---|---|
+| **T00** | Người dùng **chưa** chạy checklist xác minh → ưu tiên phần offline, gate phần cần máy thật |
+| **D-1 Dock** | Style applet `grouped-window-list@cinnamon.org` có sẵn. **Không** dùng Plank ở Phase 1, **không** cài gói nào |
+| **D-2 Biến thể** | **Dark trước, Light sau.** Light đã định nghĩa token + CI kiểm parity, nhưng `emit: false` |
+| **D-3 Accent** | **Xanh Mint `#3ddc97`.** Hệ quả: chữ trên accent phải là màu tối (trắng trên mint chỉ ~1.9:1) |
+| **D-4 Vị trí cài** | `~/.local/share/themes/MintOS-Glass` — user-level, không root, rollback tức thì |
 
-- **D-1 Dock**: dùng applet `grouped-window-list` có sẵn (0 gói mới) hay hỗ trợ Plank (nếu máy đã có sẵn)?
-- **D-2 Phạm vi biến thể**: Dark-only / Light-only / cả hai?
-- **D-3 Accent**: xanh macOS, xanh Mint, hay trung tính?
-- **D-4 Vị trí cài**: `~/.local/share/themes/` (không cần root, rollback tức thì — **khuyến nghị**) hay `/usr/share/themes/`?
+Chi tiết + hệ quả: [`../decisions.md`](../decisions.md).
 
 ## Nguyên tắc bất biến (áp dụng cho mọi nhiệm vụ)
 

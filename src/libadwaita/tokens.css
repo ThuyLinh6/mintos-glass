@@ -1,0 +1,181 @@
+/* GENERATED — TUYỆT ĐỐI KHÔNG SỬA TAY.
+ * Nguồn : design/tokens/*.json
+ * Tool  : tools/tokens/generate.py v1.0.0
+ * Scheme: dark
+ * Lock  : bff2fa4379d3e277
+ *
+ * Đây là token KHÔNG GIAN TÊN RIÊNG (mg_*). T10 phải map chúng sang tên
+ * mà libadwaita mong đợi trong defaults-light.css / defaults-dark.css
+ * (xem docs/plan/01-survey.md E21-E23).
+ */
+
+@define-color mg_surface_base #121316;
+@define-color mg_surface_glass_low rgba(18, 19, 22, 0.55);
+@define-color mg_surface_glass_mid rgba(23, 24, 28, 0.72);
+@define-color mg_surface_glass_high rgba(28, 30, 34, 0.86);
+@define-color mg_surface_elevated_1 rgba(23, 24, 28, 0.92);
+@define-color mg_surface_elevated_2 rgba(28, 30, 34, 0.96);
+@define-color mg_surface_solid #17181c;
+@define-color mg_surface_sunken #0b0c0e;
+@define-color mg_surface_selected #3ddc97;
+@define-color mg_surface_hover rgba(255, 255, 255, 0.07);
+@define-color mg_surface_active rgba(255, 255, 255, 0.12);
+@define-color mg_surface_disabled rgba(28, 30, 34, 0.6);
+@define-color mg_border_hairline rgba(255, 255, 255, 0.08);
+@define-color mg_border_subtle rgba(255, 255, 255, 0.12);
+@define-color mg_border_strong rgba(255, 255, 255, 0.2);
+@define-color mg_border_control rgba(255, 255, 255, 0.36);
+@define-color mg_border_highlight rgba(255, 255, 255, 0.1);
+@define-color mg_border_focus rgba(110, 231, 189, 0.85);
+@define-color mg_border_accent #3ddc97;
+@define-color mg_text_primary rgba(255, 255, 255, 0.92);
+@define-color mg_text_secondary rgba(255, 255, 255, 0.66);
+@define-color mg_text_tertiary rgba(255, 255, 255, 0.44);
+@define-color mg_text_disabled rgba(255, 255, 255, 0.3);
+@define-color mg_text_on_accent #0b0c0e;
+@define-color mg_text_link #6ee7bd;
+@define-color mg_text_inverse rgba(11, 12, 14, 0.92);
+@define-color mg_status_accent #3ddc97;
+@define-color mg_status_accent_hover #6ee7bd;
+@define-color mg_status_accent_active #2bb67a;
+@define-color mg_status_accent_subtle rgba(61, 220, 151, 0.16);
+@define-color mg_status_success #28c840;
+@define-color mg_status_warning #ffbd2e;
+@define-color mg_status_error #ff5f57;
+@define-color mg_status_badge #ff5f57;
+@define-color mg_status_badge_text #ffffff;
+/* shadow mg_shadow_sm: 0px 1px 2px rgba(0, 0, 0, 0.3) */
+/* shadow mg_shadow_md: 0px 4px 12px rgba(0, 0, 0, 0.36) */
+/* shadow mg_shadow_lg: 0px 10px 28px rgba(0, 0, 0, 0.44) */
+/* shadow mg_shadow_xl: 0px 18px 48px rgba(0, 0, 0, 0.52) */
+/* shadow mg_shadow_inset_top: inset 0px 1px 0px rgba(255, 255, 255, 0.08) */
+@define-color mg_cinnamon_panel_background rgba(28, 30, 34, 0.86);
+@define-color mg_cinnamon_panel_border rgba(255, 255, 255, 0.08);
+/* dim mg_cinnamon_panel_height: 30px */
+/* dim mg_cinnamon_panel_blur: 0 */
+@define-color mg_cinnamon_panel_launcher_hover rgba(255, 255, 255, 0.07);
+@define-color mg_cinnamon_panel_launcher_active rgba(255, 255, 255, 0.12);
+/* dim mg_cinnamon_panel_launcher_radius: 6px */
+@define-color mg_cinnamon_menu_background rgba(23, 24, 28, 0.72);
+@define-color mg_cinnamon_menu_border rgba(255, 255, 255, 0.12);
+/* dim mg_cinnamon_menu_radius: 12px */
+/* shadow mg_cinnamon_menu_shadow: 0px 10px 28px rgba(0, 0, 0, 0.44) */
+/* dim mg_cinnamon_menu_blur: 4 */
+/* dim mg_cinnamon_menu_padding: 12px */
+/* dim mg_cinnamon_menu_item_radius: 8px */
+/* dim mg_cinnamon_menu_item_padding_y: 4px */
+/* dim mg_cinnamon_menu_item_padding_x: 8px */
+@define-color mg_cinnamon_menu_item_hover rgba(255, 255, 255, 0.07);
+@define-color mg_cinnamon_menu_item_selected #3ddc97;
+@define-color mg_cinnamon_appmenu_sidebar_background rgba(28, 30, 34, 0.86);
+@define-color mg_cinnamon_appmenu_sidebar_border rgba(255, 255, 255, 0.08);
+/* dim mg_cinnamon_windowlist_item_radius: 8px */
+@define-color mg_cinnamon_windowlist_item_hover rgba(255, 255, 255, 0.07);
+@define-color mg_cinnamon_windowlist_item_active rgba(255, 255, 255, 0.12);
+@define-color mg_cinnamon_windowlist_item_attention #ff5f57;
+@define-color mg_cinnamon_windowlist_item_focused_background rgba(61, 220, 151, 0.16);
+@define-color mg_cinnamon_windowlist_item_focused_border #3ddc97;
+@define-color mg_cinnamon_osd_background rgba(18, 19, 22, 0.55);
+/* dim mg_cinnamon_osd_radius: 16px */
+/* shadow mg_cinnamon_osd_shadow: 0px 18px 48px rgba(0, 0, 0, 0.52) */
+/* dim mg_cinnamon_osd_blur: 6 */
+@define-color mg_cinnamon_notification_background rgba(28, 30, 34, 0.96);
+/* dim mg_cinnamon_notification_radius: 12px */
+/* shadow mg_cinnamon_notification_shadow: 0px 10px 28px rgba(0, 0, 0, 0.44) */
+@define-color mg_cinnamon_notification_border rgba(255, 255, 255, 0.08);
+/* dim mg_cinnamon_notification_blur: 0 */
+@define-color mg_cinnamon_dialog_background rgba(23, 24, 28, 0.92);
+/* dim mg_cinnamon_dialog_radius: 16px */
+/* shadow mg_cinnamon_dialog_shadow: 0px 18px 48px rgba(0, 0, 0, 0.52) */
+/* dim mg_cinnamon_dialog_blur: 0 */
+@define-color mg_cinnamon_modal_shade rgba(0, 0, 0, 0.35);
+@define-color mg_cinnamon_calendar_today_background rgba(61, 220, 151, 0.16);
+@define-color mg_cinnamon_calendar_today_border #3ddc97;
+/* dim mg_cinnamon_calendar_today_radius: 6px */
+@define-color mg_cinnamon_desklet_background rgba(23, 24, 28, 0.72);
+/* dim mg_cinnamon_desklet_radius: 12px */
+/* shadow mg_cinnamon_desklet_shadow: 0px 10px 28px rgba(0, 0, 0, 0.44) */
+/* dim mg_cinnamon_desklet_blur: 2 */
+@define-color mg_cinnamon_expo_workspace_border rgba(255, 255, 255, 0.12);
+@define-color mg_cinnamon_expo_workspace_active_border #3ddc97;
+/* dim mg_cinnamon_expo_workspace_radius: 8px */
+@define-color mg_cinnamon_alt_tab_background rgba(23, 24, 28, 0.72);
+/* dim mg_cinnamon_alt_tab_radius: 16px */
+/* shadow mg_cinnamon_alt_tab_shadow: 0px 18px 48px rgba(0, 0, 0, 0.52) */
+/* dim mg_cinnamon_alt_tab_blur: 4 */
+@define-color mg_cinnamon_tooltip_background rgba(28, 30, 34, 0.96);
+/* dim mg_cinnamon_tooltip_radius: 6px */
+/* shadow mg_cinnamon_tooltip_shadow: 0px 1px 2px rgba(0, 0, 0, 0.3) */
+@define-color mg_cinnamon_looking_glass_background rgba(23, 24, 28, 0.92);
+/* dim mg_cinnamon_looking_glass_radius: 12px */
+@define-color mg_cinnamon_looking_glass_border rgba(255, 255, 255, 0.12);
+@define-color mg_cinnamon_screensaver_background rgba(18, 19, 22, 0.55);
+/* dim mg_cinnamon_screensaver_radius: 16px */
+/* dim mg_cinnamon_screensaver_blur: 4 */
+@define-color mg_gtk_window_background #121316;
+/* dim mg_gtk_window_radius: 12px */
+@define-color mg_gtk_titlebar_background rgba(28, 30, 34, 0.86);
+@define-color mg_gtk_titlebar_border_bottom rgba(255, 255, 255, 0.08);
+@define-color mg_gtk_titlebar_backdrop_background #17181c;
+@define-color mg_gtk_button_background rgba(255, 255, 255, 0.07);
+/* dim mg_gtk_button_radius: 8px */
+@define-color mg_gtk_button_border rgba(255, 255, 255, 0.12);
+/* dim mg_gtk_button_padding_x: 12px */
+/* dim mg_gtk_button_padding_y: 4px */
+@define-color mg_gtk_button_hover_background rgba(255, 255, 255, 0.12);
+@define-color mg_gtk_button_active_background rgba(61, 220, 151, 0.16);
+@define-color mg_gtk_button_active_border #3ddc97;
+@define-color mg_gtk_button_default_background #3ddc97;
+@define-color mg_gtk_button_default_text #0b0c0e;
+/* dim mg_gtk_button_default_radius: 8px */
+@define-color mg_gtk_button_destructive_background #ff5f57;
+@define-color mg_gtk_button_destructive_text rgba(11, 12, 14, 0.92);
+/* dim mg_gtk_button_destructive_radius: 8px */
+@define-color mg_gtk_entry_background #0b0c0e;
+/* dim mg_gtk_entry_radius: 8px */
+@define-color mg_gtk_entry_border rgba(255, 255, 255, 0.36);
+@define-color mg_gtk_entry_focus_border rgba(110, 231, 189, 0.85);
+@define-color mg_gtk_sidebar_background rgba(23, 24, 28, 0.72);
+@define-color mg_gtk_sidebar_border rgba(255, 255, 255, 0.08);
+@define-color mg_gtk_view_background #121316;
+@define-color mg_gtk_selection_background #3ddc97;
+@define-color mg_gtk_selection_text #0b0c0e;
+@define-color mg_gtk_headerbar_background rgba(28, 30, 34, 0.86);
+@define-color mg_gtk_headerbar_border_bottom rgba(255, 255, 255, 0.08);
+/* dim mg_gtk_notebook_tab_radius: 6px */
+@define-color mg_gtk_notebook_tab_active_background #121316;
+@define-color mg_gtk_notebook_tab_inactive_text rgba(255, 255, 255, 0.66);
+@define-color mg_gtk_scrollbar_slider_background rgba(255, 255, 255, 0.22);
+@define-color mg_gtk_scrollbar_slider_hover rgba(255, 255, 255, 0.34);
+/* dim mg_gtk_scrollbar_slider_radius: 999px */
+/* dim mg_gtk_scrollbar_slider_min_width: 6px */
+@define-color mg_gtk_switch_on_background #3ddc97;
+@define-color mg_gtk_switch_off_background rgba(255, 255, 255, 0.12);
+@define-color mg_gtk_progressbar_background #3ddc97;
+@define-color mg_gtk_progressbar_trough rgba(255, 255, 255, 0.12);
+/* dim mg_gtk_progressbar_radius: 4px */
+/* shadow mg_gtk_decoration_shadow: 0px 10px 28px rgba(0, 0, 0, 0.44) */
+@define-color mg_nemo_desktop_label_text #eeeeee;
+/* shadow mg_nemo_desktop_label_shadow: 1px 1px 0px rgba(0, 0, 0, 0.8) */
+@define-color mg_nemo_desktop_label_hover_background rgba(0, 0, 0, 0.5);
+@define-color mg_nemo_desktop_label_selected_background rgba(61, 220, 151, 0.8);
+@define-color mg_nemo_desktop_label_selected_text #f5f5f5;
+/* dim mg_nemo_desktop_canvas_radius: 4px */
+/* dim mg_nemo_places_disk_full_bar_width: 2px */
+/* dim mg_nemo_places_disk_full_bar_radius: 1px */
+/* dim mg_nemo_places_disk_full_bottom_padding: 1px */
+/* dim mg_nemo_places_disk_full_max_length: 70px */
+@define-color mg_nemo_inactive_pane_background #0b0c0e;
+@define-color mg_nemo_floating_bar_background #3ddc97;
+@define-color mg_nemo_floating_bar_text #0b0c0e;
+/* dim mg_nemo_floating_bar_radius: 4px */
+@define-color mg_adwaita_window_controls_close #ff5f57;
+@define-color mg_adwaita_window_controls_minimize #ffbd2e;
+@define-color mg_adwaita_window_controls_maximize #28c840;
+/* dim mg_dock_item_radius: 8px */
+@define-color mg_dock_item_hover rgba(255, 255, 255, 0.07);
+@define-color mg_dock_item_active rgba(255, 255, 255, 0.12);
+@define-color mg_dock_indicator #3ddc97;
+/* dim mg_dock_indicator_size: 5px */
+@define-color mg_dock_badge #ff5f57;
+@define-color mg_dock_badge_text #ffffff;

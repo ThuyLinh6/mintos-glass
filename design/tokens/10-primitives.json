@@ -1,0 +1,94 @@
+{
+  "_doc": "Tầng 1 PRIMITIVE — giá trị thô, không ngữ nghĩa. Chỉ file này được định nghĩa màu hex.",
+
+  "color": {
+    "gray": {
+      "0": "#ffffff",
+      "100": "#eceef1",
+      "200": "#cfd2d7",
+      "300": "#a5a9b0",
+      "400": "#7c8087",
+      "500": "#55585f",
+      "600": "#3a3d43",
+      "700": "#2a2c31",
+      "750": "#232529",
+      "800": "#1c1e22",
+      "850": "#17181c",
+      "900": "#121316",
+      "950": "#0b0c0e"
+    },
+    "mint": {
+      "300": "#8ff0c4",
+      "400": "#6ee7bd",
+      "500": "#3ddc97",
+      "600": "#2bb67a",
+      "700": "#1f8f5f",
+      "800": "#17714a",
+      "900": "#0f5233"
+    },
+    "red":   { "400": "#ff7b73", "500": "#ff5f57", "600": "#e04b43" },
+    "amber": { "500": "#ffbd2e", "600": "#d99a1f" },
+    "green": { "500": "#28c840" },
+    "blue":  { "400": "#6cb6ff", "500": "#3b9dff" },
+    "white": "#ffffff",
+    "black": "#000000"
+  },
+
+  "radius": { "xs": 4, "sm": 6, "md": 8, "lg": 12, "xl": 16, "2xl": 20, "pill": 999 },
+
+  "space": { "0": 0, "1": 2, "2": 4, "3": 6, "4": 8, "5": 12, "6": 16, "7": 20, "8": 24, "9": 32 },
+
+  "blur": {
+    "_doc": "RÀO CỨNG. E11: src/st/st-background-effect.c chạy blur_size vòng lặp, mỗi vòng g_malloc(w*h*4) + cogl_framebuffer_read_pixels() + cogl_texture_new_from_data(), MỖI LẦN PAINT. Chi phí tỉ lệ thuận blur_size x diện tích.",
+    "none": 0,
+    "sm": 2,
+    "md": 4,
+    "lg": 6,
+    "MAX_ALLOWED": 6,
+    "MAX_SURFACE_PX": 240000,
+    "_max_surface_note": "240000 px ~ 600x400. Cấm -blur trên panel full-width (1920x40 = 76800 thì lọt, nhưng panel là bề mặt repaint liên tục -> xem component cinnamon.panel.blur = blur.none)."
+  },
+
+  "size": {
+    "icon-sm": 16,
+    "icon-md": 22,
+    "icon-lg": 32,
+    "icon-xl": 48,
+    "panel-height": 30,
+    "titlebar-height": {
+      "value": 34,
+      "unverified": true,
+      "note": "E32b: muffin lấy get_min_size()/get_padding_and_border() từ CSS nên padding của ta = chiều cao titlebar THẬT. Phải đo trên máy thật (T08) rồi bỏ cờ unverified.",
+      "evidence": "E32b"
+    },
+    "menu-min-width": 260,
+    "hit-target-min": 24
+  },
+
+  "font": {
+    "family": {
+      "value": null,
+      "unverified": true,
+      "note": "CHƯA xác minh font khả dụng trên máy người dùng (fc-list — docs/plan/09-verification-checklist.md mục 8). KHÔNG được đoán. Generator bỏ qua token này.",
+      "evidence": "09-verification-checklist.md#8"
+    },
+    "size-base-pt": { "value": 10, "unverified": true, "note": "Phụ thuộc font-name hiện tại của user (mục 4 checklist)." },
+    "size-sm-pt": 9,
+    "size-lg-pt": 12,
+    "weight-regular": 400,
+    "weight-medium": 500,
+    "weight-bold": 700
+  },
+
+  "border-width": { "hairline": 1, "thin": 1, "medium": 2 },
+
+  "opacity": {
+    "_doc": "St KHÔNG hỗ trợ thuộc tính 'opacity' — chỉ dùng alpha trong rgba(). Các giá trị này là alpha, không phải thuộc tính CSS.",
+    "glass-low": 0.55,
+    "glass-mid": 0.72,
+    "glass-high": 0.86,
+    "hover": 0.07,
+    "active": 0.12,
+    "disabled": 0.30
+  }
+}

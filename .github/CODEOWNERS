@@ -1,0 +1,23 @@
+# Định tuyến review tự động — xem docs/plan/06-git-workflow.md §4.1
+# Mỗi đường dẫn = một owner duy nhất (quy tắc "một file, một owner").
+
+*                                  @ThuyLinh6
+
+/design/tokens/                    @ThuyLinh6
+/tools/tokens/                     @ThuyLinh6
+/tools/lint/                       @ThuyLinh6
+/tools/cli/                        @ThuyLinh6
+/src/cinnamon/vendor/              @ThuyLinh6
+/src/cinnamon/                     @ThuyLinh6
+/src/gtk-3.0/                      @ThuyLinh6
+/src/gtk-4.0/                      @ThuyLinh6
+/src/libadwaita/                   @ThuyLinh6
+/src/dock/                         @ThuyLinh6
+/tests/                            @ThuyLinh6
+/docs/                             @ThuyLinh6
+/LICENSE                           @ThuyLinh6
+/NOTICE.md                         @ThuyLinh6
+
+# Ghi chú: repo hiện do 1 người sở hữu nên mọi đường dẫn trỏ về cùng tài khoản.
+# Khi các agent khác có tài khoản GitHub, thay @ThuyLinh6 bằng handle tương ứng
+# theo bảng phân công trong docs/plan/04-work-breakdown.md §2.

@@ -1,0 +1,106 @@
+{
+  "_doc": "Tầng 3 COMPONENT — ràng buộc theo widget. Chỉ được trỏ xuống tầng 2 (semantic) hoặc tầng 1 (primitive). Không hard-code hex ở tầng này.",
+
+  "cinnamon": {
+    "panel": {
+      "background": "surface.glass.high",
+      "border": "border.hairline",
+      "height": "size.panel-height",
+      "blur": "blur.none",
+      "_blur_note": "CỐ Ý = none. Panel full-width repaint liên tục; E11 => chi phí = blur_size x w x h x 4 byte GPU readback MỖI LẦN PAINT."
+    },
+    "panel-launcher": { "hover": "surface.hover", "active": "surface.active", "radius": "radius.sm" },
+    "menu": {
+      "background": "surface.glass.mid",
+      "border": "border.subtle",
+      "radius": "radius.lg",
+      "shadow": "shadow.lg",
+      "blur": "blur.md",
+      "padding": "space.5"
+    },
+    "menu-item": { "radius": "radius.md", "padding-y": "space.2", "padding-x": "space.4", "hover": "surface.hover", "selected": "surface.selected" },
+    "appmenu-sidebar": { "background": "surface.glass.high", "border": "border.hairline" },
+    "windowlist-item": { "radius": "radius.md", "hover": "surface.hover", "active": "surface.active", "attention": "status.badge" },
+    "windowlist-item-focused": { "background": "status.accent-subtle", "border": "border.accent" },
+    "osd": { "background": "surface.glass.low", "radius": "radius.xl", "shadow": "shadow.xl", "blur": "blur.lg" },
+    "notification": { "background": "surface.elevated.2", "radius": "radius.lg", "shadow": "shadow.lg", "border": "border.hairline", "blur": "blur.none" },
+    "dialog": { "background": "surface.elevated.1", "radius": "radius.xl", "shadow": "shadow.xl", "blur": "blur.none" },
+    "modal-shade": { "ref": "color.black", "alpha": 0.35 },
+    "calendar-today": { "background": "status.accent-subtle", "border": "border.accent", "radius": "radius.sm" },
+    "desklet": { "background": "surface.glass.mid", "radius": "radius.lg", "shadow": "shadow.lg", "blur": "blur.sm" },
+    "expo-workspace": { "border": "border.subtle", "active-border": "border.accent", "radius": "radius.md" },
+    "alt-tab": { "background": "surface.glass.mid", "radius": "radius.xl", "shadow": "shadow.xl", "blur": "blur.md" },
+    "tooltip": { "background": "surface.elevated.2", "radius": "radius.sm", "shadow": "shadow.sm" },
+    "looking-glass": { "background": "surface.elevated.1", "radius": "radius.lg", "border": "border.subtle" },
+    "screensaver": { "background": "surface.glass.low", "radius": "radius.xl", "blur": "blur.md" }
+  },
+
+  "gtk": {
+    "window": { "background": "surface.base", "radius": "radius.lg" },
+    "titlebar": {
+      "background": "surface.glass.high",
+      "border-bottom": "border.hairline",
+      "height": {
+        "value": "size.titlebar-height",
+        "unverified": true,
+        "evidence": "E32b",
+        "note": "T08 phải đo chiều cao titlebar thật trên máy (muffin lấy get_min_size từ CSS) rồi bỏ cờ unverified."
+      }
+    },
+    "titlebar-backdrop": { "background": "surface.solid" },
+    "button": { "background": "surface.hover", "radius": "radius.md", "border": "border.subtle", "padding-x": "space.5", "padding-y": "space.2" },
+    "button-hover": { "background": "surface.active" },
+    "button-active": { "background": "status.accent-subtle", "border": "border.accent" },
+    "button-default": { "background": "status.accent", "text": "text.on-accent", "radius": "radius.md" },
+    "button-destructive": { "background": "status.error", "text": "text.inverse", "radius": "radius.md" },
+    "entry": { "background": "surface.sunken", "radius": "radius.md", "border": "border.control", "focus-border": "border.focus" },
+    "sidebar": { "background": "surface.glass.mid", "border": "border.hairline" },
+    "view": { "background": "surface.base" },
+    "selection": { "background": "surface.selected", "text": "text.on-accent" },
+    "headerbar": { "background": "surface.glass.high", "border-bottom": "border.hairline" },
+    "notebook-tab": { "radius": "radius.sm", "active-background": "surface.base", "inactive-text": "text.secondary" },
+    "scrollbar-slider": { "background": { "ref": "color.gray.0", "alpha": 0.22 }, "hover": { "ref": "color.gray.0", "alpha": 0.34 }, "radius": "radius.pill", "min-width": "space.3" },
+    "switch-on": { "background": "status.accent" },
+    "switch-off": { "background": "surface.active" },
+    "progressbar": { "background": "status.accent", "trough": "surface.active", "radius": "radius.xs" },
+    "decoration-shadow": "shadow.lg"
+  },
+
+  "nemo": {
+    "desktop-label": {
+      "text": { "value": "#eeeeee", "alpha": 1.0 },
+      "shadow": { "x": 1, "y": 1, "blur": 0, "color": "color.black", "alpha": 0.80 },
+      "_note": "Giữ tương đương nemo-style-application.css gốc để KHÔNG giảm độ đọc icon desktop (ràng buộc F10)."
+    },
+    "desktop-label-hover": { "background": { "ref": "color.black", "alpha": 0.50 } },
+    "desktop-label-selected": { "background": { "ref": "color.mint.500", "alpha": 0.80 }, "text": { "value": "#f5f5f5", "alpha": 1.0 } },
+    "desktop-canvas-radius": "radius.xs",
+    "places-disk-full": {
+      "bar-width": "border-width.medium",
+      "bar-radius": 1,
+      "bottom-padding": 1,
+      "max-length": 70,
+      "_note": "Đơn vị px, ánh xạ trực tiếp vào -NemoPlacesTreeView-disk-full-* (E28)."
+    },
+    "inactive-pane": { "background": "surface.sunken" },
+    "floating-bar": { "background": "status.accent", "text": "text.on-accent", "radius": "radius.xs" }
+  },
+
+  "adwaita": {
+    "window-controls-close": "status.error",
+    "window-controls-minimize": "status.warning",
+    "window-controls-maximize": "status.success",
+    "_note": "E23: upstream khuyến nghị libadwaita chỉ đổi MÀU + WINDOW CONTROLS. Không thêm token layout ở đây."
+  },
+
+  "dock": {
+    "_note": "D-1 = grouped-window-list applet có sẵn. Token ở đây map vào CSS của cinnamon (T04 overrides/_40-windowlist-gwl.scss), KHÔNG sinh dock.theme Plank ở Phase 1.",
+    "item-radius": "radius.md",
+    "item-hover": "surface.hover",
+    "item-active": "surface.active",
+    "indicator": "status.accent",
+    "indicator-size": 5,
+    "badge": "status.badge",
+    "badge-text": "status.badge-text"
+  }
+}

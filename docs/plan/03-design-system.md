@@ -3,6 +3,17 @@
 Mục tiêu: **một** định nghĩa màu/kích thước/blur/motion, sinh ra **năm** định dạng đầu ra.
 Không module nào được hard-code giá trị màu hay bán kính.
 
+> **TRẠNG THÁI: ĐÃ TRIỂN KHAI (T02 xong).**
+> Token thật nằm ở `design/tokens/*.json`; generator là `tools/tokens/generate.py`
+> (hướng dẫn: `tools/tokens/README.md`); tài liệu sinh ra ở `docs/design-system/tokens.md`.
+> Các đoạn JSON trong tài liệu này là **thiết kế ban đầu** — bản chính thức là file trên đĩa.
+> Ba điểm khác biệt đã phát hiện khi triển khai thật:
+> 1. Thêm token `border.control` (white/black alpha ~0.36–0.45) vì `border.subtle` 12% chỉ đạt 1.43:1 —
+>    không đủ 3:1 theo WCAG 1.4.11 cho ranh giới cần để nhận diện control (ví dụ viền ô nhập).
+> 2. `text.on-accent` là **gray-950**, không phải trắng: trắng trên mint `#3ddc97` chỉ ~1.9:1.
+> 3. Cặp contrast có thêm trường `role` (`text` / `ui` / `decorative`); đường kẻ trang trí
+>    được báo cáo nhưng không chặn build, và bắt buộc có `_note` giải thích.
+
 ## 1. Ba tầng token
 
 ```

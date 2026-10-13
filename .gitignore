@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Node (chỉ dùng dart-sass ở dev, không commit)
+node_modules/
+
+# Build trung gian
+build/
+*.tmp
+.sass-cache/
+
+# KHÔNG ignore dist/ và các file *_tokens.scss:
+# A8 — file generated được commit để người dùng không cần toolchain sass.
+# CI target `make tokens-check` đảm bảo chúng không lệch src/.
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Kết quả test trên máy người dùng: ảnh chụp lớn -> chỉ commit bản đã nén
+docs/verification/raw/*.png
+docs/verification/raw/*.mp4
+docs/testing/results/**/*.mp4

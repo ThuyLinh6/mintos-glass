@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mintos-glass/token-schema.json",
+  "title": "MintOS Glass design token grammar",
+  "description": "Ngữ pháp giá trị token. tools/tokens/generate.py từ chối mọi giá trị không khớp.",
+  "type": "object",
+  "definitions": {
+    "hex": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{6}$",
+      "description": "Màu hex 6 chữ số. Không dùng shorthand 3 chữ số (khó diff, khó blend)."
+    },
+    "ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-zA-Z0-9_-]+)+$",
+      "description": "Đường dẫn token dạng chấm: 'color.gray.900', 'surface.glass.mid', 'radius.lg'."
+    },
+    "alpha": {
+      "oneOf": [
+        { "type": "number", "minimum": 0, "maximum": 1 },
+        {
+          "$ref": "#/definitions/ref",
+          "description": "Cho phép trỏ tới primitives.opacity.*, ví dụ 'opacity.glass-mid'."
+        }
+      ]
+    },
+    "color": {
+      "oneOf": [
+        { "$ref": "#/definitions/hex" },
+        { "$ref": "#/definitions/ref" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["ref", "alpha"],
+          "properties": {
+            "ref": { "$ref": "#/definitions/ref" },
+            "alpha": { "$ref": "#/definitions/alpha" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "alpha"],
+          "properties": {
+            "value": { "$ref": "#/definitions/hex" },
+            "alpha": { "$ref": "#/definitions/alpha" }
+          }
+        }
+      ]
+    },
+    "dimension": {
+      "oneOf": [
+        { "type": "number" },
+        { "$ref": "#/definitions/ref" }
+      ]
+    },
+    "shadow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "blur", "color", "alpha"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "blur": { "type": "number", "minimum": 0 },
+        "spread": { "type": "number" },
+        "inset": { "type": "boolean" },
+        "color": { "$ref": "#/definitions/color" },
+        "alpha": { "$ref": "#/definitions/alpha" }
+      }
+    },
+    "annotated": {
+      "type": "object",
+      "description": "Bọc một giá trị kèm ghi chú. 'unverified': true nghĩa là giá trị CHƯA được xác minh trên máy thật -> generator bỏ qua khi emit và in cảnh báo.",
+      "required": ["value"],
+      "properties": {
+        "value": {},
+        "note": { "type": "string" },
+        "unverified": { "type": "boolean" },
+        "phase": { "type": "integer" },
+        "evidence": { "type": "string", "description": "Mã bằng chứng trong docs/plan/01-survey.md, ví dụ 'E11'." }
+      }
+    }
+  }
+}

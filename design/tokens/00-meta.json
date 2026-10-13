@@ -1,0 +1,48 @@
+{
+  "name": "MintOS Glass",
+  "theme_dir_name": "MintOS-Glass",
+  "token_version": "0.1.0",
+  "generator": "tools/tokens/generate.py",
+
+  "target": {
+    "distro": "Linux Mint 22.3 (Zena)",
+    "base": "Ubuntu 24.04.3 LTS (Noble)",
+    "cinnamon_vendor_pin": "6.6.9",
+    "verified_on_target": false,
+    "verification_ref": "docs/plan/09-verification-checklist.md"
+  },
+
+  "schemes": {
+    "dark": { "phase": 1, "emit": true },
+    "light": { "phase": 2, "emit": false }
+  },
+
+  "decisions": {
+    "D1_dock": "grouped-window-list applet (không dùng Plank ở Phase 1)",
+    "D2_variants": "Dark trước, Light sau",
+    "D3_accent": "mint-green",
+    "D4_install_path": "~/.local/share/themes/MintOS-Glass (user-level, không root)",
+    "recorded_in": "docs/decisions.md"
+  },
+
+  "emitters": {
+    "src/cinnamon/tokens/_tokens.scss": { "format": "scss", "scheme": "dark" },
+    "src/gtk-3.0/sass/_tokens.scss": { "format": "scss", "scheme": "dark" },
+    "src/gtk-4.0/sass/_tokens.scss": { "format": "scss", "scheme": "dark" },
+    "src/libadwaita/tokens.css": { "format": "define-color", "scheme": "dark" },
+    "docs/design-system/tokens.md": { "format": "markdown", "scheme": "dark" }
+  },
+
+  "emitters_disabled": {
+    "src/dock/plank/MintOS-Glass/dock.theme": "D-1 = grouped-window-list; Plank bị hoãn. Bật lại ở Phase 2 nếu detect thấy plank đã cài sẵn.",
+    "src/gtk-3.0/sass/_tokens.light.scss": "D-2 = dark trước; light ở Phase 2."
+  },
+
+  "invariants": [
+    "Deterministic: cùng input cho ra output giống hệt từng byte (không timestamp, sort key).",
+    "Fail-fast: ref không phân giải được -> exit 1.",
+    "Blur clamp: mọi token blur phải <= primitives.blur.MAX_ALLOWED (rào cứng theo E11).",
+    "Không bịa giá trị chưa xác minh: token có 'unverified': true sẽ bị bỏ qua khi emit và in cảnh báo.",
+    "Contrast AA bắt buộc đạt cho mọi cặp trong 50-a11y.json contrast_pairs."
+  ]
+}

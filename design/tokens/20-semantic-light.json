@@ -1,0 +1,60 @@
+{
+  "_doc": "Tầng 2 SEMANTIC — scheme LIGHT. Phase 2 theo D-2: ĐỊNH NGHĨA sẵn nhưng CHƯA emit. Phải giữ cùng cấu trúc khoá với 20-semantic-dark.json (CI kiểm tra).",
+  "_scheme": "light",
+  "_phase": 2,
+
+  "surface": {
+    "base":        { "ref": "color.gray.100", "alpha": 1.00 },
+    "glass.low":   { "ref": "color.gray.0",   "alpha": 0.55 },
+    "glass.mid":   { "ref": "color.gray.0",   "alpha": 0.72 },
+    "glass.high":  { "ref": "color.gray.0",   "alpha": 0.86 },
+    "elevated.1":  { "ref": "color.gray.0",   "alpha": 0.92 },
+    "elevated.2":  { "ref": "color.gray.0",   "alpha": 0.97 },
+    "solid":       { "ref": "color.gray.0",   "alpha": 1.00 },
+    "sunken":      { "ref": "color.gray.200", "alpha": 1.00 },
+    "selected":    { "ref": "color.mint.800", "alpha": 1.00 },
+    "hover":       { "ref": "color.gray.950", "alpha": 0.05 },
+    "active":      { "ref": "color.gray.950", "alpha": 0.10 },
+    "disabled":    { "ref": "color.gray.200", "alpha": 0.60 }
+  },
+
+  "border": {
+    "hairline":  { "ref": "color.gray.950", "alpha": 0.08 },
+    "subtle":    { "ref": "color.gray.950", "alpha": 0.14 },
+    "strong":    { "ref": "color.gray.950", "alpha": 0.24 },
+    "control":   { "ref": "color.gray.950", "alpha": 0.45 },
+    "highlight": { "ref": "color.gray.0",   "alpha": 0.70 },
+    "focus":     { "ref": "color.mint.800", "alpha": 0.90 },
+    "accent":    { "ref": "color.mint.800", "alpha": 1.00 }
+  },
+
+  "text": {
+    "primary":   { "ref": "color.gray.950", "alpha": 0.90 },
+    "secondary": { "ref": "color.gray.950", "alpha": 0.64 },
+    "tertiary":  { "ref": "color.gray.950", "alpha": 0.44 },
+    "disabled":  { "ref": "color.gray.950", "alpha": 0.30 },
+    "on-accent": { "ref": "color.gray.0",   "alpha": 1.00 },
+    "link":      { "ref": "color.mint.800", "alpha": 1.00 },
+    "inverse":   { "ref": "color.gray.0",   "alpha": 0.92 }
+  },
+
+  "status": {
+    "accent":            { "ref": "color.mint.800", "alpha": 1.00 },
+    "accent-hover":      { "ref": "color.mint.700", "alpha": 1.00 },
+    "accent-active":     { "ref": "color.mint.900", "alpha": 1.00 },
+    "accent-subtle":     { "ref": "color.mint.500", "alpha": 0.18 },
+    "success":           { "ref": "color.mint.800", "alpha": 1.00 },
+    "warning":           { "ref": "color.amber.600", "alpha": 1.00 },
+    "error":             { "ref": "color.red.600", "alpha": 1.00 },
+    "badge":             { "ref": "color.red.500", "alpha": 1.00 },
+    "badge-text":        { "ref": "color.gray.0", "alpha": 1.00 }
+  },
+
+  "shadow": {
+    "sm": { "x": 0, "y": 1,  "blur": 2,  "color": "color.gray.950", "alpha": 0.10 },
+    "md": { "x": 0, "y": 4,  "blur": 12, "color": "color.gray.950", "alpha": 0.14 },
+    "lg": { "x": 0, "y": 10, "blur": 28, "color": "color.gray.950", "alpha": 0.18 },
+    "xl": { "x": 0, "y": 18, "blur": 48, "color": "color.gray.950", "alpha": 0.22 },
+    "inset-top": { "x": 0, "y": 1, "blur": 0, "inset": true, "color": "color.gray.0", "alpha": 0.70 }
+  }
+}

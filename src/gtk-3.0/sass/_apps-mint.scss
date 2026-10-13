@@ -1,0 +1,371 @@
+// =============================================================================
+// MintOS Glass · Dark Glass
+// src/gtk-3.0/sass/_apps-mint.scss          (Task T09)
+// -----------------------------------------------------------------------------
+// Mục riêng cho từng ứng dụng Mint. Done criterion #4 của T09 yêu cầu mỗi app có
+// một mục, "tối thiểu là không selector nào gây xung đột".
+//
+// File này KHÔNG áp đặt bố cục. Nó chỉ style những hook mà MÃ NGUỒN THẬT của từng
+// app chứng minh là tồn tại, và nói rõ bằng chữ khi app KHÔNG có hook nào.
+// =============================================================================
+//
+// -----------------------------------------------------------------------------
+// PHÁT HIỆN QUYẾT ĐỊNH: GTK 3.24 KHÔNG CHO CSS BIẾT ĐANG CHẠY APP NÀO
+// -----------------------------------------------------------------------------
+// Cách thông thường để theme nhắm vào một app là dùng application ID. Đã kiểm
+// chứng điều đó KHÔNG tồn tại trong GTK3: tải GNOME/gtk ref 3.24.42, file
+// gtk/gtkapplicationwindow.c (1048 dòng) có **0 lần** xuất hiện chuỗi
+// `application_id`. GtkApplicationWindow không thêm app ID làm style class,
+// không dùng nó làm CSS node name.
+// (Đây cũng là lý do các theme GNOME nhắm vào app bằng class RIÊNG mà app tự
+// thêm, ví dụ `.nautilus-window`.)
+//
+// HỆ QUẢ TRỰC TIẾP, quyết định toàn bộ nội dung file này:
+//   Không có cách nào scope một class CHUNG về đúng một app. Viết
+//   `.content-view { ... }` ở đây sẽ áp lên xplayer, xreader VÀ MỌI app GTK3
+//   khác dùng class đó — tức là rò rỉ toàn cục và giẫm lên T06.
+// => QUY TẮC CỦA FILE NÀY: chỉ dùng
+//   (a) class có TÊN RIÊNG của app trong chính tên class: `.xed-statusbar`,
+//       `.xreader-window`, `.pix-circular-button`;
+//   (b) CSS NODE NAME độc nhất do app đặt bằng gtk_widget_class_set_css_name:
+//       `evview`, `evsidebarthumbnails`, `evpresentationview`;
+//   (c) widget NAME (selector `#`) độc nhất: `#GthInfoBar`, `#page-label-entry`.
+//   Class chung (`.content-view`, `.small-button`, `.close-button`,
+//   `.inline-toolbar`, `.title`, `.icon`, `.view`, ...) -> THUỘC T06, không viết ở đây.
+//   `tools/lint/nemo_selectors.py` bài `mint-apps-namespaced` THỰC THI quy tắc này.
+//
+// -----------------------------------------------------------------------------
+// BẢNG KẾT QUẢ KHẢO SÁT TỪNG APP (đã tải mã nguồn, grep đa dòng, không suy đoán)
+// -----------------------------------------------------------------------------
+//   nemo              18 style class + 1 widget name + 1 CSS node  -> _apps-nemo.scss
+//   xreader           CÓ hook riêng                                -> mục 2
+//   pix               CÓ hook riêng (14 class + 1 node + 1 name)   -> mục 3
+//   xed               CHỈ `.xed-statusbar` là riêng                -> mục 4
+//   xplayer           CHỈ widget name riêng                        -> mục 5
+//   xviewer           KHÔNG có hook nào (48 file nguồn, 0 kết quả)  -> mục 6
+//   mintupdate        KHÔNG có hook nào                            -> mục 7
+//   mintinstall       KHÔNG có hook nào                            -> mục 8
+//   cinnamon-settings KHÔNG có hook riêng (Cinnamon 6.6.9, chỉ `.inline-toolbar`
+//                     là class GTK chung)                          -> mục 9
+// =============================================================================
+
+@import "tokens";
+
+// Hằng tạm thời — cùng lý do và bằng chứng như trong _apps-nemo.scss.
+$mint-w-medium: 500;
+$mint-dur-fast: 90ms;
+$mint-ease:     cubic-bezier(0.2, 0.0, 0.0, 1.0);
+
+
+// =============================================================================
+// 1. nemo — xem _apps-nemo.scss
+// =============================================================================
+// Cố ý KHÔNG viết gì ở đây. Nemo có module riêng vì nó là app phức tạp nhất và
+// có cơ chế ưu tiên provider đặc thù (PRIORITY_APPLICATION đè theme). Viết Nemo
+// ở hai nơi sẽ tạo ra nguồn sự thật đôi.
+
+
+// =============================================================================
+// 2. xreader (trình đọc tài liệu) — CÓ hook riêng
+// =============================================================================
+// Bằng chứng (linuxmint/xreader @ master):
+//   shell/ev-window.c:7490                    add_class(..., "xreader-window")
+//   libview/ev-view.c:5655                    set_css_name(wclass, "evview")
+//   libview/ev-view.c:5827                    add_class(..., "content-view")  [CHUNG -> bỏ]
+//   libview/ev-view-presentation.c:1420       set_css_name(..., "evpresentationview")
+//   libview/ev-view-presentation.c:153        add_class(..., "white-mode")
+//   shell/ev-sidebar-thumbnails.c:439         set_css_name(..., "evsidebarthumbnails")
+//   libdocument/ev-document-misc.c:114        add_class(..., "page-thumbnail")
+//   libdocument/ev-document-misc.c:116        add_class(..., "inverted")
+//
+// `.inverted` là chế độ ĐẢO MÀU trang (accessibility / đọc đêm). Đây là chỗ DỄ
+// LÀM HỎNG NHẤT: nếu theme tô nền cho `evview` mà không tôn trọng `.inverted`,
+// tính năng đảo màu sẽ cho chữ tối trên nền tối. Nên nền của chế độ đảo màu phải
+// được giữ đối lập có chủ đích, không để token nền tối đè lên.
+.xreader-window {
+  background-color: $mg-surface-base;
+}
+
+// Vùng trang. `evview` là node name độc nhất của xreader/Evince -> an toàn.
+evview {
+  background-color: $mg-surface-sunken;
+  color: $mg-text-primary;
+}
+
+// Trang giấy phải SÁNG — đó là mô hình ẩn dụ của tài liệu in, và chữ trong PDF
+// là mực tối. Ép nền tối ở đây sẽ phá khả năng đọc nội dung thật của tài liệu.
+//
+// THIẾU TOKEN NGỮ NGHĨA (đã ghi nhận, KHÔNG tự thêm vào design/tokens/*.json vì
+// đó là sở hữu của Agent Design Systems): hệ token hiện tại là dark-first nên
+// không có surface nào nghĩa là "mặt giấy trắng". `$mg-text-primary` là
+// rgba(255,255,255,0.92) — BÁN TRONG SUỐT, dùng làm nền sẽ cho ra XÁM chứ không
+// phải trắng, và dùng token chữ làm token nền là sai ngữ nghĩa. Nên phải dùng
+// primitive `$mg-color-white` (#ffffff). Cần Agent 1 bổ sung token dạng
+// `surface.paper` / `surface.page` rồi thay thế ở đây.
+evview.page-thumbnail,
+evview .page-thumbnail {
+  background-color: $mg-color-white;
+}
+
+// Chế độ đảo màu: giữ nguyên logic đối lập, chỉ đảm bảo có phản hồi thị giác.
+// KHÔNG đặt nền tối ở đây — `.inverted` nghĩa là trang ĐANG bị đảo.
+evview.inverted {
+  background-color: $mg-surface-sunken;
+}
+
+// Chế độ thuyết trình (fullscreen) và white-mode.
+evpresentationview {
+  background-color: $mg-color-black;
+}
+
+evpresentationview.white-mode {
+  // Cùng vấn đề thiếu token `surface.paper` như trên.
+  background-color: $mg-color-white;
+}
+
+// Sidebar thumbnail: nền trũng hơn một bậc để tách khỏi vùng đọc.
+evsidebarthumbnails {
+  background-color: $mg-surface-base;
+}
+
+evsidebarthumbnails .view,
+evsidebarthumbnails treeview.view {
+  background-color: transparent;
+}
+
+// Ô nhập số trang. `page-label-entry` là widget NAME độc nhất của xreader.
+#page-label-entry {
+  border: 1px solid $mg-gtk-entry-border;
+  border-radius: $mg-gtk-entry-radius;
+  background-color: $mg-gtk-entry-background;
+  color: $mg-text-primary;
+}
+
+#page-label-entry:focus {
+  border-color: $mg-gtk-entry-focus-border;
+}
+
+
+// =============================================================================
+// 3. pix (quản lý ảnh) — CÓ hook riêng
+// =============================================================================
+// Bằng chứng (linuxmint/pix @ master):
+//   pix/gth-empty-list.c:299            add_class(..., "empty-view")
+//   pix/gth-grid-view.c:1327            add_class(..., "icon")            [CHUNG -> bỏ]
+//   pix/gth-grid-view.c:3748            set_css_name(wclass, "iconview")  [CHUNG -> bỏ]
+//   pix/gth-curve-editor.c:467          add_class(..., "histogram")
+//   pix/gth-progress-dialog.c:155       add_class(..., "pix-circular-button")
+//   pix/gth-filter-grid.c:323           add_class(..., "filter-preview")
+//   extensions/importer/gth-import-destination-button.c:72
+//                                       add_class(..., "highlighted-text")
+//   pix/dlg-preferences-extensions.c:469/476
+//                                       add_class(..., "extension-name" / "-description")
+//   thêm: void-view, toolbox, video-player, window-overlay, title, revert-shortcut-button
+//   widget name: GthInfoBar
+//
+// `.empty-view` / `.void-view` là TRẠNG THÁI HỆ THỐNG thật của mục 3.6: thư mục
+// rỗng và kết quả tìm kiếm rỗng. Pix đã tự cung cấp hook cho nó — dùng hook đó
+// thay vì bịa.
+.empty-view,
+.void-view {
+  background-color: $mg-surface-base;
+  color: $mg-text-tertiary;
+}
+
+// Vùng làm việc tối để ảnh nổi lên — chuẩn của app xử lý ảnh, không phải trang trí.
+.toolbox {
+  background-color: $mg-surface-base;
+  border-right: 1px solid $mg-border-subtle;
+}
+
+// Histogram phải trung tính về màu, nếu không người dùng đọc sai phơi sáng.
+// Đây là lý do KHÔNG dùng accent cho nền histogram.
+.histogram {
+  background-color: $mg-surface-sunken;
+  color: $mg-text-secondary;
+}
+
+.video-player {
+  background-color: $mg-color-black;
+}
+
+// Lớp phủ trên cửa sổ (overlay) — bề mặt nổi, cần nền đặc và viền rõ.
+.window-overlay {
+  background-color: $mg-surface-elevated-2;
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-radius-md;
+  box-shadow: $mg-shadow-lg;
+}
+
+// Nút tròn riêng của pix (dialog tiến trình). Tên class đã chứa "pix" -> riêng.
+.pix-circular-button {
+  border-radius: $mg-radius-pill;
+  background-color: transparent;
+  border: none;
+  color: $mg-text-secondary;
+  min-width: 28px;
+  min-height: 28px;
+  transition: all $mint-dur-fast $mint-ease;
+}
+
+.pix-circular-button:hover {
+  background-color: $mg-surface-hover;
+  color: $mg-text-primary;
+}
+
+.pix-circular-button:active {
+  background-color: $mg-surface-active;
+  color: $mg-text-on-accent;
+}
+
+// Xem trước bộ lọc và nhãn được tô sáng trong kết quả tìm kiếm.
+.filter-preview {
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-radius-sm;
+  background-color: $mg-surface-sunken;
+}
+
+.highlighted-text {
+  color: $mg-status-accent;
+  font-weight: $mint-w-medium;
+}
+
+.extension-name {
+  color: $mg-text-primary;
+  font-weight: $mint-w-medium;
+}
+
+.extension-description {
+  color: $mg-text-secondary;
+}
+
+.revert-shortcut-button {
+  color: $mg-text-tertiary;
+}
+
+.revert-shortcut-button:hover {
+  color: $mg-status-warning;
+}
+
+// Widget name riêng của pix.
+#GthInfoBar {
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-radius-sm;
+}
+
+
+// =============================================================================
+// 4. xed (trình soạn thảo văn bản) — CHỈ MỘT hook riêng
+// =============================================================================
+// Bằng chứng (linuxmint/xed @ master, 67 file .c):
+//   xed/xed-statusbar.c:155                      add_class(..., "xed-statusbar")   <- RIÊNG
+//   xed/xed-searchbar.c:712                      add_class(..., "close-button")    <- CHUNG
+//   xed/xed-print-preview.c:567                  add_class(..., "inline-toolbar")  <- CHUNG
+//   plugins/filebrowser/xed-file-browser-widget.c:927
+//                                                add_class(..., "small-button")    <- CHUNG
+//   xed/xed-close-confirmation-dialog.c:156,162  add_class(..., ...)               <- CHUNG
+//
+// Kết luận trung thực: xed KHÔNG có hook để theme nhận ra cửa sổ của nó. Ba class
+// còn lại đều là class GTK/GNOME dùng chung nhiều app, nên viết chúng ở đây sẽ
+// rò rỉ toàn cục. Chúng thuộc T06.
+// Ở đây CHỈ có `.xed-statusbar` — tên class đã chứa tên app nên không rò rỉ.
+.xed-statusbar {
+  background-color: $mg-surface-base;
+  border-top: 1px solid $mg-border-subtle;
+  color: $mg-text-secondary;
+  padding: 0 $mg-space-2;
+  min-height: 24px;
+}
+
+// Vùng soạn thảo là GtkSourceView. GtkSourceView tự nạp scheme màu RIÊNG của nó
+// (không qua gtk.css của theme), nên tô màu cú pháp KHÔNG điều khiển được từ
+// đây — ghi rõ để không ai tưởng file này làm được việc đó.
+
+
+// =============================================================================
+// 5. xplayer (trình phát media) — CHỈ widget name riêng
+// =============================================================================
+// Bằng chứng (linuxmint/xplayer @ master, 86 file .c):
+//   src/plugins/grilo/xplayer-grilo.c:1208   add_class(..., "content-view")  <- CHUNG
+//   libgd/libgd/gd-tagged-entry.c:228        add_class(..., "documents-entry-tag") <- libgd, CHUNG
+//   widget name: "frame", "logo-frame", "stage"
+//
+// `#stage` là vùng video. `#logo-frame` là khung logo khi chưa phát.
+// `#frame` là tên quá chung — KHÔNG dùng, vì selector ID `#frame` sẽ trúng bất
+// kỳ widget nào trong bất kỳ app nào được đặt tên "frame".
+#stage {
+  background-color: $mg-color-black;
+}
+
+#logo-frame {
+  background-color: $mg-surface-sunken;
+}
+
+
+// =============================================================================
+// 6. xviewer (trình xem ảnh) — KHÔNG CÓ HOOK NÀO
+// =============================================================================
+// Đã quét 48 file nguồn (.c/.py) của linuxmint/xviewer @ master:
+//   0 kết quả cho gtk_style_context_add_class / add_class với class riêng
+//   0 kết quả cho gtk_widget_set_name / set_name
+//   0 kết quả cho gtk_widget_class_set_css_name
+// xviewer kế thừa Eye of GNOME; eog đặt tên widget bằng GtkBuilder chứ không
+// thêm style class riêng, nên theme GTK3 KHÔNG có điểm tựa nào để nhận ra nó.
+//
+// => KẾT LUẬN: giao diện xviewer được quyết định HOÀN TOÀN bởi phần widget GTK
+//    chung, tức là bởi T06. T09 KHÔNG viết selector nào cho xviewer, vì mọi
+//    selector viết ra hoặc là rò rỉ toàn cục hoặc là chết.
+//    Đây là "mục tối thiểu không gây xung đột" theo nghĩa đen và trung thực nhất.
+
+
+// =============================================================================
+// 7. mintupdate (Trình quản lý cập nhật) — KHÔNG CÓ HOOK NÀO
+// =============================================================================
+// Đã quét linuxmint/mintupdate @ master: 0 style class riêng, 0 widget name,
+// 0 CSS node name. Ứng dụng là Python + Gtk3, dựng giao diện bằng Gtk.Builder từ
+// file .ui và không thêm hook tạo kiểu nào.
+// Application ID tìm được là `com.linuxmint.mintupdate`, nhưng như đã chứng minh
+// ở đầu file, GTK 3.24 KHÔNG đưa application ID vào CSS nên ID này KHÔNG dùng
+// làm selector được.
+//
+// => Toàn bộ giao diện mintupdate đi qua widget GTK chung (T06). Một điểm cần
+//    lưu ý cho T06 chứ không phải T09: mintupdate dùng rất nhiều hàng trạng thái
+//    có màu ngữ nghĩa (an toàn / nguy hiểm / nhân kernel). Nếu muốn tô màu chúng
+//    thì PHẢI có hook từ phía app, mà hiện không có -> KHÔNG làm được bằng theme.
+//    Không bịa selector.
+
+
+// =============================================================================
+// 8. mintinstall (Trình quản lý phần mềm) — KHÔNG CÓ HOOK NÀO
+// =============================================================================
+// Đã quét linuxmint/mintinstall @ master (10 file nguồn): 0 style class riêng,
+// 0 widget name, 0 CSS node name. Không tìm thấy application ID trong
+// meson.build/*.c/*.in.
+// => Như xviewer và mintupdate: giao diện hoàn toàn do widget GTK chung quyết
+//    định (T06). Không viết selector nào.
+
+
+// =============================================================================
+// 9. cinnamon-settings (Trung tâm điều khiển) — KHÔNG CÓ HOOK RIÊNG
+// =============================================================================
+// Bằng chứng: Cinnamon 6.6.9, commit 806c1a4e8cd23e528d3446b9e3cf5a3c7a3ddf18,
+// quét toàn bộ files/usr/share/cinnamon/cinnamon-settings/**/*.py:
+//   1 kết quả DUY NHẤT: modules/cs_backgrounds.py:220
+//                       add_class(..., "inline-toolbar")  <- class GTK CHUNG
+//   0 widget name riêng, 0 CSS node name riêng.
+//
+// => KHÔNG có cách nào trong GTK3 CSS để nhận ra cửa sổ cinnamon-settings.
+//    Giao diện của nó do widget GTK chung quyết định (T06).
+//    GHI CHÚ cho T12 (cấu hình): một số thứ trong cinnamon-settings là GSETTING
+//    chứ không phải CSS, nên không thuộc phạm vi theme. Không giả vờ style được.
+
+
+// =============================================================================
+// TÓM TẮT TRUNG THỰC
+// =============================================================================
+// 4/9 app có hook để theme nhắm riêng: nemo, xreader, pix, xed (một phần),
+// xplayer (một phần) — chính xác là 5 nếu tính cả xed/xplayer ở mức giới hạn.
+// 4/9 app KHÔNG có hook nào: xviewer, mintupdate, mintinstall, cinnamon-settings.
+// Với 4 app đó, câu trả lời đúng là "theme GTK3 không thể nhắm riêng vào chúng"
+// chứ không phải viết selector đoán mò. Đã kiểm chứng bằng mã nguồn, không suy đoán.
+// =============================================================================

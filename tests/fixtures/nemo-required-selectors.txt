@@ -1,0 +1,319 @@
+// =============================================================================
+// tests/fixtures/nemo-required-selectors.txt
+// -----------------------------------------------------------------------------
+// Danh sách selector Nemo mà theme MintOS Glass BẮT BUỘC phải phủ, kèm bằng chứng
+// file:dòng trong mã nguồn Nemo. Đây là hợp đồng giữa T09 và lint
+// `tools/lint/nemo_selectors.py`.
+//
+// MARKER COMMENT LÀ `//`, không phải `#` — vì selector CSS dùng `#` cho widget
+// name (`#nemo-tab-close-button`). Bài học rút ra từ fixture Cinnamon.
+//
+// -----------------------------------------------------------------------------
+// NGUỒN XÁC MINH
+// -----------------------------------------------------------------------------
+// Nemo có HAI nhánh ứng viên cho Mint 22.3 và CHƯA xác minh được máy thật cài
+// nhánh nào (E2b2, cổng T00):
+//   · master.mint22    -> meson.build `version : '6.7.8'`
+//                         head ed2d34b390917fa11c1031176db489fd5cfbc915
+//   · 6.6-maintenance  -> meson.build `version : '6.6.4'`   <- fixture này dựa trên đây
+// Đã TẢI VÀ DIFF CẢ HAI (không đoán):
+//   · gresources/nemo-style-fallback.css           GIỐNG HỆT (21 dòng)
+//   · gresources/nemo-style-fallback-mandatory.css GIỐNG HỆT (36 dòng)
+//   · gresources/nemo-style-application.css        6.6.4 có THÊM 12 dòng `#drop-bar`
+//     (dòng 73-84) mà 6.7.8 không có.
+// => Fixture lấy HỢP (union) của cả hai để stylesheet chạy đúng trên cả hai bản.
+//    Phần khác biệt duy nhất (`#drop-bar`) được đánh dấu riêng bên dưới.
+//
+// -----------------------------------------------------------------------------
+// BA MỨC ƯU TIÊN — QUYẾT ĐỊNH TA CÓ GHI ĐÈ ĐƯỢC HAY KHÔNG
+// -----------------------------------------------------------------------------
+// src/nemo-application.c:306-330 `init_icons_and_styles()`:
+//   add_css_provider_at_priority("/org/nemo/nemo-style-fallback.css",
+//                                GTK_STYLE_PROVIDER_PRIORITY_FALLBACK)      =   0
+//   add_css_provider_at_priority("/org/nemo/nemo-style-application.css",
+//                                GTK_STYLE_PROVIDER_PRIORITY_APPLICATION)   = 600
+// và :230 `add_fallback_mandatory_css_provider()` thêm
+//   nemo-style-fallback-mandatory.css ở PRIORITY_APPLICATION                = 600
+//   nhưng CHỈ khi theme không được nhận diện là có hỗ trợ Nemo (xem dưới).
+// Theme của ta nạp ở GTK_STYLE_PROVIDER_PRIORITY_THEME                     = 200.
+//
+// GTK 3.24 KHÔNG hỗ trợ `!important`. Đã kiểm chứng: chuỗi "important" xuất hiện
+// 0 lần trong gtk/gtkcssparser.c (1067 dòng), 0 lần trong gtk/gtkcssprovider.c
+// (2405 dòng), 0 lần trong gtk/gtkstylecascade.c (426 dòng), ref 3.24.42.
+// Parser là nơi DUY NHẤT có thể nhận diện cú pháp `!`, nên nếu parser không đọc
+// nó thì không tầng nào phía sau dùng được. Và `gtk_style_cascade_iter_next()`
+// (gtkstylecascade.c:42-71) duyệt provider THEO THỨ TỰ PRIORITY GIẢM DẦN, không
+// có đường nào cho specificity hay `!important` lật ngược.
+//
+// => KẾT LUẬN CỨNG:
+//    [WIN]  Nemo để ở FALLBACK(0) hoặc không style  -> theme(200) THẮNG.
+//    [LOCK] Nemo để ở APPLICATION(600)              -> theme(200) THUA TUYỆT ĐỐI.
+//
+// -----------------------------------------------------------------------------
+// VÌ SAO `nemo-style-fallback-mandatory.css` KHÔNG được nạp cho MintOS Glass
+// -----------------------------------------------------------------------------
+// src/nemo-application.c:297:
+//     if (!is_known_supported_theme (theme_name))
+//         add_fallback_mandatory_css_provider (theme_name);
+// :245 `supported_theme_hints[] = {"mint", "arc", "numix", "matcha"}`
+// :259 `name = g_utf8_casefold (theme_name, -1)`
+// :267 `if (g_strstr_len (name, -1, hint)) ret = TRUE;`   <- SO KHỚP CHUỖI CON
+//
+// "MintOS-Glass" -> casefold "mintos-glass" -> CHỨA "mint" -> is_known_supported_theme
+// trả về TRUE -> Nemo KHÔNG nạp fallback-mandatory, và in ra cũng KHÔNG có cảnh báo.
+//
+// HAI HỆ QUẢ, cả hai đều phải xử lý:
+//   1. Không có provider APPLICATION nào đè lên `.nemo-inactive-pane`,
+//      `.nemo-window-pane widget.entry`, `.floating-bar` -> TA PHẢI TỰ STYLE CẢ BA.
+//      Nếu bỏ sót, chúng rơi về GTK mặc định chứ không phải "fallback của Nemo".
+//   2. Tên theme là MỘT PHẦN CỦA CƠ CHẾ. Nếu đổi tên thành thứ không chứa
+//      "mint"/"arc"/"numix"/"matcha" (ví dụ "GlassOS"), Nemo sẽ nạp
+//      fallback-mandatory ở priority 600 và ĐÈ LÊN theme của ta cho ba selector
+//      trên. Đây là ràng buộc đặt tên có căn cứ kỹ thuật, độc lập với câu hỏi
+//      chính sách đặt tên Linux Mint đang mở.
+//      LƯU Ý đây là khớp chuỗi con nên cũng rất mong manh: một theme tên
+//      "Terminator" cũng lọt vì chứa... không; nhưng "Mint-X" thì lọt. Không
+//      nên dựa vào đó lâu dài — xem docs/testing/nemo-checklist.md mục Rủi ro.
+//
+// Ngoài ra :173-243 còn một lớp kiểm tra thứ hai, CHỈ chạy khi theme không lọt
+// danh sách trên: nó serialize CSS của theme (`gtk_css_provider_to_string`) rồi
+// tìm chuỗi con "nemo"; nếu không có thì in "The theme appears to have no nemo
+// support. Adding some...". Nghĩa là theme PHẢI chứa chuỗi "nemo" — stylesheet
+// của ta thoả mãn vì có `.nemo-window`.
+// Cùng hàm đó (:203-217) quyết định dùng `@theme_*` hay viết lại thành `@`:
+//   · theme có chuỗi "theme_selected_bg_color"        -> giữ `@theme_*`
+//   · theme có "@define-color selected_bg_color"      -> thay `@theme_` bằng `@`
+//   · không có cả hai                                 -> bỏ luôn, không nạp gì
+// => T06 PHẢI export đủ @theme_bg_color, @theme_fg_color, @theme_selected_bg_color,
+//    @theme_selected_fg_color, @theme_unfocused_bg_color (đã là Done criterion #2
+//    của T06). Nếu không, `alpha(@theme_selected_bg_color, 0.8)` trong
+//    nemo-style-application.css không phân giải được và nền icon desktop khi
+//    được chọn sẽ hỏng.
+// =============================================================================
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 1 — [WIN] Cửa sổ chính. Theme thắng vì Nemo không style những lớp này
+// trong nemo-style-application.css, và fallback-mandatory không được nạp.
+//
+// *** QUYẾT ĐỊNH CÓ CHỦ ĐÍCH: DẠNG SCOPE, KHÔNG PHẢI DẠNG TRẦN ***
+// Done criterion #1 của T09 liệt kê các TÊN CLASS mà Nemo đăng ký (`.sidebar`,
+// `.view`, `.linked`, `.error`, ...). Fixture này yêu cầu chúng ở DẠNG ĐÃ SCOPE
+// (`.nemo-window .sidebar`) chứ không phải dạng trần, vì ba lý do đã kiểm chứng:
+//
+//   1. Một theme GTK3 biên dịch ra MỘT file gtk.css DUY NHẤT dùng cho MỌI app.
+//      Viết `.sidebar { ... }` trần trong `_apps-nemo.scss` nghĩa là áp đặt quy
+//      tắc của Nemo lên GNOME Boxes, Inkscape, mọi app GTK3 khác. Đó chính xác
+//      là "stylesheet riêng cạnh tranh" mà yêu cầu phối hợp Agent 3 cấm.
+//   2. Yêu cầu phối hợp Agent 3 nói rõ: "không ghi đè rule GTK chung chỉ vì một
+//      chi tiết của Nemo khi có thể dùng selector hẹp hơn". `.sidebar`, `.view`,
+//      `.linked`, `.raised`, `.error`, `.primary-toolbar` là CLASS GTK CHUNG —
+//      chúng thuộc sở hữu của T06 (`_common.scss`/`_widgets.scss`), không phải
+//      của T09.
+//   3. `tools/lint/nemo_selectors.py` có bài kiểm tra `no-bare-generic` FAIL nếu
+//      `_apps-nemo.scss` phát ra một class GTK chung ở dạng trần. Nghĩa là quyết
+//      định này ĐƯỢC THỰC THI, không phải nới lỏng âm thầm.
+//
+// Các class RIÊNG của Nemo (`.nemo-*`, `.places-treeview`, `.floating-bar`,
+// `.treeview-drop-indicator`) vẫn được yêu cầu ở dạng trần khi Nemo tự đăng ký
+// chúng ở gốc widget, vì không có rủi ro rò rỉ sang app khác.
+// Tên class trần vẫn được ghi lại dưới mỗi mục làm BẰNG CHỨNG nguồn.
+// ---------------------------------------------------------------------------
+// src/nemo-window.c:1999 gtk_style_context_add_class(..., "nemo-window")
+.nemo-window
+.nemo-window.background
+// src/nemo-window-pane.c:1067
+.nemo-window-pane
+// src/nemo-window.c:430 GTK_STYLE_CLASS_SIDEBAR cho khung sidebar
+// class trần `.sidebar` -> T06 sở hữu; T09 chỉ scope trong .nemo-window
+.nemo-window .sidebar
+.nemo-window .sidebar row
+.nemo-window .sidebar row:hover
+.nemo-window .sidebar row:selected
+// src/nemo-places-sidebar.c:4168 (E30 ghi 4161 — lệch 7 dòng so với 6.6.4)
+.nemo-window .nemo-places-sidebar
+.nemo-window .nemo-places-sidebar row
+.nemo-window .nemo-places-sidebar row:selected
+// src/nemo-config-base-widget.c:41
+// class trần `.primary-toolbar` là class GTK chung -> scope
+.nemo-window .primary-toolbar
+// src/nemo-pathbar.c:379  `.path-bar` là class của RIÊNG Nemo trên pathbar của nó
+.nemo-window .path-bar
+.nemo-window .path-bar button
+.nemo-window .path-bar button:hover
+.nemo-window .path-bar button:disabled
+// src/nemo-pathbar.c:172  `.slider-button` — mũi tên trượt khi đường dẫn quá dài
+.nemo-window .path-bar .slider-button
+.nemo-window .path-bar .slider-button:hover
+// src/nemo-config-base-widget.c:71 `.linked`, :33 `.view` -> class GTK chung, scope
+.nemo-window .linked button
+.nemo-window-pane .view
+.nemo-window-pane .view:selected
+.nemo-window-pane treeview.view
+.nemo-window-pane iconview
+// src/nemo-properties-window.c:4971 `.raised` -> class GTK chung, scope
+.nemo-window .linked .raised
+// src/nemo-query-editor.c:182 — ô tìm kiếm ở trạng thái lỗi; `.error` là chung
+.nemo-window .error
+// src/nemo-window.c: set_name "nemo-tab-close-button" (nút đóng tab)
+// Đây là WIDGET NAME, không phải style class -> selector ID. Không rò rỉ vì
+// không app nào khác đặt tên widget này.
+#nemo-tab-close-button
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 2 — [WIN] Pane không hoạt động (F3 chia đôi cửa sổ).
+// nemo-style-fallback-mandatory.css:6 có rule này NHƯNG file đó không được nạp
+// cho theme tên chứa "mint" -> theme(200) thắng.
+// ---------------------------------------------------------------------------
+// src/nemo-window-pane.c:1095
+.nemo-inactive-pane
+.nemo-window .nemo-inactive-pane .view:not(:selected)
+.nemo-window .nemo-inactive-pane iconview
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 3 — [WIN] Ô nhập trong khung nhìn (đổi tên file, nhập đường dẫn).
+// nemo-style-fallback-mandatory.css:12,20 — không được nạp, ta phải tự style.
+// ---------------------------------------------------------------------------
+.nemo-window .nemo-window-pane widget.entry
+.nemo-window .nemo-window-pane widget.entry:selected
+.nemo-window .nemo-window-pane widget.entry:focus
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 4 — [WIN] Thanh nổi ở đáy khung nhìn (hiện khi tắt status bar).
+// nemo-style-fallback-mandatory.css:30 — không được nạp, ta phải tự style.
+// ---------------------------------------------------------------------------
+// src/nemo-floating-bar.c:257
+.floating-bar
+// Nút huỷ trên thanh nổi (dừng thao tác sao chép/di chuyển)
+.floating-bar button
+.floating-bar button:hover
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 5 — [WIN] Sidebar places: chỉ báo dung lượng ổ đĩa.
+// nemo-style-fallback.css:3-21 nạp ở PRIORITY_FALLBACK(0) -> theme(200) THẮNG.
+// Đây là chỗ DUY NHẤT ta điều khiển được chỉ báo disk-full.
+//
+// Tên property là quy ước GTK3 `-<TênLớpWidget>-<style-property>`. Đã xác minh
+// các style property thật đăng ký bằng gtk_widget_class_install_style_property:
+//   libnemo-private/nemo-places-tree-view.c:43  g_param_spec_boxed("disk-full-bg-color")
+//   :50  g_param_spec_boxed("disk-full-fg-color")
+//   :57  g_param_spec_int ("disk-full-bar-width")
+//   :64  g_param_spec_int ("disk-full-bar-radius")
+//   :71  g_param_spec_int ("disk-full-bottom-padding")
+//   :78  g_param_spec_int ("disk-full-max-length")
+// Cả 6 property ĐỀU BẮT BUỘC có mặt (Done criterion #1 của T09).
+// ---------------------------------------------------------------------------
+// libnemo-private/nemo-places-tree-view.c:32
+.places-treeview
+.places-treeview:selected
+.places-treeview:hover
+.places-treeview:selected:hover
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 6 — [WIN] Chỉ báo kéo-thả trong tree view (list view).
+// Nemo không có rule nào cho lớp này trong 3 file CSS của nó.
+// ---------------------------------------------------------------------------
+// libnemo-private/nemo-tree-view-drag-dest.c:206
+.treeview-drop-indicator
+treeview.view.treeview-drop-indicator
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 7 — [WIN] Nhãn mờ (file ẩn, thông tin phụ trên icon canvas).
+// ---------------------------------------------------------------------------
+// libnemo-private/nemo-icon-canvas-item.c:1147
+.dim-label
+label.dim-label
+.nemo-window .dim-label
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 8 — [WIN] Node CSS của khung nhìn icon trên desktop.
+// ĐÍNH CHÍNH E30: `nemo-desktop-icon-view` KHÔNG phải style class. Nó là
+// CSS NODE NAME, đặt bằng gtk_widget_class_set_css_name tại
+// src/nemo-desktop-icon-grid-view.c:379. Selector đúng là TÊN TRẦN, không có dấu chấm.
+// ---------------------------------------------------------------------------
+nemo-desktop-icon-view
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 9 — [LOCK] Icon trên desktop. Nemo nạp nemo-style-application.css ở
+// PRIORITY_APPLICATION(600) nên theme(200) THUA. GTK3 không có `!important`.
+//
+// VẪN PHẢI VIẾT RA, vì ba lý do:
+//   (1) Chúng là giá trị MẶC ĐỊNH cho biến thể Light Glass và cho bất kỳ bề mặt
+//       canvas item nào KHÔNG nằm trên desktop (`.nemo-canvas-item` dùng chung cho
+//       icon view trong cửa sổ, nơi không bị rule `.nemo-desktop.*` đè).
+//   (2) Nếu sau này nạp stylesheet ở PRIORITY_USER(800) qua
+//       ~/.config/gtk-3.0/gtk.css (cơ chế chuẩn của GTK3, không cần fork Nemo),
+//       đúng khối này sẽ có hiệu lực mà không phải viết lại.
+//   (3) lint cần biết chúng tồn tại và đang ở trạng thái LOCK, để không ai
+//       tưởng chúng có tác dụng.
+//
+// nemo-style-application.css:18-42 (6.6.4 và 6.7.8 giống hệt nhau ở đoạn này):
+//   .nemo-canvas-item                   { border-radius: 3px }
+//   .nemo-desktop                       { -NemoIconContainer-activate-prelight-icon-label: true }
+//   .nemo-desktop.nemo-canvas-item      { color: #eeeeee; text-shadow: 1px 1px alpha(black,0.8) }
+//   .nemo-desktop.nemo-canvas-item:hover    { background-color: alpha(black,0.5); text-shadow:none }
+//   .nemo-desktop.nemo-canvas-item:selected { background-color: alpha(@theme_selected_bg_color,0.8);
+//                                             color:#f5f5f5; text-shadow:none }
+//
+// XUNG ĐỘT ĐÃ ĐO ĐƯỢC, cần Agent Design Systems quyết:
+//   token $mg-nemo-desktop-canvas-radius = 4px  vs  Nemo khoá border-radius: 3px
+//   -> trên desktop giá trị 3px thắng, token 4px KHÔNG có tác dụng.
+//   token $mg-nemo-desktop-label-text    = #eeeeee  == Nemo  -> trùng khớp, an toàn
+//   token $mg-nemo-desktop-label-shadow  = 1px 1px 0px rgba(0,0,0,0.8)
+//                                        ~ Nemo `1px 1px alpha(black,0.8)` -> tương đương
+//
+// RÀNG BUỘC T09 Done #2: KHÔNG được ghi đè
+// `-NemoIconContainer-activate-prelight-icon-label`. Đã xác minh nó là style
+// property boolean đăng ký tại libnemo-private/nemo-icon-container.c:4861-4866
+// (`g_param_spec_boolean("activate_prelight_icon_label", ..., G_PARAM_READABLE)`),
+// điều khiển HÀNH VI (nhãn icon có sáng lên khi rê chuột hay không), không phải
+// màu sắc. Đổi nó là đổi chức năng gốc -> lint chặn cứng.
+// ---------------------------------------------------------------------------
+// libnemo-private/nemo-icon-container.c:7141
+.nemo-desktop
+// src/nemo-blank-desktop-window.c:408
+.nemo-desktop-window
+.nemo-desktop-window:backdrop
+.nemo-window.nemo-desktop-window notebook
+.nemo-window.nemo-desktop-window paned
+// libnemo-private/nemo-icon-canvas-item.c:478
+.nemo-canvas-item
+.nemo-desktop.nemo-canvas-item
+.nemo-desktop.nemo-canvas-item:hover
+.nemo-desktop.nemo-canvas-item:selected
+.nemo-desktop.view .entry
+.nemo-desktop.view .entry:active
+.nemo-desktop.view .entry:focus
+.nemo-desktop.view .entry:backdrop
+.nemo-desktop.view .entry:selected
+.nemo-desktop.view .entry:focus:selected
+.nemo-desktop.view .entry:backdrop:selected
+
+
+// ---------------------------------------------------------------------------
+// NHÓM 10 — [LOCK][CHỈ CÓ Ở 6.6.4] `#drop-bar`.
+// nemo-style-application.css:73-84 của 6.6-maintenance (6.6.4); 6.7.8 KHÔNG có.
+// Ở PRIORITY_APPLICATION(600) -> theme thua.
+//
+// GHI CHÚ XÁC MINH: chuỗi "drop-bar" KHÔNG xuất hiện dưới dạng widget name trong
+// mã nguồn 6.6.4 — grep toàn bộ src/, libnemo-private/, eel/ cho
+// `gtk_widget_set_name` chỉ ra đúng một kết quả là "nemo-tab-close-button", và
+// grep "drop-bar" chỉ trúng `g_signal_new("show-drop-bar", ...)` tại
+// src/nemo-view.c:11200 (tên SIGNAL, không phải tên widget). Nemo 6.6.4 cũng
+// chỉ có một file .ui duy nhất là gresources/nemo-shortcuts.ui.
+// => Nhiều khả năng ba rule `#drop-bar` này là CSS chết ngay trong chính Nemo
+//    6.6.4, hoặc widget được đặt tên ở một nhánh khác. CHƯA XÁC MINH ĐƯỢC.
+//    Ta KHÔNG viết rule cho nó (viết cũng không thắng, và có thể là selector chết).
+//    Được ghi ở đây để lint KHÔNG báo thiếu và để người đọc biết đã tra cứu.
+// ---------------------------------------------------------------------------
+// #drop-bar                      <- cố ý KHÔNG yêu cầu, xem ghi chú trên
+// #drop-bar:drop(active)
+// #drop-bar > revealer > box

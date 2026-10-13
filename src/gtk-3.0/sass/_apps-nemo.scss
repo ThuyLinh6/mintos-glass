@@ -1,0 +1,624 @@
+// =============================================================================
+// MintOS Glass · Dark Glass
+// src/gtk-3.0/sass/_apps-nemo.scss          (Task T09)
+// -----------------------------------------------------------------------------
+// Style riêng cho Nemo File Manager, nạp như MỘT PHẦN của GTK theme chung.
+// KHÔNG phải một stylesheet cạnh tranh: Nemo đọc theme GTK như mọi app GTK3
+// khác, nên mọi thứ ở đây đi qua cùng một provider THEME(200) với phần core.
+//
+// -----------------------------------------------------------------------------
+// BA ĐIỀU ĐÃ XÁC MINH TỪ MÃ NGUỒN, QUYẾT ĐỊNH TOÀN BỘ CẤU TRÚC FILE NÀY
+// -----------------------------------------------------------------------------
+// (Xem bản đầy đủ + file:dòng trong tests/fixtures/nemo-required-selectors.txt)
+//
+// 1. Nemo tự nạp CSS của nó ở HAI mức ưu tiên (src/nemo-application.c:306-330):
+//      nemo-style-fallback.css       PRIORITY_FALLBACK     =   0   -> ta THẮNG
+//      nemo-style-application.css    PRIORITY_APPLICATION  = 600   -> ta THUA
+//    Theme nạp ở PRIORITY_THEME = 200, nằm giữa hai mức đó.
+//
+// 2. GTK 3.24 KHÔNG có `!important`. Chuỗi "important" xuất hiện 0 lần trong
+//    gtk/gtkcssparser.c (1067 dòng), gtk/gtkcssprovider.c (2405 dòng) và
+//    gtk/gtkstylecascade.c (426 dòng), ref 3.24.42. Và
+//    gtk_style_cascade_iter_next() (gtkstylecascade.c:42-71) duyệt provider theo
+//    priority GIẢM DẦN. => specificity cao hay `!important` đều KHÔNG lật được
+//    priority. Vì vậy file này KHÔNG dùng `!important` ở bất kỳ đâu, và lint
+//    `tools/lint/nemo_selectors.py` chặn cứng.
+//
+// 3. "MintOS-Glass" CHỨA chuỗi con "mint", mà
+//    supported_theme_hints[] = {"mint","arc","numix","matcha"} được khớp bằng
+//    g_strstr_len trên tên theme đã casefold (src/nemo-application.c:245,259,267).
+//    Nên is_known_supported_theme() trả TRUE và Nemo KHÔNG nạp
+//    nemo-style-fallback-mandatory.css.
+//    => `.nemo-inactive-pane`, `.nemo-window-pane widget.entry`, `.floating-bar`
+//       KHÔNG có ai style giúp: ta PHẢI tự viết cả ba, nếu không chúng rơi về
+//       GTK mặc định (nền sáng, viền mặc định) và vỡ giao diện tối.
+//
+// Ký hiệu dùng trong file:
+//   [WIN]  = theme(200) thắng, rule có tác dụng thật
+//   [LOCK] = Nemo giữ ở APPLICATION(600), rule ở đây KHÔNG thắng trên desktop
+// =============================================================================
+
+@import "tokens";
+
+// -----------------------------------------------------------------------------
+// HẰNG TẠM THỜI — cùng lý do và cùng bằng chứng như phía Cinnamon.
+// `tools/tokens/generate.py:215` gắn "px" cho mọi leaf không nằm trong
+// UNITLESS_KEYS (={"blur"}), và NS_UNIT không có nhánh "font", nên
+// `$mg-font-weight-*` được sinh ra là `400px/500px/700px` — không hợp lệ cho
+// GTK3 lẫn St. `40-motion.json` thì KHÔNG BAO GIỜ được emit vì
+// `generate.py:605-616` chỉ flatten primitives + component + semantic, nên
+// không có `$mg-duration-*` để dùng.
+// Đã báo Agent Design Systems. Khi generator được sửa, xoá khối này và thay bằng
+// token. tests/lint/test_nemo_selectors.py khoá không cho dùng token hỏng.
+// -----------------------------------------------------------------------------
+$nemo-w-regular: 400;
+$nemo-w-medium:  500;
+$nemo-w-bold:    700;
+
+$nemo-dur-fast: 90ms;    // motion.duration.fast  (GTK3 BẮT BUỘC có đơn vị, ngược St)
+$nemo-dur-base: 160ms;   // motion.duration.base
+$nemo-ease:     cubic-bezier(0.2, 0.0, 0.0, 1.0);   // motion.easing.standard
+
+// Giá trị Nemo khoá ở APPLICATION priority, ghi lại đây để đối chiếu, KHÔNG dùng
+// để ghi đè (xem khối [LOCK] cuối file).
+$nemo-locked-canvas-radius: 3px;   // nemo-style-application.css:19
+
+// =============================================================================
+// 1. [WIN] KHUNG CỬA SỔ CHÍNH
+// =============================================================================
+// Nền cửa sổ và khung nhìn: phân cấp rõ — nền cửa sổ đậm hơn nền view một bậc
+// để vùng chứa file "nổi" lên, đúng yêu cầu Dark Glass.
+.nemo-window {
+  background-color: $mg-surface-base;
+  color: $mg-text-primary;
+}
+
+.nemo-window.background {
+  background-color: $mg-surface-base;
+}
+
+.nemo-window-pane {
+  background-color: $mg-surface-base;
+}
+
+// Khung nhìn (icon view + list view). Nemo thêm class `view` vào
+// nemo-config-base-widget (src/nemo-config-base-widget.c:33).
+.nemo-window-pane .view,
+.nemo-window-pane treeview.view,
+.nemo-window-pane iconview {
+  background-color: $mg-gtk-view-background;
+  color: $mg-text-primary;
+  border-radius: 0;
+}
+
+.nemo-window-pane .view:selected,
+.nemo-window-pane treeview.view:selected,
+.nemo-window-pane iconview:selected {
+  background-color: $mg-gtk-selection-background;
+  color: $mg-gtk-selection-text;
+}
+
+// -----------------------------------------------------------------------------
+// Thanh công cụ chính + thanh đường dẫn
+// src/nemo-config-base-widget.c:41 `primary-toolbar`
+// src/nemo-pathbar.c:379 `path-bar`, :172 `slider-button`
+// -----------------------------------------------------------------------------
+.nemo-window .primary-toolbar,
+.nemo-window .primary-toolbar.toolbar,
+.nemo-window headerbar {
+  background-color: $mg-gtk-titlebar-background;
+  border-bottom: 1px solid $mg-gtk-titlebar-border-bottom;
+  padding: $mg-space-1 $mg-space-2;
+}
+
+.nemo-window .path-bar {
+  background-color: transparent;
+}
+
+// Nút trong path-bar: bo góc, viền mảnh, trạng thái rõ.
+.nemo-window .path-bar button,
+.nemo-window .path-bar .slider-button {
+  background-color: $mg-gtk-button-background;
+  border: 1px solid $mg-gtk-button-border;
+  border-radius: $mg-gtk-button-radius;
+  color: $mg-text-primary;
+  min-height: 24px;
+  padding: $mg-gtk-button-padding-y $mg-gtk-button-padding-x;
+  transition: all $nemo-dur-fast $nemo-ease;
+}
+
+.nemo-window .path-bar button:hover,
+.nemo-window .path-bar .slider-button:hover {
+  background-color: $mg-gtk-button-hover-background;
+  color: $mg-text-primary;
+}
+
+.nemo-window .path-bar button:active,
+.nemo-window .path-bar button:checked {
+  background-color: $mg-gtk-button-active-background;
+  border-color: $mg-gtk-button-active-border;
+}
+
+.nemo-window .path-bar button:disabled {
+  color: $mg-text-disabled;
+  background-color: $mg-surface-disabled;
+}
+
+// Nút mũi tên trượt path-bar khi đường dẫn quá dài — phải thấy rõ ràng,
+// nếu không người dùng không biết còn phần đường dẫn bị che.
+.nemo-window .path-bar .slider-button {
+  color: $mg-text-secondary;
+}
+
+.nemo-window .path-bar .slider-button:hover {
+  color: $mg-text-primary;
+}
+
+// Nhóm nút liền nhau (back/forward, view switcher).
+.nemo-window .linked button,
+.nemo-window .linked .raised {
+  border-radius: 0;
+  border-right-width: 0;
+}
+
+.nemo-window .linked button:first-child {
+  border-radius: $mg-gtk-button-radius 0 0 $mg-gtk-button-radius;
+  border-right-width: 0;
+}
+
+.nemo-window .linked button:last-child {
+  border-radius: 0 $mg-gtk-button-radius $mg-gtk-button-radius 0;
+  border-right-width: 1px;
+}
+
+.nemo-window .linked button:only-child {
+  border-radius: $mg-gtk-button-radius;
+  border-right-width: 1px;
+}
+
+// Nút đóng tab. Nemo đặt widget NAME, không phải style class.
+.nemo-window #nemo-tab-close-button,
+#nemo-tab-close-button {
+  color: $mg-text-tertiary;
+  border-radius: $mg-radius-pill;
+  padding: 0;
+  min-width: 18px;
+  min-height: 18px;
+}
+
+#nemo-tab-close-button:hover {
+  color: $mg-text-primary;
+  background-color: $mg-surface-hover;
+}
+
+// =============================================================================
+// 2. [WIN] SIDEBAR — phân cấp kiểu Finder, nhưng KHÔNG hard-code vị trí
+// =============================================================================
+// YÊU CẦU: không hard-code Home/Desktop/Documents/... Danh sách đó do Nemo tự
+// dựng từ XDG user-dirs (thay đổi theo cấu hình người dùng) và từ bookmark của
+// người dùng trong ~/.config/gtk-3.0/bookmarks. Theme chỉ style CẤU TRÚC,
+// không style từng vị trí cụ thể — nếu hard-code tên, theme sẽ sai ngay trên máy
+// có user-dirs khác (ví dụ hệ thống tiếng Việt đặt "Tài liệu" thay "Documents").
+//
+// src/nemo-window.c:430 thêm GTK_STYLE_CLASS_SIDEBAR cho khung sidebar
+// src/nemo-places-sidebar.c:4168 thêm class `nemo-places-sidebar`
+.nemo-window .sidebar,
+.nemo-window .nemo-places-sidebar {
+  background-color: $mg-gtk-sidebar-background;
+  border-right: 1px solid $mg-gtk-sidebar-border;
+  color: $mg-text-secondary;
+  padding: $mg-space-1 0;
+}
+
+.nemo-window .sidebar:dir(rtl),
+.nemo-window .nemo-places-sidebar:dir(rtl) {
+  border-right: none;
+  border-left: 1px solid $mg-gtk-sidebar-border;
+}
+
+// Hàng trong sidebar: bo góc nhẹ, thụt lề, hover rõ — nét Finder.
+.nemo-window .sidebar row,
+.nemo-window .nemo-places-sidebar row {
+  border-radius: $mg-radius-sm;
+  margin: 1px $mg-space-1;
+  padding: $mg-space-1 $mg-space-2;
+  min-height: 24px;
+  color: $mg-text-secondary;
+  transition: all $nemo-dur-fast $nemo-ease;
+}
+
+.nemo-window .sidebar row:hover,
+.nemo-window .nemo-places-sidebar row:hover {
+  background-color: $mg-surface-hover;
+  color: $mg-text-primary;
+}
+
+.nemo-window .sidebar row:selected,
+.nemo-window .nemo-places-sidebar row:selected {
+  background-color: $mg-status-accent-subtle;
+  color: $mg-text-primary;
+}
+
+.nemo-window .sidebar row:selected:hover,
+.nemo-window .nemo-places-sidebar row:selected:hover {
+  // $mg-surface-active là mint #3ddc97 ĐẶC. Chữ trắng trên đó = 2.60:1 -> FAIL.
+  // $mg-text-on-accent là gray-950 -> 7.52:1 PASS. Đây là cùng tiền lệ tương phản
+  // đã chốt cho chip accent ở phía Cinnamon.
+  background-color: $mg-surface-active;
+  color: $mg-text-on-accent;
+}
+
+// Icon trong sidebar nhỏ hơn chữ một bậc để phân cấp.
+.nemo-window .sidebar row image,
+.nemo-window .nemo-places-sidebar row image {
+  // KHÔNG dùng `-gtk-icon-size`: đó KHÔNG phải property CSS của GTK 3.24.
+  // GTK3 chỉ có -gtk-icon-source/-gtk-icon-palette/-gtk-icon-shadow/
+  // -gtk-icon-effect/-gtk-icon-transform/-gtk-icon-style. Cỡ icon là property
+  // `icon-size` của widget image, đặt trong code chứ không đặt bằng theme.
+  color: $mg-text-tertiary;
+}
+
+.nemo-window .sidebar row:selected image {
+  color: $mg-status-accent;
+}
+
+// Tiêu đề nhóm (Bookmarks / Devices / Network). Nemo render chúng như
+// row có nhãn mờ; dùng .dim-label để KHÔNG phụ thuộc vào chuỗi tiêu đề nào.
+.nemo-window .sidebar .dim-label,
+.nemo-window .sidebar separator {
+  color: $mg-text-disabled;
+}
+
+// -----------------------------------------------------------------------------
+// [WIN] Chỉ báo dung lượng ổ đĩa trong sidebar.
+// Đây là chỗ DUY NHINH theme điều khiển được: nemo-style-fallback.css:3-21
+// đặt 6 property này ở PRIORITY_FALLBACK(0) nên theme(200) THẮNG.
+//
+// 6 property là style property GObject thật, đăng ký tại
+// libnemo-private/nemo-places-tree-view.c:43,50,57,64,71,78:
+//   disk-full-bg-color      (boxed / màu)   nền của thanh
+//   disk-full-fg-color      (boxed / màu)   phần đã dùng
+//   disk-full-bar-width     (int / px)      bề dày thanh
+//   disk-full-bar-radius    (int / px)      bo góc thanh
+//   disk-full-bottom-padding(int / px)      cách đáy hàng
+//   disk-full-max-length    (int / px)      chiều dài tối đa
+// GTK3 map CSS `-NemoPlacesTreeView-disk-full-bg-color` -> class
+// NemoPlacesTreeView + style property `disk-full-bg-color`.
+//
+// PHẢI có đủ cả 6 (Done criterion #1 của T09). Thiếu một cái thì Nemo dùng
+// giá trị mặc định trong C, tức là mất kiểm soát một phần chỉ báo.
+// -----------------------------------------------------------------------------
+.places-treeview {
+  -NemoPlacesTreeView-disk-full-bg-color: $mg-border-strong;
+  -NemoPlacesTreeView-disk-full-fg-color: $mg-status-accent;
+  -NemoPlacesTreeView-disk-full-bar-width: $mg-nemo-places-disk-full-bar-width;
+  -NemoPlacesTreeView-disk-full-bar-radius: $mg-nemo-places-disk-full-bar-radius;
+  -NemoPlacesTreeView-disk-full-bottom-padding: $mg-nemo-places-disk-full-bottom-padding;
+  -NemoPlacesTreeView-disk-full-max-length: $mg-nemo-places-disk-full-max-length;
+}
+
+// Hàng được chọn: thanh phải đổi sang màu đọc được TRÊN nền selected,
+// không giữ nguyên accent (accent trên nền accent-subtle sẽ mất tương phản).
+.places-treeview:selected {
+  -NemoPlacesTreeView-disk-full-bg-color: $mg-border-control;
+  -NemoPlacesTreeView-disk-full-fg-color: $mg-text-primary;
+}
+
+// Nemo để HAI selector này RỖNG (nemo-style-fallback.css:17-21), nghĩa là hàng
+// ổ đĩa trong sidebar KHÔNG có phản hồi hover nào — thiếu sót UX thật, sửa được
+// trong phạm vi của theme.
+//
+// LƯU Ý KỸ THUẬT: cả libsass lẫn dart-sass đều LOẠI rule rỗng khỏi output, nên
+// một rule `{}` không bao giờ kiểm chứng được bằng coverage trên CSS đã compile.
+// Vì vậy hai selector này phải có khai báo thật, không để rỗng.
+.places-treeview:hover {
+  background-color: $mg-surface-hover;
+  color: $mg-text-primary;
+}
+
+.places-treeview:selected:hover {
+  background-color: $mg-surface-active;
+  color: $mg-text-on-accent;
+}
+
+// =============================================================================
+// 3. [WIN] PANE KHÔNG HOẠT ĐỘNG (F3 chia đôi cửa sổ)
+// =============================================================================
+// nemo-style-fallback-mandatory.css:6 style chỗ này nhưng KHÔNG được nạp cho
+// theme tên chứa "mint" (xem mục 3 ở đầu file). Ta phải tự viết, nếu không pane
+// không hoạt động sẽ sáng bằng pane hoạt động và người dùng mất dấu định hướng.
+// Nền trũng hơn một bậc + chữ mờ hơn, nhưng vẫn phải đạt tương phản AA.
+.nemo-inactive-pane {
+  background-color: $mg-nemo-inactive-pane-background;
+}
+
+// Selector trần `.nemo-inactive-pane iconview` phải có mặt đúng như
+// nemo-style-fallback-mandatory.css:6 viết nó, để coverage khớp fixture.
+.nemo-window .nemo-inactive-pane iconview {
+  background-color: $mg-nemo-inactive-pane-background;
+}
+
+.nemo-window .nemo-inactive-pane .view:not(:selected),
+.nemo-window .nemo-inactive-pane iconview:not(:selected),
+.nemo-window .nemo-inactive-pane treeview.view:not(:selected) {
+  background-color: $mg-nemo-inactive-pane-background;
+  color: $mg-text-secondary;
+}
+
+// Item ĐƯỢC CHỌN trong pane không hoạt động vẫn phải giữ màu selected, nếu
+// không người dùng mất hoàn toàn dấu vết lựa chọn khi chuyển pane.
+.nemo-window .nemo-inactive-pane .view:selected,
+.nemo-window .nemo-inactive-pane iconview:selected {
+  background-color: $mg-gtk-selection-background;
+  color: $mg-gtk-selection-text;
+}
+
+.nemo-window .nemo-inactive-pane .sidebar {
+  background-color: $mg-nemo-inactive-pane-background;
+}
+
+// =============================================================================
+// 4. [WIN] Ô NHẬP TRONG KHUNG NHÌN (đổi tên file, nhập đường dẫn)
+// =============================================================================
+// nemo-style-fallback-mandatory.css:12,20 — cũng không được nạp, ta tự viết.
+// Selector dùng `widget.entry`: `widget` là CSS node name của GtkWidget, Nemo
+// dùng EelEditableLabel chứ không phải GtkEntry thật nên không match `entry`.
+.nemo-window .nemo-window-pane widget.entry {
+  border: 1px solid $mg-gtk-entry-focus-border;
+  border-radius: $mg-gtk-entry-radius;
+  background-color: $mg-gtk-entry-background;
+  color: $mg-text-primary;
+  caret-color: $mg-text-primary;
+  padding: 0 $mg-space-1;
+  // Bỏ outline mặc định để không nhân đôi khung viền khi đang đổi tên.
+  outline-style: none;
+}
+
+.nemo-window .nemo-window-pane widget.entry:selected {
+  border: 1px solid $mg-gtk-entry-focus-border;
+  border-radius: $mg-gtk-entry-radius;
+  background-color: $mg-gtk-selection-background;
+  color: $mg-gtk-selection-text;
+}
+
+.nemo-window .nemo-window-pane widget.entry:focus {
+  border-color: $mg-gtk-entry-focus-border;
+  box-shadow: inset 0 0 0 1px $mg-gtk-entry-focus-border;
+}
+
+// Ô tìm kiếm ở trạng thái lỗi (truy vấn không hợp lệ).
+// src/nemo-query-editor.c:182 thêm class `error`.
+.nemo-window .error,
+.nemo-window entry.error {
+  border-color: $mg-status-error;
+  color: $mg-status-error;
+}
+
+// =============================================================================
+// 5. [WIN] THANH NỔI Ở ĐÁY KHUNG NHÌN
+// =============================================================================
+// nemo-style-fallback-mandatory.css:30 — không được nạp, ta tự viết.
+// Hiện khi người dùng TẮT status bar; dùng để báo tiến trình sao chép/di chuyển.
+// Theme gốc của Nemo đặt nền = selected_bg với chữ = selected_fg. Ta giữ nguyên
+// ngữ nghĩa đó (nền accent + chữ on-accent) vì đây là bề mặt CÓ kèm chữ và đã
+// được kiểm tương phản: gray-950 trên mint #3ddc97.
+// Bo góc chỉ hai góc trên vì thanh này dính vào đáy cửa sổ.
+.floating-bar {
+  border: 1px solid $mg-nemo-floating-bar-background;
+  border-radius: $mg-nemo-floating-bar-radius $mg-nemo-floating-bar-radius 0 0;
+  border-bottom-width: 0;
+  background-color: $mg-nemo-floating-bar-background;
+  color: $mg-nemo-floating-bar-text;
+  padding: $mg-space-0 $mg-space-2;
+  font-weight: $nemo-w-medium;
+}
+
+.floating-bar button {
+  color: $mg-nemo-floating-bar-text;
+  background-color: transparent;
+  border: none;
+  border-radius: $mg-radius-pill;
+  padding: 0;
+  min-width: 18px;
+  min-height: 18px;
+}
+
+.floating-bar button:hover {
+  background-color: rgba($mg-nemo-floating-bar-text, $mg-opacity-hover);
+}
+
+// Trạng thái hệ thống: thanh này cũng là nơi hiện lỗi quyền truy cập ngắn.
+// Không tự bịa hành vi — chỉ đảm bảo chữ đọc được trên nền accent.
+.floating-bar .dim-label,
+.floating-bar label.dim-label {
+  color: rgba($mg-nemo-floating-bar-text, $mg-opacity-glass-mid);
+}
+
+// =============================================================================
+// 6. [WIN] CHỈ BÁO KÉO-THẢ TRONG LIST VIEW
+// =============================================================================
+// Nemo KHÔNG có rule nào cho class này trong cả 3 file CSS của nó
+// (đã đọc hết: nemo-style-application.css 83 dòng, nemo-style-fallback.css
+//  21 dòng, nemo-style-fallback-mandatory.css 36 dòng).
+// libnemo-private/nemo-tree-view-drag-dest.c:206 thêm class
+// `treeview-drop-indicator` cho hàng đang là đích thả.
+// Đây là phản hồi thị giác của thao tác kéo-thả -> phải rất rõ.
+treeview.view.treeview-drop-indicator,
+.treeview-drop-indicator {
+  border-bottom: $mg-border-width-medium solid $mg-status-accent;
+  background-color: $mg-status-accent-subtle;
+  color: $mg-text-primary;
+}
+
+// =============================================================================
+// 7. [WIN] NHÃN MỜ
+// =============================================================================
+// libnemo-private/nemo-icon-canvas-item.c:1147 thêm `dim-label` (file ẩn, thông
+// tin phụ). Phải mờ NHƯNG vẫn đạt tương phản tối thiểu cho chữ phụ: dùng
+// text.tertiary (alpha 0.44 trên nền tối) chứ không dùng text.disabled (0.30).
+.dim-label,
+label.dim-label,
+.nemo-window .dim-label {
+  color: $mg-text-tertiary;
+  opacity: 1;
+}
+
+// =============================================================================
+// 8. [WIN] NODE CSS CỦA KHUNG NHÌN ICON TRÊN DESKTOP
+// =============================================================================
+// ĐÍNH CHÍNH E30: `nemo-desktop-icon-view` là CSS NODE NAME chứ không phải style
+// class — src/nemo-desktop-icon-grid-view.c:379 dùng
+// `gtk_widget_class_set_css_name (wclass, "nemo-desktop-icon-view")`.
+// Selector đúng là TÊN TRẦN, không có dấu chấm.
+nemo-desktop-icon-view {
+  background-color: transparent;
+}
+
+// =============================================================================
+// 9. [LOCK] ICON TRÊN DESKTOP — VIẾT RA NHƯNG KHÔNG THẮNG ĐƯỢC NEMO
+// =============================================================================
+// nemo-style-application.css:18-42 được nạp ở PRIORITY_APPLICATION(600) >
+// PRIORITY_THEME(200), và GTK 3.24 không có `!important` (bằng chứng ở đầu file).
+// Nên MỌI rule bên dưới đây KHÔNG thay đổi được icon trên desktop khi theme
+// chạy ở priority THEME.
+//
+// VẪN VIẾT RA vì ba lý do có thật:
+//   (a) `.nemo-canvas-item` KHÔNG kèm `.nemo-desktop` là canvas item trong cửa
+//       sổ thường (icon view). Nemo chỉ khoá `border-radius` cho class này;
+//       `color`/`background-color` của nó trong cửa sổ KHÔNG bị khoá -> phần đó
+//       của khối dưới đây CÓ tác dụng thật.
+//   (b) Đây là giá trị mặc định cho biến thể Light Glass sau này.
+//   (c) Nếu nạp đúng khối này ở PRIORITY_USER(800) qua
+//       ~/.config/gtk-3.0/gtk.css — cơ chế chuẩn của GTK3, KHÔNG cần fork Nemo,
+//       KHÔNG sửa file hệ thống — thì nó có hiệu lực ngay. Xem
+//       docs/testing/nemo-checklist.md mục "Đường thoát cho phần bị khoá".
+//
+// XUNG ĐỘT TOKEN ĐÃ ĐO, cần Agent Design Systems quyết:
+//   $mg-nemo-desktop-canvas-radius = 4px nhưng Nemo khoá border-radius: 3px
+//   -> token 4px KHÔNG có tác dụng trên desktop. Hoặc chấp nhận 3px, hoặc đổi
+//      token thành 3px, hoặc dùng đường PRIORITY_USER. KHÔNG im lặng bỏ qua.
+//   $mg-nemo-desktop-label-text  = #eeeeee  == giá trị Nemo đang dùng -> an toàn
+//   $mg-nemo-desktop-label-shadow= 1px 1px 0px rgba(0,0,0,0.8)
+//                                ~ Nemo `1px 1px alpha(black,0.8)` -> tương đương
+//
+// RÀNG BUỘC CỨNG (Done criterion #2 của T09): KHÔNG ghi đè
+// `-NemoIconContainer-activate-prelight-icon-label`. Đó là style property boolean
+// đăng ký tại libnemo-private/nemo-icon-container.c:4861-4866
+// (g_param_spec_boolean("activate_prelight_icon_label", ..., G_PARAM_READABLE)),
+// điều khiển HÀNH VI nhãn icon có sáng lên khi rê chuột hay không — đổi nó là
+// đổi chức năng gốc của Nemo. lint nemo_selectors.py chặn cứng chuỗi này.
+// -----------------------------------------------------------------------------
+.nemo-canvas-item {
+  // Trong cửa sổ thường: giá trị này CÓ tác dụng (Nemo không khoá color).
+  color: $mg-text-primary;
+  // Trên desktop: Nemo khoá 3px ở priority 600, giá trị này KHÔNG thắng.
+  border-radius: $mg-nemo-desktop-canvas-radius;
+}
+
+.nemo-desktop-window {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.nemo-desktop-window:backdrop {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.nemo-window.nemo-desktop-window notebook,
+.nemo-window.nemo-desktop-window paned {
+  background-color: transparent;
+}
+
+.nemo-desktop {
+  background-color: transparent;
+}
+
+// *** ĐÃ ĐO — điểm yếu thật của shadow LỆCH, cần Agent Design Systems biết ***
+// $mg-nemo-desktop-label-shadow = `1px 1px 0px rgba(0,0,0,0.8)` và Nemo cũng dùng
+// `1px 1px alpha(black,0.8)`. Vì shadow LỆCH 1px xuống-phải, mép TRÊN-TRÁI của
+// glyph KHÔNG được shadow đỡ và nằm thẳng lên wallpaper. Đo bằng contrast.py:
+//   chữ #eeeeee trên wallpaper #ffffff, mép KHÔNG có shadow ->  1.16:1  FAIL
+//   chữ #eeeeee trên wallpaper #ffffff, thân chữ trên shadow  -> 10.89:1  PASS
+//   wallpaper #808080: mép không shadow 3.40:1 PASS | thân chữ 15.00:1 PASS
+//   wallpaper #000000: 18.10:1 cả hai
+// => Trên wallpaper SÁNG, nét chữ phía trên-trái bị mất. Đổi sang shadow KHÔNG
+//    lệch (0 0 2px rgba(0,0,0,0.8)) thì che cả mép: 10.89:1 ngay cả trên nền
+//    trắng (đã đo). Đề xuất đổi token; T09 không tự sửa token.
+// LƯU Ý: rule này ở nhóm [LOCK] nên trên desktop Nemo thắng — xem ghi chú cuối
+// file và docs/testing/nemo-checklist.md.
+.nemo-desktop.nemo-canvas-item {
+  color: $mg-nemo-desktop-label-text;
+  text-shadow: $mg-nemo-desktop-label-shadow;
+}
+
+.nemo-desktop.nemo-canvas-item:hover {
+  background-color: $mg-nemo-desktop-label-hover-background;
+  background-image: none;
+  text-shadow: none;
+}
+
+// Nền khi được chọn: Nemo dùng alpha(@theme_selected_bg_color, 0.8) — tức là nó
+// PHỤ THUỘC theme export @theme_selected_bg_color. Đó là việc của T06
+// (Done criterion #2 của T06). Nếu T06 không export, chỗ này của Nemo vỡ và
+// không có cách nào sửa từ phía T09.
+//
+// *** ĐÃ ĐO, KHÔNG ĐOÁN — token $mg-nemo-desktop-label-selected-text BỊ LOẠI ***
+// Done criterion #3 của T09 yêu cầu tương phản nhãn icon desktop >= 3:1 ĐO TRÊN
+// MỘT WALLPAPER MẪU. Wallpaper là ảnh bất kỳ nên đã đo trên ba mức chói chặn hai
+// đầu, dùng đúng tools/lint/contrast.py của repo (composite source-over + WCAG):
+//   chữ #f5f5f5 (token selected-text) trên nền rgba(61,220,151,0.8) đã composite:
+//     wallpaper #ffffff -> nền #64e3ac -> 1.47:1  FAIL
+//     wallpaper #808080 -> nền #4aca92 -> 1.90:1  FAIL
+//     wallpaper #000000 -> nền #31b079 -> 2.53:1  FAIL
+//   chữ #0b0c0e ($mg-text-on-accent) trên CÙNG ba nền đó:
+//     12.23:1 / 9.46:1 / 7.10:1  -> PASS cả ba
+// Token FAIL ở CẢ BA mức chói, tức là không có wallpaper nào cứu được. Đây đúng
+// là tiền lệ đã chốt ở T02/T04: trắng trên mint = 2.60:1 FAIL, gray-950 trên
+// mint = 7.52:1 PASS -> chip accent phải lật sang text-on-accent.
+// => Dùng $mg-text-on-accent. Đã báo Agent Design Systems đề nghị đổi
+//    nemo.desktop.label.selected.text từ #f5f5f5 sang #0b0c0e (T09 không được
+//    sửa design/tokens/*.json). tests/lint/test_nemo_selectors.py khoá con số này.
+.nemo-desktop.nemo-canvas-item:selected {
+  background-color: $mg-nemo-desktop-label-selected-background;
+  background-image: none;
+  text-shadow: none;
+  color: $mg-text-on-accent;
+}
+
+// Ô đổi tên icon NGAY TRÊN DESKTOP. Nemo khoá toàn bộ khối này ở priority 600
+// với màu hard-code (#000000 viền/chữ + gradient trắng). Ta viết lại bằng token
+// để dùng được nếu nạp ở PRIORITY_USER, nhưng ở priority THEME thì Nemo thắng.
+.nemo-desktop.view .entry,
+.nemo-desktop.view .entry:active,
+.nemo-desktop.view .entry:focus,
+.nemo-desktop.view .entry:backdrop {
+  border-image: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: $mg-border-strong;
+  border-radius: $mg-nemo-desktop-canvas-radius;
+  background-color: $mg-surface-solid;
+  background-image: none;
+  color: $mg-text-primary;
+  caret-color: $mg-text-primary;
+  text-shadow: none;
+}
+
+.nemo-desktop.view .entry:selected,
+.nemo-desktop.view .entry:focus:selected,
+.nemo-desktop.view .entry:backdrop:selected {
+  background-color: $mg-gtk-selection-background;
+  color: $mg-gtk-selection-text;
+  text-shadow: none;
+}
+
+// =============================================================================
+// 10. Ứng dụng Mint khác — chỉ đảm bảo KHÔNG PHÁ VỠ, không áp đặt bố cục
+// =============================================================================
+// Yêu cầu của T09: mỗi app Mint có một mục, tối thiểu là không selector nào
+// gây xung đột. Không app nào bị ép bố cục riêng — cấu trúc widget của chúng
+// khác nhau và task đã nói rõ không ép cùng bố cục khi cấu trúc không hỗ trợ.
+// Chi tiết từng app và cách kiểm tra nằm trong _apps-mint.scss và
+// docs/testing/nemo-checklist.md.
+// =============================================================================

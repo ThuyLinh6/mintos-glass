@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" role="img" aria-label="MintOS Glass — Dark Glass (dải chéo)">
+  <!-- MintOS Glass · T16 · SVG tự vẽ · màu từ src/cinnamon/tokens/_tokens.scss
+       Nền tối có chủ đích: nhãn icon desktop phải đạt >=3:1. Đo bằng
+       tools/lint/wallpapers.py, không đoán. Xem MANIFEST.md -->
+  <defs>
+    <linearGradient id="mgGlassBase" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0"   stop-color="#0b0c0e"/>
+      <stop offset="0.6" stop-color="#121316"/>
+      <stop offset="1"   stop-color="#1c1e22"/>
+    </linearGradient>
+    <linearGradient id="mgSheen" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0"   stop-color="#3ddc97" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#3ddc97" stop-opacity="0.08"/>
+      <stop offset="1"   stop-color="#6ee7bd"  stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#mgGlassBase)"/>
+  <path d="M0 1080 L1920 0 L1920 345 L576 1080 Z" fill="url(#mgSheen)"/>
+  <path d="M998 1080 L1920 594 L1920 777 L1344 1080 Z"
+        fill="#6ee7bd" fill-opacity="0.07"/>
+</svg>

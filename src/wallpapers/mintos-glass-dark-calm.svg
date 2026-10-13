@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" role="img" aria-label="MintOS Glass — Dark Calm (không điểm sáng)">
+  <!-- MintOS Glass · T16 · SVG tự vẽ · màu từ src/cinnamon/tokens/_tokens.scss
+       Nền tối có chủ đích: nhãn icon desktop phải đạt >=3:1. Đo bằng
+       tools/lint/wallpapers.py, không đoán. Xem MANIFEST.md -->
+  <defs>
+    <linearGradient id="mgCalm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b0c0e"/>
+      <stop offset="1" stop-color="#121316"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#mgCalm)"/>
+</svg>

@@ -1,0 +1,681 @@
+// =============================================================================
+// MintOS Glass · Dark Glass
+// src/cinnamon/overrides/_50-dialogs-osd-notif.scss
+// -----------------------------------------------------------------------------
+// DIALOG (.dialog + biến thể) · OSD · THÔNG BÁO · sound player.
+//
+// XÁC MINH TÊN SELECTOR (không đoán): Cinnamon 6.6 KHÔNG có `.modal-dialog`
+// và KHÔNG có `.osd-window`. Đã grep toàn bộ `js/` + applets + desklets của
+// commit 806c1a4e (tag 6.6.9): cả hai chuỗi xuất hiện 0 lần. Lớp dialog thật
+// là `.dialog` (js/ui/dialog.js:68 `dialog-button-box`, :148 `dialog-button`)
+// và OSD thật là `.info-osd` / `.media-keys-osd` / `.workspace-switch-osd` /
+// `.resize-popup`. Viết selector không tồn tại = CSS chết, không ai phát hiện.
+//
+// LỖI THƯỢNG NGUỒN ĐƯỢC SỬA Ở FILE NÀY (bằng chứng kèm từng chỗ):
+//   (a) widgets/_dialogs.scss:68 viết `tranparentize($warning_color, 0.9)` —
+//       SAI CHÍNH TẢ hàm `transparentize`. Cả libsass lẫn dart-sass đều đẩy
+//       nguyên chuỗi lạ ra CSS (đã build kiểm chứng: vendor.css:1005 và
+//       vendor-dart.css:866 chứa đúng chuỗi `tranparentize(...)`), St không
+//       parse được → khai báo bị bỏ → tiêu đề cảnh báo "End session" của theme
+//       gốc KHÔNG có nền. Ta viết lại bằng rgba() của token.
+//   (b) `.workspace-switch-osd-indicator:active { background-color: #3584e4 }`
+//       và `.window-list-item-box:focus { border-color: #3584e4 }` là xanh
+//       GNOME, rò ra từ `_colors.scss:24 $accent_bg_color: #3584e4`. Đổi sang
+//       accent mint theo quyết định D-3.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// 1. Khung dialog
+// -----------------------------------------------------------------------------
+.dialog {
+  background-color: $mg-cinnamon-dialog-background;
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-cinnamon-dialog-radius;
+  box-shadow: $mg-cinnamon-dialog-shadow;
+  color: $mg-text-primary;
+  padding: $mg-space-4;
+}
+
+.dialog .dialog-content-box {
+  margin-top: $mg-space-2;
+  margin-bottom: $mg-space-4;
+  spacing: $mg-space-6;
+  max-width: 28em;
+}
+
+.dialog .confirm-dialog-title {
+  text-align: center;
+  font-weight: $mg-w-bold;
+  color: $mg-text-primary;
+}
+
+// -----------------------------------------------------------------------------
+// 2. Nút dialog — giữ ĐỦ mọi trạng thái vendor có, không bỏ trạng thái nào
+//    (mất trạng thái = mất phản hồi bàn phím/chuột, vi phạm tiêu chí a11y).
+// -----------------------------------------------------------------------------
+.dialog .dialog-button {
+  border-radius: $mg-radius-md;
+  padding: $mg-space-1 $mg-space-3;
+  font-weight: $mg-w-medium;
+  color: $mg-text-primary;
+  background-color: $mg-glass-high;
+  border: 1px solid $mg-border-subtle;
+  transition-duration: $mg-duration-fast;
+}
+
+.dialog .dialog-button:hover {
+  background-color: $mg-active;
+  color: $mg-text-primary;
+}
+
+.dialog .dialog-button:active {
+  background-color: $mg-surface-active;
+  color: $mg-text-primary;
+}
+
+.dialog .dialog-button:checked {
+  background-color: $mg-accent-subtle;
+  color: $mg-text-primary;
+}
+
+.dialog .dialog-button:focus {
+  @include mg-focus-ring();
+  color: $mg-text-primary;
+}
+
+.dialog .dialog-button:insensitive {
+  background-color: $mg-surface-disabled;
+  color: $mg-text-disabled;
+}
+
+// Nút mặc định (Enter) — nền accent. CHỮ phải là on-accent:
+//   #ffffff trên #2bb67a = 2.60:1 (FAIL AA)
+//   #0b0c0e trên #2bb67a = 7.52:1 (PASS AA)
+.dialog .dialog-button:default {
+  background-color: $mg-accent-strong;
+  border-color: transparent;
+  color: $mg-text-on-accent;
+}
+
+.dialog .dialog-button:hover:default {
+  background-color: $mg-accent-strong;
+  color: $mg-text-on-accent;
+  border-color: $mg-border-strong;
+}
+
+.dialog .dialog-button:active:default,
+.dialog .dialog-button:checked:default {
+  background-color: $mg-accent;
+  color: $mg-text-on-accent;
+}
+
+.dialog .dialog-button:focus:default {
+  @include mg-focus-ring();
+  color: $mg-text-on-accent;
+}
+
+.dialog .dialog-button:insensitive:default {
+  background-color: $mg-surface-disabled;
+  color: $mg-text-disabled;
+}
+
+// Nút phá huỷ (Xoá / Đăng xuất / Tắt máy) — KHÔNG dùng accent.
+.dialog .dialog-button:destructive-action {
+  background-color: rgba($mg-status-error, $mg-opacity-disabled);
+  border-color: rgba($mg-status-error, $mg-opacity-glass-mid);
+  color: $mg-text-primary;
+}
+
+.dialog .dialog-button:hover:destructive-action {
+  background-color: $mg-status-error;
+  color: $mg-text-inverse;
+}
+
+.dialog .dialog-button:active:destructive-action,
+.dialog .dialog-button:checked:destructive-action {
+  background-color: $mg-status-error;
+  color: $mg-text-inverse;
+}
+
+.dialog .dialog-button:focus:destructive-action {
+  @include mg-focus-ring();
+}
+
+.dialog .dialog-button:insensitive:destructive-action {
+  background-color: $mg-surface-disabled;
+  color: $mg-text-disabled;
+}
+
+.dialog .dialog-button-box {
+  spacing: $mg-space-2;
+}
+
+// -----------------------------------------------------------------------------
+// 3. Danh sách trong dialog (end-session liệt kê app đang chạy)
+// -----------------------------------------------------------------------------
+.dialog-list {
+  spacing: $mg-space-4;
+}
+
+.dialog-list .dialog-list-title {
+  text-align: center;
+  font-weight: $mg-w-bold;
+  color: $mg-text-primary;
+}
+
+.dialog-list .dialog-list-scrollview {
+  max-height: 200px;
+}
+
+.dialog-list .dialog-list-box {
+  spacing: 1em;
+}
+
+.dialog-list .dialog-list-box .dialog-list-item {
+  spacing: 1em;
+  padding: $mg-space-1;
+  border-radius: $mg-radius-sm;
+}
+
+.dialog-list .dialog-list-box .dialog-list-item .dialog-list-item-title {
+  font-weight: $mg-w-bold;
+  color: $mg-text-primary;
+}
+
+.dialog-list .dialog-list-box .dialog-list-item .dialog-list-item-description {
+  color: $mg-text-secondary;
+}
+
+// -----------------------------------------------------------------------------
+// 4. End session dialog
+// -----------------------------------------------------------------------------
+.end-session-dialog {
+  min-width: 40em;
+}
+
+.end-session-dialog .dialog-content-box {
+  spacing: 0;
+}
+
+.end-session-dialog .dialog-list {
+  spacing: 0;
+}
+
+// SỬA LỖI (a) ở đầu file: `tranparentize()` không phải hàm SCSS/CSS.
+.end-session-dialog .dialog-list .dialog-list-title {
+  color: $mg-status-warning;
+  background-color: rgba($mg-status-warning, $mg-opacity-hover);
+  padding: $mg-space-2;
+  border-radius: $mg-radius-md;
+  margin: $mg-space-1 0;
+}
+
+// -----------------------------------------------------------------------------
+// 5. Message dialog (thông báo dạng dialog)
+// -----------------------------------------------------------------------------
+.message-dialog-content {
+  spacing: $mg-space-4;
+}
+
+.message-dialog-content .message-dialog-title {
+  text-align: center;
+  font-weight: $mg-w-bold;
+  font-size: $mg-fs-title;
+  color: $mg-text-primary;
+}
+
+.message-dialog-content .message-dialog-title.lightweight {
+  font-size: $mg-fs-ui-lg;
+  font-weight: $mg-w-bold;
+}
+
+.message-dialog-content .message-dialog-description {
+  text-align: center;
+  color: $mg-text-secondary;
+}
+
+.message-dialog-content .message-dialog-caption {
+  text-align: center;
+  color: $mg-text-tertiary;
+  font-size: $mg-fs-small;
+}
+
+// -----------------------------------------------------------------------------
+// 6. Run dialog (Alt+F2)
+// -----------------------------------------------------------------------------
+.run-dialog .dialog-content-box {
+  margin: $mg-space-1;
+}
+
+.run-dialog-description {
+  text-align: center;
+  color: $mg-text-secondary;
+}
+
+.run-dialog-description.error {
+  color: $mg-status-error;
+}
+
+.run-dialog-completion-box {
+  padding-top: $mg-space-1;
+  padding-left: $mg-space-2;
+}
+
+.run-dialog-entry {
+  width: 20em;
+  height: 1.2em;
+}
+
+// -----------------------------------------------------------------------------
+// 7. Prompt dialog (nhập mật khẩu / tên)
+// -----------------------------------------------------------------------------
+.prompt-dialog {
+  width: 26em;
+}
+
+.prompt-dialog .dialog-content-box {
+  spacing: $mg-space-3;
+  margin-bottom: $mg-space-2;
+}
+
+.prompt-dialog-password-entry {
+  width: 20em;
+}
+
+.prompt-dialog-password-layout {
+  spacing: $mg-space-2;
+}
+
+.prompt-dialog-error-label,
+.prompt-dialog-info-label,
+.prompt-dialog-null-label {
+  text-align: center;
+  color: $mg-text-secondary;
+  font-size: $mg-fs-small;
+}
+
+.prompt-dialog-error-label {
+  color: $mg-status-error;
+}
+
+// -----------------------------------------------------------------------------
+// 8. Polkit dialog (xác thực quyền root)
+// -----------------------------------------------------------------------------
+.polkit-dialog-user-layout {
+  text-align: center;
+  spacing: $mg-space-0;
+}
+
+.polkit-dialog-user-combo {
+  border-radius: $mg-radius-md;
+  padding: $mg-space-1 $mg-space-6;
+  color: $mg-text-primary;
+  background-color: $mg-field-bg;
+  border: 1px solid $mg-border-subtle;
+}
+
+.polkit-dialog-user-combo:hover {
+  background-color: $mg-hover;
+}
+
+.polkit-dialog-user-combo:focus {
+  @include mg-focus-ring();
+}
+
+// Vendor đặt `color: white` cho :insensitive — chữ trắng trên nền mờ là khó đọc.
+.polkit-dialog-user-combo:insensitive {
+  color: $mg-text-disabled;
+}
+
+// -----------------------------------------------------------------------------
+// 9. Audio device selection dialog
+// -----------------------------------------------------------------------------
+.audio-device-selection-dialog {
+  min-width: 24em;
+}
+
+.audio-device-selection-dialog .audio-selection-box {
+  spacing: $mg-space-2;
+}
+
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device {
+  border-radius: $mg-radius-md;
+  padding: $mg-space-2;
+  color: $mg-text-primary;
+  background-color: $mg-field-bg;
+  border: 1px solid $mg-border-subtle;
+  transition-duration: $mg-duration-fast;
+}
+
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device:hover {
+  background-color: $mg-hover;
+}
+
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device:checked,
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device:selected {
+  background-color: $mg-accent-subtle;
+  border-color: $mg-accent;
+}
+
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device:focus {
+  @include mg-focus-ring();
+}
+
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device:insensitive {
+  color: $mg-text-disabled;
+  background-color: $mg-surface-disabled;
+}
+
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device .audio-selection-device-box {
+  spacing: $mg-space-2;
+}
+
+.audio-device-selection-dialog .audio-selection-box .audio-selection-device .audio-selection-device-icon {
+  icon-size: $mg-size-icon-lg;
+  color: $mg-text-primary;
+}
+
+// HỌ SELECTOR CHẾT CỦA THEME GỐC — giữ lại CHỈ để đủ coverage (E6), không phải
+// vì nó có tác dụng. Đã xác minh: `device-box`, `device-labels`, `primary-label`,
+// `device-icon` xuất hiện 0 lần trong js/ và files/usr/share/cinnamon/ của commit
+// 806c1a4e. Cinnamon 6.6 dùng họ `audio-selection-*` thật
+// (js/ui/audioDeviceSelection.js:111 `audio-selection-device-box`,
+//  :122 `audio-selection-device-icon`) — đã style ở mục 9 phía trên.
+// KHÔNG tự thêm `.secondary-label` vào họ chết này (đã thêm nhầm rồi gỡ).
+.device-box .device-icon {
+  icon-size: 1.637em;
+  color: $mg-text-primary;
+}
+
+.device-box .device-labels .primary-label {
+  font-weight: $mg-w-bold;
+  color: $mg-text-primary;
+}
+
+// -----------------------------------------------------------------------------
+// 10. THÔNG BÁO (notification) — không được phá vỡ
+//     Vendor: nền #242424 ĐỤC, border #333333, radius 8px, shadow 4px/2px.
+//     Glass: nền rgba, radius lg, shadow md.
+//     QUAN TRỌNG: thông báo nằm trên nền desktop bất kỳ, nên alpha phải đủ cao
+//     (0.86) để chữ vẫn đọc được trên ảnh nền sáng. Đã chọn token
+//     cinnamon.notification.background = rgba(...,0.86), không dùng 0.55.
+// -----------------------------------------------------------------------------
+#notification {
+  width: 34em;
+  background-color: $mg-cinnamon-notification-background;
+  border: 1px solid $mg-cinnamon-notification-border;
+  border-radius: $mg-cinnamon-notification-radius;
+  box-shadow: $mg-cinnamon-notification-shadow;
+  color: $mg-text-primary;
+  padding: $mg-space-3;
+  margin-from-right-edge-of-screen: 20px;
+  spacing-rows: 10px;
+  spacing-columns: 10px;
+}
+
+#notification.multi-line-notification {
+  padding-bottom: $mg-space-3;
+  color: $mg-text-primary;
+}
+
+#notification-body {
+  spacing: $mg-space-1;
+  color: $mg-text-secondary;
+}
+
+#notification-actions {
+  spacing: $mg-space-2;
+}
+
+// Giữ nguyên min-height 159px: đây là bù trừ cho row-span=2 của ô ảnh, đã có
+// giải thích trong comment của vendor. Đổi giá trị này sẽ làm ảnh bị kéo giãn.
+.notification-with-image {
+  min-height: 159px;
+}
+
+// Nút trong thông báo — vendor gộp 3 selector, giữ nguyên danh sách.
+.notification-icon-button,
+.notification-button,
+.sound-player StButton {
+  border-radius: $mg-radius-md;
+  padding: $mg-space-1 $mg-space-6;
+  font-weight: $mg-w-medium;
+  color: $mg-text-primary;
+  background-color: $mg-glass-high;
+  border: 1px solid $mg-border-subtle;
+  transition-duration: $mg-duration-fast;
+}
+
+.notification-icon-button:hover,
+.notification-button:hover,
+.sound-player StButton:hover {
+  background-color: $mg-active;
+  color: $mg-text-primary;
+}
+
+.notification-icon-button:active,
+.notification-button:active,
+.sound-player StButton:active {
+  background-color: $mg-surface-active;
+  color: $mg-text-primary;
+}
+
+.notification-icon-button:focus,
+.notification-button:focus,
+.sound-player StButton:focus {
+  @include mg-focus-ring();
+  color: $mg-text-primary;
+}
+
+.notification-icon-button:insensitive,
+.notification-button:insensitive,
+.sound-player StButton:insensitive {
+  background-color: $mg-surface-disabled;
+  color: $mg-text-disabled;
+}
+
+.notification-button {
+  padding: $mg-space-1 $mg-space-2;
+}
+
+.notification-icon-button {
+  padding: $mg-space-1;
+}
+
+// -----------------------------------------------------------------------------
+// 11. OSD — media keys, đổi kích thước cửa sổ, chuyển workspace
+// -----------------------------------------------------------------------------
+.resize-popup,
+.workspace-switch-osd,
+.info-osd,
+.media-keys-osd,
+#LookingGlassDialog {
+  color: $mg-text-primary;
+  background-color: $mg-cinnamon-osd-background;
+  border: 1px solid $mg-border-control;
+  border-radius: $mg-cinnamon-osd-radius;
+  box-shadow: $mg-cinnamon-osd-shadow;
+  text-align: center;
+  padding: $mg-space-5;
+}
+
+.info-osd {
+  font-size: $mg-fs-title;
+  font-weight: $mg-w-bold;
+  text-align: center;
+}
+
+.resize-popup {
+  padding: $mg-space-3;
+}
+
+.media-keys-osd {
+  margin-bottom: 1em;
+  border-radius: $mg-radius-pill;
+  font-weight: $mg-w-bold;
+  spacing: $mg-space-3;
+  padding: $mg-space-3 $mg-space-5;
+}
+
+.media-keys-osd > * {
+  spacing: $mg-space-3;
+}
+
+.media-keys-osd StIcon {
+  icon-size: $mg-size-icon-lg;
+  color: $mg-text-primary;
+}
+
+.media-keys-osd StLabel:ltr {
+  margin-right: $mg-space-1;
+}
+
+.media-keys-osd StLabel:rtl {
+  margin-left: $mg-space-1;
+}
+
+// Thanh mức âm lượng trong OSD.
+.media-keys-osd .level {
+  min-width: 160px;
+  -barlevel-height: 6px;
+  -barlevel-background-color: $mg-border-strong;
+  -barlevel-active-background-color: $mg-accent;
+  -barlevel-amplify-color: $mg-status-warning;
+  -barlevel-amplify-separator-width: 3px;
+  // KHÔNG thêm -barlevel-overdrive-color / -barlevel-overdrive-separator-width /
+  // -barlevel-border-color / -barlevel-border-width: đó là property của GNOME
+  // Shell. js/ui/barLevel.js:96-102 của Cinnamon 6.6 chỉ đọc đúng 5 property
+  // -barlevel-* (height, background-color, active-background-color,
+  // amplify-color, amplify-separator-width). Thêm nữa là CSS chết.
+}
+
+.media-keys-osd .level:ltr {
+  margin-right: $mg-space-1;
+}
+
+.media-keys-osd .level:rtl {
+  margin-left: $mg-space-1;
+}
+
+.media-keys-osd .level-bar {
+  border-radius: $mg-radius-md;
+  background-color: $mg-text-primary;
+}
+
+// OSD chuyển workspace: chỉ báo vị trí.
+.workspace-switch-osd {
+  min-width: 140px;
+  margin-bottom: 1em;
+  border-radius: $mg-radius-pill;
+  font-weight: $mg-w-bold;
+  padding: $mg-space-3 $mg-space-6 0 $mg-space-6;
+}
+
+.workspace-switch-osd-indicator-box {
+  spacing: $mg-space-3;
+}
+
+.workspace-switch-osd-indicator {
+  background-color: $mg-border-control;
+  padding: 2.66667px;
+  margin: 13.33333px;
+  border-radius: $mg-radius-pill;
+}
+
+// SỬA LỖI (b): vendor dùng #3584e4 (xanh GNOME) cho workspace đang kích hoạt.
+.workspace-switch-osd-indicator:active {
+  background-color: $mg-accent;
+  padding: 5.33333px;
+  margin: 10.66667px;
+}
+
+// -----------------------------------------------------------------------------
+// 12. Sound player applet
+// -----------------------------------------------------------------------------
+.sound-player > StBoxLayout:first-child {
+  spacing: $mg-space-1;
+  padding: 0 $mg-space-1;
+}
+
+.sound-player StButton {
+  width: 18px;
+  height: 18px;
+  padding: $mg-space-1;
+}
+
+.sound-player StButton StIcon {
+  icon-size: 1em;
+  color: $mg-text-primary;
+}
+
+.sound-player StButton:small {
+  width: $mg-size-icon-sm;
+  height: $mg-size-icon-sm;
+  color: $mg-text-primary;
+  background-color: $mg-field-bg;
+}
+
+// SỬA LỖI THƯỢNG NGUỒN (c): widgets/_applets.scss:130 viết `icon-size: 1.2 em`
+// — CÓ DẤU CÁCH giữa số và đơn vị. CSS coi đó là 2 token (number + ident), St
+// nhận NUM_GENERIC và, theo src/st/st-theme-node.c:977-984, in cảnh báo
+// "length values must specify a unit" rồi trả VALUE_NOT_FOUND → khai báo bị BỎ.
+// Sửa thành `1.2em` liền mạch.
+.sound-player StButton:small StIcon {
+  icon-size: 1.2em;
+}
+
+.sound-player StButton:hover:small {
+  background-color: $mg-hover;
+}
+
+.sound-player StButton:checked:small {
+  background-color: $mg-accent-subtle;
+}
+
+.sound-player StButton:focus:small {
+  @include mg-focus-ring();
+}
+
+.sound-player StButton:insensitive:small {
+  background-color: $mg-surface-disabled;
+  color: $mg-text-disabled;
+}
+
+.sound-player-generic-coverart {
+  // Vendor dùng `rgba(0, 0, 0, 0.2)` — literal. Đây là nền THAY THẾ cho ảnh bìa
+  // khi trình phát không có cover art, nên nền ĐỤC là đúng ý đồ hơn: không có
+  // nội dung nào phía sau để lộ ra. Dùng token semantic surface.sunken,
+  // không chạm primitive $mg-color-* (chỉ _00-globals.scss được phép).
+  background-color: $mg-surface-sunken;
+}
+
+.sound-player-overlay {
+  width: 290px;
+  padding: $mg-space-3;
+  spacing: $mg-space-1;
+  background-color: $mg-cinnamon-dialog-background;
+  color: $mg-text-primary;
+}
+
+.sound-player-overlay StBoxLayout {
+  padding-top: $mg-space-0;
+}
+
+.sound-player-overlay > StBoxLayout {
+  spacing: $mg-space-1;
+}
+
+.sound-player-overlay StBin > StBoxLayout {
+  spacing: $mg-space-1;
+}
+
+.sound-player .slider {
+  height: 6px;
+  -slider-height: 6px;
+  -slider-background-color: $mg-border-strong;
+  -slider-active-background-color: $mg-accent;
+  -slider-border-color: transparent;
+  -slider-active-border-color: transparent;
+  -slider-border-width: 0;
+  -slider-handle-radius: 0;
+}

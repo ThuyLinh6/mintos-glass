@@ -1,0 +1,600 @@
+// =============================================================================
+// MintOS Glass · Dark Glass
+// src/cinnamon/overrides/_30-menus-startmenu.scss
+// -----------------------------------------------------------------------------
+// MENU (popup) + APP MENU mới của Cinnamon 6.6 (.appmenu-*) + menu cũ
+// (.menu-*) + điều khiển trong menu (toggle / checkbox / radio / slider).
+//
+// Cinnamon 6.6 ship HAI app menu: `menu@cinnamon.org` (cũ, selector .menu-*)
+// và `appmenu@cinnamon.org` (mới, có sidebar, selector .appmenu-*). Cả hai
+// đều phải chạy được — ta style cả hai, không bỏ nhánh nào.
+//
+// URL asset: St phân giải `url()` TƯƠNG ĐỐI VỚI THƯ MỤC CỦA FILE CSS chứa nó
+// (`_st_theme_resolve_url`, src/st/st-theme.c:1087-1123, dùng
+// `g_path_get_dirname(base_filename)` + `g_file_resolve_relative_path`).
+// CSS biên dịch ra `cinnamon/cinnamon.css`, nên `url("assets/x.svg")` trỏ tới
+// `cinnamon/assets/x.svg`. Vendor dùng tên trần (`url("toggle-off.svg")`);
+// ta ghi đè lại toàn bộ 22 rule có url() để trỏ vào `assets/`.
+// Lint `tools/lint/theme_assets.py` kiểm tra MỌI url() trong CSS ĐÃ BIÊN DỊCH
+// có file thật — bắt được cả rule quên ghi đè lẫn lỗi chính tả.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// 1. Popup menu (menu ngữ cảnh của applet, sound, network, ...)
+// -----------------------------------------------------------------------------
+.menu {
+  min-width: 15em;
+  color: $mg-text-primary;
+  padding: $mg-cinnamon-menu-padding;
+}
+
+.popup-combo-menu {
+  background-color: $mg-cinnamon-menu-background;
+  border: 1px solid $mg-cinnamon-menu-border;
+  border-radius: $mg-cinnamon-menu-radius;
+  box-shadow: $mg-cinnamon-menu-shadow;
+  padding: $mg-space-1;
+}
+
+.popup-combobox-item {
+  spacing: $mg-space-1;
+  border-radius: $mg-cinnamon-menu-item-radius;
+  padding: $mg-cinnamon-menu-item-padding-y $mg-cinnamon-menu-item-padding-x;
+  transition-duration: $mg-duration-fast;
+}
+
+.popup-combobox-item:hover,
+.popup-combobox-item:focus {
+  background-color: $mg-cinnamon-menu-item-hover;
+}
+
+// Sub-menu lồng nhau (ví dụ menu network chọn SSID).
+.popup-sub-menu {
+  background-color: $mg-surface-sunken;
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-cinnamon-menu-item-radius;
+  margin: 0 $mg-space-1;
+  margin-bottom: $mg-space-1;
+  padding: $mg-space-0 0;
+}
+
+.popup-sub-menu .popup-menu-item {
+  border-radius: $mg-radius-sm;
+  margin: 0 $mg-space-0;
+  // Vendor `_common.scss:114` đặt `transition-duration: 100ms` cho nhóm
+  // `.popup-menu-item`. St yêu cầu SỐ TRẦN (xem _00-globals.scss mục MOTION)
+  // nên khai báo đó CHẾT. Selector lồng này có specificity (0,2,0) cao hơn
+  // `.popup-menu-item` (0,1,0) của ta, nên phải đặt lại tại đây, nếu không
+  // mục trong sub-menu sẽ không có transition.
+  transition-duration: $mg-duration-fast;
+}
+
+.popup-sub-menu .popup-menu-item:active {
+  background-color: $mg-cinnamon-menu-item-hover;
+}
+
+.popup-alternating-menu-item:alternate {
+  font-weight: $mg-w-medium;
+}
+
+// -----------------------------------------------------------------------------
+// 2. Mục menu — hover / selected / insensitive
+//    Vendor: `:active { background-color: #393939 }` (đục, vuông cạnh).
+//    Glass: hover rgba 0.07 + radius 8px, transition 90ms.
+// -----------------------------------------------------------------------------
+.popup-menu-item {
+  spacing: $mg-space-1;
+  padding: $mg-cinnamon-menu-item-padding-y $mg-cinnamon-menu-item-padding-x;
+  margin: 0 $mg-space-1;
+  border-radius: $mg-cinnamon-menu-item-radius;
+  font-weight: $mg-w-regular;
+  color: $mg-text-primary;
+  transition-duration: $mg-duration-fast;
+}
+
+.popup-menu-item:active {
+  background-color: $mg-cinnamon-menu-item-hover;
+  color: $mg-text-primary;
+}
+
+// Mục được chọn bằng bàn phím. ĐÂY là focus state — không được bỏ.
+.popup-menu-item:focus {
+  @include mg-focus-ring();
+  color: $mg-text-primary;
+}
+
+.popup-menu-item:insensitive {
+  color: $mg-text-disabled;
+  background: none;
+}
+
+.popup-inactive-menu-item {
+  color: $mg-text-secondary;
+}
+
+.popup-inactive-menu-item:insensitive {
+  color: $mg-text-disabled;
+}
+
+.popup-menu-icon,
+.popup-menu-arrow {
+  icon-size: 1.091em;
+  color: $mg-text-tertiary;
+}
+
+.popup-menu-item:active .popup-menu-icon,
+.popup-menu-item:active .popup-menu-arrow {
+  color: $mg-text-secondary;
+}
+
+// Đầu mục nhóm (submenu title).
+.popup-subtitle-menu-item {
+  font-weight: $mg-w-bold;
+  color: $mg-text-secondary;
+}
+
+// Thiết bị âm thanh trong sound applet.
+.popup-device-menu-item {
+  font-weight: $mg-w-bold;
+  font-size: 1em;
+}
+
+// -----------------------------------------------------------------------------
+// 3. Slider trong menu (âm lượng, độ sáng)
+// -----------------------------------------------------------------------------
+.popup-slider-menu-item,
+.slider {
+  height: 1em;
+  min-width: 15em;
+  -slider-height: 4px;
+  -slider-background-color: $mg-border-strong;
+  -slider-active-background-color: $mg-accent;
+  -slider-border-color: transparent;
+  -slider-active-border-color: transparent;
+  -slider-border-width: 0;
+  -slider-handle-radius: 0.5em;
+}
+
+// -----------------------------------------------------------------------------
+// 4. Đường phân cách kiểu gradient (widget `.separator`)
+// -----------------------------------------------------------------------------
+.separator {
+  -gradient-height: 1px;
+  -gradient-start: $mg-border-subtle;
+  -gradient-end: $mg-border-subtle;
+  -margin-horizontal: 0;
+  height: 1px;
+}
+
+// -----------------------------------------------------------------------------
+// 5. Toggle / checkbox / radio — ghi đè url() về assets/
+//    Vendor dùng `background-image` cho toàn bộ trạng thái. Ta giữ nguyên cơ chế
+//    (St không có pseudo-element) nhưng trỏ vào assets do T05 sinh ra, tô màu
+//    theo token để đổi được theo scheme.
+// -----------------------------------------------------------------------------
+.toggle-switch {
+  height: 26px;
+  width: 46px;
+  background-size: contain;
+  background-image: url("assets/toggle-off.svg");
+}
+
+.toggle-switch:checked {
+  background-image: url("assets/toggle-on.svg");
+}
+
+.toggle-switch-us,
+.toggle-switch-intl {
+  height: 26px;
+  width: 46px;
+  background-size: contain;
+  background-image: url("assets/toggle-off.svg");
+}
+
+.toggle-switch-us:checked,
+.toggle-switch-intl:checked {
+  background-image: url("assets/toggle-on.svg");
+}
+
+.check-box StBin,
+.check-box-2 StBin {
+  background-image: url("assets/checkbox-off.svg");
+  background-size: contain;
+}
+
+.check-box:checked StBin,
+.check-box-2:checked StBin {
+  background-image: url("assets/checkbox.svg");
+}
+
+.check-box:focus StBin,
+.check-box-2:focus StBin {
+  background-image: url("assets/checkbox-off.svg");
+}
+
+.check-box:focus:checked StBin,
+.check-box-2:focus:checked StBin {
+  background-image: url("assets/checkbox.svg");
+}
+
+.radiobutton StBin {
+  background-image: url("assets/radio-off.svg");
+  background-size: contain;
+}
+
+.radiobutton:checked StBin {
+  background-image: url("assets/radio.svg");
+}
+
+.radiobutton:focus StBin {
+  background-image: url("assets/radio-off.svg");
+}
+
+.radiobutton:focus:checked StBin {
+  background-image: url("assets/radio.svg");
+}
+
+// -----------------------------------------------------------------------------
+// 6. Ô tìm kiếm trong menu / app menu / expo / dialog
+//    Vendor gộp 5 selector; ta giữ nguyên danh sách để không sót nhánh nào.
+// -----------------------------------------------------------------------------
+#menu-search-entry,
+#appmenu-search-entry,
+.expo-workspaces-name-entry,
+.prompt-dialog-password-entry,
+.run-dialog-entry {
+  min-height: 22px;
+  border-radius: $mg-cinnamon-menu-item-radius;
+  padding: $mg-space-1 $mg-space-2;
+  border: 1px solid $mg-border-subtle;
+  background-color: $mg-field-bg;
+  color: $mg-text-primary;
+  caret-color: $mg-text-primary;
+  caret-size: 1px;
+  selection-background-color: $mg-accent-strong;
+  selected-color: $mg-text-on-accent;
+  transition-duration: $mg-duration-fast;
+}
+
+#menu-search-entry:hover,
+#appmenu-search-entry:hover,
+.expo-workspaces-name-entry:hover,
+.prompt-dialog-password-entry:hover,
+.run-dialog-entry:hover {
+  border-color: $mg-border-strong;
+}
+
+#menu-search-entry:focus,
+#appmenu-search-entry:focus,
+.expo-workspaces-name-entry:focus,
+.prompt-dialog-password-entry:focus,
+.run-dialog-entry:focus {
+  background-color: $mg-field-bg;
+  color: $mg-text-primary;
+  border-color: $mg-accent-border;
+  box-shadow: inset 0 0 0 1px $mg-accent-border;
+}
+
+#menu-search-entry:insensitive,
+#appmenu-search-entry:insensitive,
+.expo-workspaces-name-entry:insensitive,
+.prompt-dialog-password-entry:insensitive,
+.run-dialog-entry:insensitive {
+  background-color: $mg-surface-disabled;
+  color: $mg-text-disabled;
+}
+
+#menu-search-entry StLabel.hint-text,
+#appmenu-search-entry StLabel.hint-text,
+.expo-workspaces-name-entry StLabel.hint-text,
+.prompt-dialog-password-entry StLabel.hint-text,
+.run-dialog-entry StLabel.hint-text {
+  color: $mg-text-disabled;
+}
+
+#menu-search-entry .capslock-warning,
+#appmenu-search-entry .capslock-warning,
+.expo-workspaces-name-entry .capslock-warning,
+.prompt-dialog-password-entry .capslock-warning,
+.run-dialog-entry .capslock-warning {
+  icon-size: 1.091em;
+  color: $mg-status-warning;
+}
+
+#menu-search-entry StIcon.peek-password,
+#appmenu-search-entry StIcon.peek-password,
+.expo-workspaces-name-entry StIcon.peek-password,
+.prompt-dialog-password-entry StIcon.peek-password,
+.run-dialog-entry StIcon.peek-password {
+  icon-size: $mg-size-icon-sm;
+  color: $mg-text-secondary;
+}
+
+.menu-search-entry-icon,
+.appmenu-search-entry-icon {
+  icon-size: 1.091em;
+  color: $mg-text-tertiary;
+}
+
+// -----------------------------------------------------------------------------
+// 7. APP MENU mới (Cinnamon 6.6, có sidebar) — .appmenu-*
+// -----------------------------------------------------------------------------
+.appmenu-background .popup-menu-content {
+  padding: 0;
+}
+
+.appmenu-main-box {
+  spacing: $mg-space-2;
+}
+
+.appmenu-right-box {
+  spacing: $mg-space-1;
+  padding: $mg-space-2;
+}
+
+.appmenu-categories-applications-box {
+  spacing: $mg-space-3;
+}
+
+.appmenu-categories-applications-box:top {
+  padding-top: $mg-space-1;
+}
+
+.appmenu-applications-box {
+  padding-right: $mg-space-1;
+}
+
+.appmenu-search-box {
+  spacing: $mg-space-2;
+  padding: 0 $mg-space-2 $mg-space-2;
+}
+
+// Sidebar trái — đặc trưng của app menu 6.6. Nền đậm hơn thân menu một bậc
+// để tách thị giác, vẫn trong suốt.
+.appmenu-sidebar {
+  padding: $mg-space-2 0;
+  background-color: $mg-cinnamon-appmenu-sidebar-background;
+  border-radius: $mg-cinnamon-menu-radius 0 0 $mg-cinnamon-menu-radius;
+  border-right-width: 1px;
+  border-color: $mg-cinnamon-appmenu-sidebar-border;
+}
+
+.appmenu-sidebar-button {
+  padding: $mg-space-0 $mg-space-1;
+  margin: 0 $mg-space-2;
+  border-radius: $mg-cinnamon-menu-item-radius;
+  color: $mg-text-primary;
+  transition-duration: $mg-duration-fast;
+}
+
+.appmenu-sidebar-button:hover {
+  background-color: $mg-cinnamon-menu-item-hover;
+  border-color: transparent;
+}
+
+.appmenu-sidebar-button:selected {
+  background-color: $mg-accent-subtle;
+  color: $mg-text-primary;
+}
+
+.appmenu-sidebar-button:focus {
+  @include mg-focus-ring();
+}
+
+.appmenu-system-box {
+  spacing: $mg-space-2;
+}
+
+// Nút tròn hệ thống (lock / logout / shutdown) ở đáy sidebar.
+.appmenu-system-button {
+  padding: 8.4px;
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-radius-pill;
+  background-color: $mg-glass-high;
+  color: $mg-text-primary;
+  transition-duration: $mg-duration-fast;
+}
+
+.appmenu-sidebar .appmenu-system-button {
+  background-color: $mg-glass-high;
+}
+
+.appmenu-system-button-lock:hover,
+.appmenu-system-button-logout:hover,
+.appmenu-sidebar .appmenu-system-button-lock:hover,
+.appmenu-sidebar .appmenu-system-button-logout:hover {
+  background-color: $mg-active;
+  border-color: $mg-border-strong;
+}
+
+// Shutdown là hành động phá huỷ → dùng status.error, KHÔNG đổi sang accent.
+// Vendor dùng #c01c28; hover #d61f2d. Ta giữ cặp normal/hover bằng cách
+// phủ alpha khác nhau trên cùng một hue token.
+.appmenu-system-button-shutdown,
+.appmenu-sidebar .appmenu-system-button-shutdown {
+  background-color: $mg-status-error;
+  border-color: transparent;
+  color: $mg-text-inverse;
+}
+
+.appmenu-system-button-shutdown:hover,
+.appmenu-sidebar .appmenu-system-button-shutdown:hover {
+  background-color: $mg-status-error;
+  border-color: $mg-border-strong;
+  color: $mg-text-inverse;
+}
+
+.appmenu-system-button:focus,
+.appmenu-system-button-shutdown:focus {
+  @include mg-focus-ring();
+}
+
+// Nút ứng dụng / danh mục trong app menu.
+.appmenu-application-button,
+.appmenu-category-button,
+.appmenu-application-button-selected,
+.appmenu-category-button-selected {
+  padding: $mg-space-1;
+  spacing: $mg-space-1;
+  border-radius: $mg-cinnamon-menu-item-radius;
+  color: $mg-text-primary;
+  transition-duration: $mg-duration-fast;
+}
+
+.appmenu-application-button-label,
+.appmenu-category-button-label {
+  padding: 0;
+}
+
+.appmenu-application-button-description {
+  color: $mg-text-tertiary;
+  font-size: $mg-fs-small;
+}
+
+.appmenu-application-button:hover,
+.appmenu-category-button:hover {
+  background-color: $mg-cinnamon-menu-item-hover;
+}
+
+.appmenu-application-button-selected,
+.appmenu-category-button-selected {
+  background-color: $mg-cinnamon-menu-item-selected;
+  // accent #3ddc97 + chữ trắng = 2.60:1 (FAIL). Đổi sang on-accent = 7.52:1.
+  color: $mg-text-on-accent;
+}
+
+.appmenu-application-button-selected .appmenu-application-button-description {
+  color: rgba($mg-text-on-accent, $mg-opacity-glass-mid);
+}
+
+.appmenu-application-button-selected:focus,
+.appmenu-category-button-selected:focus {
+  @include mg-focus-ring();
+}
+
+.appmenu-application-button:highlighted,
+.appmenu-application-button-selected:highlighted {
+  font-weight: $mg-w-bold;
+}
+
+.appmenu-category-button-greyed {
+  color: $mg-text-disabled;
+  font-style: italic;
+}
+
+// SỬA LỖI THƯỢNG NGUỒN: vendor viết `opacity: 0.5` cho StIcon, nhưng St KHÔNG
+// có property `opacity` — chuỗi "opacity" không xuất hiện ở bất kỳ đâu trong
+// src/st/st-theme-node.c (đã grep). Khai báo đó bị bỏ qua trong im lặng.
+// Thay bằng alpha thật trên `color`.
+.appmenu-category-button-greyed StIcon,
+.menu-category-button-greyed StIcon {
+  color: $mg-text-disabled;
+}
+
+// -----------------------------------------------------------------------------
+// 8. APP MENU cũ (menu@cinnamon.org) — .menu-*
+//    Giữ đầy đủ để người dùng chọn applet cũ vẫn có theme đúng.
+// -----------------------------------------------------------------------------
+.menu-favorites-box {
+  padding: $mg-space-2;
+  background-color: $mg-surface-sunken;
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-cinnamon-menu-item-radius;
+}
+
+.menu-favorites-button {
+  padding: $mg-space-2;
+  border-radius: $mg-radius-sm;
+  transition-duration: $mg-duration-fast;
+}
+
+.menu-favorites-button:hover {
+  background-color: $mg-cinnamon-menu-item-hover;
+}
+
+.menu-favorites-button:focus {
+  @include mg-focus-ring();
+}
+
+.menu-categories-box {
+  padding: $mg-space-2 $mg-space-5;
+}
+
+.menu-applications-box {
+  padding: $mg-space-2;
+}
+
+.menu-applications-inner-box:ltr {
+  padding-left: $mg-space-5;
+}
+
+.menu-applications-inner-box:rtl {
+  padding-right: $mg-space-5;
+}
+
+.menu-application-button,
+.menu-category-button,
+.menu-application-button-selected,
+.menu-category-button-selected {
+  padding: $mg-space-1;
+  spacing: $mg-space-1;
+  border-radius: $mg-cinnamon-menu-item-radius;
+  color: $mg-text-primary;
+  transition-duration: $mg-duration-fast;
+}
+
+.menu-application-button-label,
+.menu-category-button-label {
+  padding: 0;
+}
+
+.menu-application-button:hover,
+.menu-category-button:hover {
+  background-color: $mg-cinnamon-menu-item-hover;
+}
+
+.menu-application-button-selected,
+.menu-category-button-selected {
+  background-color: $mg-cinnamon-menu-item-selected;
+  color: $mg-text-on-accent;
+}
+
+.menu-application-button-selected:focus,
+.menu-category-button-selected:focus {
+  @include mg-focus-ring();
+}
+
+.menu-application-button:highlighted,
+.menu-application-button-selected:highlighted {
+  font-weight: $mg-w-bold;
+}
+
+.menu-category-button-greyed {
+  color: $mg-text-disabled;
+  font-style: italic;
+}
+
+.menu-selected-app-box {
+  padding-right: $mg-space-5;
+  padding-left: $mg-space-5;
+  text-align: right;
+}
+
+.menu-selected-app-title {
+  font-weight: $mg-w-bold;
+  font-size: 1em;
+  color: $mg-text-primary;
+}
+
+.menu-selected-app-description {
+  color: $mg-text-tertiary;
+}
+
+.menu-search-box {
+  padding: 0 0 $mg-space-1 $mg-space-2;
+}
+
+.menu-context-menu,
+.menu-context-menu .popup-menu-item {
+  border-radius: $mg-radius-sm;
+}

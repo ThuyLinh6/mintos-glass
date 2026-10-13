@@ -1,0 +1,309 @@
+// =============================================================================
+// MintOS Glass · Dark Glass
+// src/cinnamon/overrides/_80-keyboard-screensaver-lookingglass.scss
+// -----------------------------------------------------------------------------
+// BÀN PHÍM ẢO TRÊN MÀN HÌNH (OSK, `.vkeyboard-*`) · popup gợi ý IBus
+// (`.candidate-*`) · Looking Glass (`#LookingGlassDialog`) · kính lúp trợ năng
+// (`.magnifier-*`).
+//
+// ---------------------------------------------------------------------------
+// VÌ SAO FILE NÀY KHÔNG CÓ CSS CHO SCREENSAVER
+// ---------------------------------------------------------------------------
+// Tên file theo allow-list của T04 (docs/plan/04-work-breakdown.md) có chữ
+// "screensaver", nhưng ĐÃ XÁC MINH: sass của Cinnamon 6.6 KHÔNG sinh ra bất kỳ
+// selector screensaver nào. Bằng chứng:
+//   · `grep -iE 'screen|unlock|login|lock'` trên 452 selector của CSS biên dịch
+//     từ vendor chỉ trúng 6 dòng, tất cả là `.caps-lock-warning-label`,
+//     `.appmenu-system-button-lock:hover` và `.magnifier-zoom-region.full-screen`
+//     — KHÔNG có selector màn hình khoá nào.
+//   · `ls data/theme/cinnamon-sass/widgets/` @6.6.9: alttab, applets, base,
+//     calendar, deprecated, desklet, dialogs, expo, ibus-popup, keyboard, menus,
+//     notifications, osd, panel, startmenu, switch-check, windowlist —
+//     KHÔNG có screensaver.
+// Màn hình khoá là gói RIÊNG (`cinnamon-screensaver`), dựng bằng widget GTK,
+// nên nó được theme bởi GTK theme (T06/T08), KHÔNG phải bởi cinnamon.css.
+// Các token `cinnamon.screensaver-background/-blur/-radius` vì vậy KHÔNG thể
+// tiêu thụ ở tầng này — đã ghi vào docs/testing/cinnamon-selector-coverage.md
+// và cần Agent design-system quyết định: hoặc chuyển namespace sang `gtk.*`,
+// hoặc giữ và đánh dấu `applies_to: cinnamon-screensaver`. KHÔNG tự sửa token.
+//
+// ---------------------------------------------------------------------------
+// XÁC MINH TÊN SELECTOR BÀN PHÍM
+// ---------------------------------------------------------------------------
+// Cinnamon 6.6 dùng prefix `.vkeyboard-*` (bàn phím ảo native mới của Mint
+// 22.x) và `#virtual-keyboard`. KHÔNG có `.keyboard-key` — chuỗi đó xuất hiện
+// 0 lần trong CSS biên dịch từ vendor. Viết `.keyboard-key` sẽ là CSS chết.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// 1. Bàn phím ảo — khung
+// -----------------------------------------------------------------------------
+#virtual-keyboard {
+  background-color: $mg-cinnamon-osd-background;
+  border-top: 1px solid $mg-border-subtle;
+}
+
+.vkeyboard-key-container {
+  padding: $mg-space-1;
+  spacing: $mg-space-1;
+}
+
+// -----------------------------------------------------------------------------
+// 2. Phím thường
+//    Vendor khai báo `background-color` HAI LẦN trong cùng một rule
+//    (#393939 rồi #454545) do %button bị ghi đè — giá trị sau thắng. Ta đặt
+//    một lần, tường minh.
+// -----------------------------------------------------------------------------
+.vkeyboard-key {
+  color: $mg-text-primary;
+  background-color: $mg-glass-high;
+  font-size: 1.364em;
+  // `border-style` viết rời là NO-OP trong St: do_border_property()
+  // (src/st/st-theme-node.c:1244-1300) chỉ tiêu thụ ident `solid` BÊN TRONG
+  // shorthand `border:`, và StThemeNode không có trường border_style nào
+  // (grep 'border_style' trong st-theme-node.c/.h = 0 kết quả). Vendor vẫn viết
+  // `border-style: solid` rời cho .vkeyboard-key -> chết. Ta dùng shorthand.
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-radius-lg;
+  transition-duration: $mg-duration-fast;
+}
+
+.vkeyboard-key:hover,
+.vkeyboard-key:checked {
+  color: $mg-text-primary;
+  background-color: $mg-active;
+  border-color: $mg-border-strong;
+}
+
+.vkeyboard-key:active {
+  color: $mg-text-primary;
+  background-color: $mg-accent-subtle;
+  border-color: $mg-accent;
+}
+
+// Focus bàn phím — bắt buộc thấy được. Vendor dùng viền trắng mờ 0.4.
+.vkeyboard-key:focus {
+  color: $mg-text-primary;
+  background-color: $mg-glass-high;
+  border-color: $mg-accent-border;
+  @include mg-focus-ring();
+}
+
+.vkeyboard-key StIcon {
+  icon-size: 1.125em;
+  color: $mg-text-primary;
+}
+
+// -----------------------------------------------------------------------------
+// 3. Phím chức năng (Shift thường / Esc / ẩn / phím không chữ)
+// -----------------------------------------------------------------------------
+.vkeyboard-key.shift-key-lowercase,
+.vkeyboard-key.escape-key,
+.vkeyboard-key.hide-key,
+.vkeyboard-key.non-alpha-key {
+  background-color: $mg-elevated-2;
+  border-color: $mg-border-subtle;
+}
+
+.vkeyboard-key.shift-key-lowercase:hover,
+.vkeyboard-key.shift-key-lowercase:checked,
+.vkeyboard-key.escape-key:hover,
+.vkeyboard-key.escape-key:checked,
+.vkeyboard-key.hide-key:hover,
+.vkeyboard-key.hide-key:checked,
+.vkeyboard-key.non-alpha-key:hover,
+.vkeyboard-key.non-alpha-key:checked {
+  color: $mg-text-primary;
+  background-color: $mg-active;
+}
+
+.vkeyboard-key.shift-key-lowercase:active,
+.vkeyboard-key.escape-key:active,
+.vkeyboard-key.hide-key:active,
+.vkeyboard-key.non-alpha-key:active {
+  color: $mg-text-primary;
+  background-color: $mg-accent-subtle;
+}
+
+.vkeyboard-key.shift-key-lowercase:focus,
+.vkeyboard-key.escape-key:focus,
+.vkeyboard-key.hide-key:focus,
+.vkeyboard-key.non-alpha-key:focus {
+  color: $mg-text-primary;
+  background-color: $mg-elevated-2;
+  @include mg-focus-ring();
+}
+
+// Shift đang bật ( Caps/Shift uppercase ) — trạng thái "đang khoá".
+.vkeyboard-key.shift-key-uppercase {
+  background-color: $mg-accent-subtle;
+  border-color: $mg-accent;
+  color: $mg-text-primary;
+}
+
+// -----------------------------------------------------------------------------
+// 4. Phím modifier và phím Enter
+// -----------------------------------------------------------------------------
+.vkeyboard-key.modifier-key {
+  background-color: $mg-elevated-2;
+  border-color: $mg-border-subtle;
+}
+
+.vkeyboard-key.modifier-key:hover,
+.vkeyboard-key.modifier-key:checked {
+  color: $mg-text-primary;
+  background-color: $mg-active;
+}
+
+.vkeyboard-key.modifier-key:latched {
+  background-color: $mg-accent-subtle;
+  border-color: $mg-accent;
+}
+
+// Enter = hành động chính → nền accent.
+// CHỮ BẮT BUỘC là $mg-text-on-accent: vendor để `color: white` kế thừa từ
+// `.vkeyboard-key`, mà trắng trên mint #2bb67a chỉ đạt 2.60:1 (FAIL AA).
+// gray-950 trên mint-600 = 7.52:1 (PASS). Rule sửa nằm ở _10-surfaces.scss;
+// ở đây chỉ đặt nền để không phá thứ tự cascade của rule sửa màu chữ.
+.vkeyboard-key.enter-key {
+  background-color: $mg-accent-strong;
+  border-color: transparent;
+  color: $mg-text-on-accent;
+}
+
+.vkeyboard-key.enter-key:hover {
+  background-color: $mg-accent-strong;
+  border-color: $mg-border-strong;
+  color: $mg-text-on-accent;
+}
+
+.vkeyboard-key.enter-key:active {
+  background-color: $mg-accent;
+  color: $mg-text-on-accent;
+}
+
+// -----------------------------------------------------------------------------
+// 5. Popup phím phụ (nhấn giữ phím để chọn dấu — quan trọng cho tiếng Việt)
+//    St dùng property `-arrow-*` riêng cho boxpointer, KHÔNG phải
+//    `background-color`/`border` chuẩn.
+// -----------------------------------------------------------------------------
+.vkeyboard-subkeys {
+  color: $mg-text-primary;
+  -arrow-border-radius: $mg-radius-md;
+  -arrow-background-color: $mg-glass-high;
+  -arrow-border-width: 1px;
+  -arrow-border-color: $mg-border-subtle;
+  -arrow-base: 20px;
+  -arrow-rise: 10px;
+  -boxpointer-gap: $mg-space-1;
+}
+
+// -----------------------------------------------------------------------------
+// 6. IBus / fcitx candidate popup (gõ tiếng Việt: Telex, VNI)
+//    Đây là surface người dùng Việt Nam thấy RẤT thường xuyên → phải đúng.
+// -----------------------------------------------------------------------------
+.candidate-popup-boxpointer {
+  -arrow-border-radius: $mg-cinnamon-menu-radius;
+  -arrow-background-color: $mg-cinnamon-menu-background;
+  -arrow-border-width: 1px;
+  -arrow-border-color: $mg-cinnamon-menu-border;
+  -arrow-base: 24px;
+  -arrow-rise: 12px;
+  -arrow-box-shadow: $mg-cinnamon-menu-shadow;
+}
+
+.candidate-popup-content {
+  padding: 0.5em;
+  spacing: 0.3em;
+  color: $mg-text-primary;
+}
+
+.candidate-index {
+  padding: 0 0.5em 0 0;
+  color: $mg-text-tertiary;
+}
+
+.candidate-box {
+  padding: 0.3em 0.5em;
+  border-radius: $mg-radius-md;
+  color: $mg-text-primary;
+  transition-duration: $mg-duration-fast;
+}
+
+.candidate-box:hover {
+  background-color: $mg-cinnamon-menu-item-hover;
+}
+
+// Từ đang được chọn — dùng accent, chữ đổi sang on-accent (2.60:1 -> 7.52:1).
+.candidate-box:selected {
+  background-color: $mg-cinnamon-menu-item-selected;
+  color: $mg-text-on-accent;
+}
+
+.candidate-box:selected .candidate-index {
+  color: rgba($mg-text-on-accent, $mg-opacity-glass-mid);
+}
+
+.candidate-page-button-box {
+  height: 2em;
+}
+
+.vertical .candidate-page-button-box {
+  padding-top: 0.5em;
+}
+
+.horizontal .candidate-page-button-box {
+  padding-left: 0.5em;
+}
+
+.candidate-page-button {
+  padding: $mg-space-1;
+  border-radius: $mg-radius-md;
+}
+
+.candidate-page-button:hover {
+  background-color: $mg-hover;
+}
+
+.candidate-page-button-previous {
+  border-radius: $mg-radius-md 0px 0px $mg-radius-md;
+  border-right-width: 0;
+}
+
+.candidate-page-button-next {
+  border-radius: 0px $mg-radius-md $mg-radius-md 0px;
+}
+
+.candidate-page-button-icon {
+  icon-size: 1em;
+  color: $mg-text-secondary;
+}
+
+// -----------------------------------------------------------------------------
+// 7. Looking Glass (console debug của Cinnamon — Ctrl+Alt+L? mở bằng lệnh)
+//    Vendor gộp #LookingGlassDialog vào %osd_base; ta tách ra vì đây là công cụ
+//    nhà phát triển, cần nền gần đục để đọc log.
+// -----------------------------------------------------------------------------
+#LookingGlassDialog {
+  background-color: $mg-elevated-2;
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-cinnamon-looking-glass-radius;
+  box-shadow: $mg-shadow-lg;
+  color: $mg-text-primary;
+  spacing: $mg-space-1;
+  padding: $mg-space-3;
+}
+
+// -----------------------------------------------------------------------------
+// 8. Kính lúp trợ năng (magnifier)
+//    Vendor dùng `#e4705b` (đỏ cam) literal cho viền vùng phóng. Viền này là
+//    ranh giới thị giác QUAN TRỌNG cho người dùng trợ năng → phải tương phản
+//    cao, không đổi thành màu trang trí. Dùng accent (đạt ≥3:1 trên nền tối).
+// -----------------------------------------------------------------------------
+.magnifier-zoom-region {
+  border: $mg-border-width-medium solid $mg-accent;
+}
+
+.magnifier-zoom-region.full-screen {
+  border-width: 0;
+}

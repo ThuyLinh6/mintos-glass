@@ -1,0 +1,351 @@
+// =============================================================================
+// MintOS Glass · Dark Glass
+// src/cinnamon/overrides/_40-windowlist-gwl.scss
+// -----------------------------------------------------------------------------
+// DOCK: `grouped-window-list@cinnamon.org` (D-1: style applet có sẵn, KHÔNG cài
+// Plank, KHÔNG thêm package) + `window-list@cinnamon.org` (applet cũ) + khung
+// xem trước cửa sổ (thumbnail menu / preview).
+//
+// ---------------------------------------------------------------------------
+// GIỚI HẠN THẬT CỦA ST — ĐỌC TRƯỚC KHI SO SÁNH VỚI DOCK macOS
+// ---------------------------------------------------------------------------
+// St KHÔNG có: `transform` (nên KHÔNG phóng to icon khi rê chuột — hiệu ứng
+// magnification của macOS là bất khả thi), pseudo-element (nên không tạo được
+// "chấm" indicator riêng bên dưới icon), `border-image` đa trạng thái.
+// St CÓ: `border-*-width` + `border-*-color` trên chính item box.
+//
+// => Chỉ báo ứng dụng đang chạy được hiện thực bằng THANH GẠCH DƯỚI (underline)
+//    dùng border, KHÔNG phải chấm tròn. Đây là xấp xỉ gần nhất trong khuôn khổ
+//    St thuần CSS. ĐỪNG mô tả nó là "dot indicator" trong tài liệu người dùng.
+//
+// => Kỹ thuật chống nhảy layout: St không có `box-sizing`, border cộng thẳng
+//    vào kích thước. Nên border-bottom-width ĐƯỢC ĐẶT TRƯỚC cho MỌI item bằng
+//    đúng độ dày tối đa ($mg-dock-indicator-size) với màu `transparent`, rồi
+//    chỉ đổi MÀU khi active/focus. Đây chính là cách vendor làm (vendor đặt
+//    sẵn `border-bottom-width: 2px` trên `.top/.bottom`).
+//
+// => Ẩn nhãn cửa sổ (để panel thành dock chỉ-có-icon) KHÔNG làm bằng CSS.
+//    Nhãn do applet tạo dựa trên gsetting `title-display`; dùng CSS width:0 sẽ
+//    để lại khoảng trắng và phá vỡ căn giữa. Cách đúng: đặt gsetting ở tầng
+//    cấu hình (packaging/cinnamon-shell/config/, docs/install).
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// 1. DOCK — grouped-window-list
+// -----------------------------------------------------------------------------
+.grouped-window-list-item-box {
+  padding: 0 $mg-space-1;
+  margin: $mg-space-0 1px;
+  border-radius: $mg-dock-item-radius;
+  color: $mg-text-secondary;
+  transition-duration: $mg-duration-fast;
+}
+
+// Panel ngang: gạch dưới. Đặt trước độ dày tối đa + màu transparent.
+.grouped-window-list-item-box.top,
+.grouped-window-list-item-box.bottom {
+  border-bottom-width: $mg-dock-indicator-size;
+  border-bottom-color: transparent;
+}
+
+// Panel dọc: gạch bên (trái/phải tuỳ cạnh panel).
+.grouped-window-list-item-box.right {
+  padding-left: 0;
+  padding-right: 0;
+  border-right-width: $mg-dock-indicator-size;
+  border-right-color: transparent;
+}
+
+.grouped-window-list-item-box.right StBin {
+  padding-right: 0;
+}
+
+.grouped-window-list-item-box.left {
+  padding-left: 0;
+  padding-right: 0;
+  border-left-width: $mg-dock-indicator-size;
+  border-left-color: transparent;
+}
+
+.grouped-window-list-item-box.left StBin {
+  padding-left: 1px;
+}
+
+.grouped-window-list-item-label {
+  width: 15em;
+  min-width: 5px;
+  color: $mg-text-secondary;
+}
+
+// --- Trạng thái -------------------------------------------------------------
+// Chưa chạy, rê chuột → nền hover tròn cạnh (nét macOS rõ nhất ta làm được).
+.grouped-window-list-item-box:hover {
+  background-color: $mg-dock-item-hover;
+  border-radius: $mg-dock-item-radius;
+  color: $mg-text-primary;
+}
+
+.grouped-window-list-item-box:hover .grouped-window-list-item-label {
+  color: $mg-text-primary;
+}
+
+// Đang chạy nhưng KHÔNG focus → gạch mờ (alpha thấp) để phân biệt với focus.
+.grouped-window-list-item-box:active {
+  border-color: rgba($mg-dock-indicator, $mg-opacity-hover);
+  color: $mg-text-primary;
+}
+
+// Đang chạy VÀ focus → gạch đậm hết cỡ + nền active.
+// Vendor đặt `:active { border-color: #3584e4 }` — xanh GNOME, lệch accent mint
+// của chính theme gốc. Đây là chỗ ta sửa cho nhất quán với D-3.
+.grouped-window-list-item-box:focus {
+  background-color: $mg-dock-item-active;
+  border-color: $mg-dock-indicator;
+  border-radius: $mg-dock-item-radius;
+  color: $mg-text-primary;
+}
+
+// Bàn phím: vòng focus riêng, phải thấy rõ (WCAG 2.2 SC 2.4.11).
+// Lưu ý: rule này ghi đè box-shadow, không đụng border → không phá indicator.
+.grouped-window-list-item-box:outlined {
+  @include mg-focus-ring();
+}
+
+// Tiến trình (ví dụ đang tải/copy) — phủ lên item.
+.grouped-window-list-item-box .progress {
+  background-color: rgba($mg-status-success, $mg-opacity-glass-high);
+  border-radius: $mg-dock-item-radius;
+}
+
+// Cửa sổ cần chú ý (dialog modal đang chờ) → hue cảnh báo, KHÔNG dùng accent.
+.grouped-window-list-item-demands-attention {
+  background-color: $mg-cinnamon-windowlist-item-attention;
+  border-radius: $mg-dock-item-radius;
+  color: $mg-dock-badge-text;
+}
+
+// --- Nhãn số cửa sổ + badge thông báo ---------------------------------------
+.grouped-window-list-button-label {
+  padding-left: $mg-space-1;
+}
+
+.grouped-window-list-number-label {
+  font-size: $mg-fs-small;
+  color: $mg-text-tertiary;
+}
+
+.grouped-window-list-badge {
+  border-radius: $mg-radius-pill;
+  background-color: $mg-glass-high;
+  color: $mg-text-primary;
+}
+
+// Badge "có thông báo chưa đọc" (tính năng mới của Mint 22.x).
+.grouped-window-list-notifications-badge {
+  border-radius: $mg-radius-pill;
+  background-color: $mg-dock-badge;
+  color: $mg-dock-badge-text;
+}
+
+.grouped-window-list-notifications-badge-label {
+  font-size: $mg-fs-small;
+  color: $mg-dock-badge-text;
+}
+
+// -----------------------------------------------------------------------------
+// 2. Khung xem trước của dock (hover một item có nhiều cửa sổ)
+// -----------------------------------------------------------------------------
+.grouped-window-list-thumbnail-menu {
+  background-color: $mg-cinnamon-menu-background;
+  border: 1px solid $mg-cinnamon-menu-border;
+  border-radius: $mg-cinnamon-menu-radius;
+  box-shadow: $mg-cinnamon-menu-shadow;
+  margin: $mg-space-1;
+}
+
+.grouped-window-list-thumbnail-menu > StBoxLayout {
+  padding: $mg-space-1;
+}
+
+.grouped-window-list-thumbnail-menu .item-box {
+  padding: $mg-space-2;
+  spacing: $mg-space-1;
+  border-radius: $mg-radius-sm;
+  transition-duration: $mg-duration-fast;
+}
+
+.grouped-window-list-thumbnail-menu .item-box:first-child {
+  border-radius: $mg-radius-sm;
+}
+
+.grouped-window-list-thumbnail-menu .item-box:last-child {
+  border-radius: $mg-radius-sm;
+}
+
+.grouped-window-list-thumbnail-menu .item-box:selected {
+  background-color: $mg-cinnamon-menu-item-hover;
+}
+
+.grouped-window-list-thumbnail-menu .item-box:selected:only-child,
+.grouped-window-list-thumbnail-menu .item-box:selected:first-child:last-child,
+.grouped-window-list-thumbnail-menu .item-box:selected:first-child,
+.grouped-window-list-thumbnail-menu .item-box:selected:last-child {
+  border-radius: $mg-radius-sm;
+}
+
+// Item được duyệt bằng bàn phím trong khung xem trước.
+.grouped-window-list-thumbnail-menu .item-box:outlined {
+  border: $mg-border-width-medium solid $mg-accent-border;
+  border-radius: $mg-radius-sm;
+}
+
+.grouped-window-list-thumbnail-menu .item-box:outlined:first-child,
+.grouped-window-list-thumbnail-menu .item-box:outlined:last-child {
+  border-radius: $mg-radius-sm;
+}
+
+.grouped-window-list-thumbnail-menu .thumbnail {
+  width: 256px;
+  border-radius: $mg-radius-sm;
+}
+
+.grouped-window-list-thumbnail-menu .separator {
+  width: 1px;
+  background-color: $mg-border-subtle;
+}
+
+.grouped-window-list-thumbnail-label {
+  padding-left: $mg-space-1;
+  color: $mg-text-primary;
+}
+
+.grouped-window-list-thumbnail-alert {
+  background: rgba($mg-status-error, $mg-opacity-disabled);
+}
+
+// -----------------------------------------------------------------------------
+// 3. WINDOW LIST cũ (window-list@cinnamon.org)
+//    Người dùng có thể chuyển về applet này; phải theme đúng để không "vỡ".
+// -----------------------------------------------------------------------------
+.window-list-box {
+  spacing: $mg-space-1;
+  padding-left: $mg-space-1;
+  padding-top: 1px;
+}
+
+.window-list-box.vertical {
+  spacing: $mg-space-1;
+  padding: $mg-space-1 0;
+}
+
+.window-list-box:highlight {
+  background-color: rgba($mg-status-error, $mg-opacity-glass-low);
+}
+
+.window-list-item-box {
+  padding: 0 $mg-space-1;
+  margin: $mg-space-0 1px;
+  border-radius: $mg-cinnamon-windowlist-item-radius;
+  color: $mg-text-secondary;
+  transition-duration: $mg-duration-fast;
+}
+
+.window-list-item-box.top,
+.window-list-item-box.bottom {
+  border-bottom-width: $mg-dock-indicator-size;
+  border-bottom-color: transparent;
+}
+
+.window-list-item-box.top StLabel,
+.window-list-item-box.bottom StLabel {
+  padding-left: $mg-space-0;
+}
+
+.window-list-item-box.right {
+  padding-left: 0;
+  padding-right: 0;
+  border-right-width: $mg-dock-indicator-size;
+  border-right-color: transparent;
+}
+
+.window-list-item-box.right StBin {
+  padding-right: 0;
+  padding-left: $mg-space-1;
+}
+
+.window-list-item-box.left {
+  padding-left: 0;
+  padding-right: 0;
+  border-left-width: $mg-dock-indicator-size;
+  border-left-color: transparent;
+}
+
+.window-list-item-box.left StBin {
+  padding-left: 0;
+  padding-right: $mg-space-1;
+}
+
+.window-list-item-box:hover {
+  background-color: $mg-cinnamon-windowlist-item-hover;
+  color: $mg-text-primary;
+}
+
+.window-list-item-box:active {
+  border-color: rgba($mg-cinnamon-windowlist-item-focused-border, $mg-opacity-hover);
+}
+
+.window-list-item-box:focus {
+  border-color: $mg-cinnamon-windowlist-item-focused-border;
+  background-color: $mg-cinnamon-windowlist-item-focused-background;
+  border-radius: $mg-cinnamon-windowlist-item-radius;
+  color: $mg-text-primary;
+}
+
+.window-list-item-box .progress {
+  background-color: rgba($mg-status-success, $mg-opacity-glass-high);
+  border-radius: $mg-cinnamon-windowlist-item-radius;
+}
+
+.window-list-item-demands-attention {
+  background-color: $mg-cinnamon-windowlist-item-attention;
+  border-radius: $mg-cinnamon-windowlist-item-radius;
+  color: $mg-dock-badge-text;
+}
+
+// Xem trước cửa sổ của window-list cũ.
+.window-list-preview {
+  background-color: $mg-cinnamon-menu-background;
+  border: 1px solid $mg-cinnamon-menu-border;
+  border-radius: $mg-cinnamon-menu-radius;
+  box-shadow: $mg-cinnamon-menu-shadow;
+  padding: $mg-space-2;
+  spacing: $mg-space-1;
+}
+
+// -----------------------------------------------------------------------------
+// 4. Nút đóng cửa sổ trong khung xem trước / expo
+//    Vendor: url("close.svg") và url("trash-icon.svg") tên trần → trỏ assets/.
+// -----------------------------------------------------------------------------
+.window-close {
+  background-image: url("assets/close.svg");
+  background-size: contain;
+  height: 22px;
+  width: 22px;
+  border-radius: $mg-radius-pill;
+  transition-duration: $mg-duration-fast;
+}
+
+.window-close:hover {
+  background-color: rgba($mg-status-error, $mg-opacity-disabled);
+}
+
+.window-close:active {
+  background-color: rgba($mg-status-error, $mg-opacity-glass-low);
+}
+
+.window-close-area {
+  background-image: url("assets/trash-icon.svg");
+  background-size: contain;
+  height: 48px;
+  width: 48px;
+}

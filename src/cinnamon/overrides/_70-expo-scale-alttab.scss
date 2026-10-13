@@ -1,0 +1,179 @@
+// =============================================================================
+// MintOS Glass · Dark Glass
+// src/cinnamon/overrides/_70-expo-scale-alttab.scss
+// -----------------------------------------------------------------------------
+// EXPO (tổng quan workspace) · SCALE · ALT-TAB switcher · TILE PREVIEW.
+//
+// transition-duration ở file này viết DẠNG SỐ TRẦN, không có `ms`.
+// Lý do + bằng chứng mã nguồn: xem _00-globals.scss mục MOTION.
+//
+// LỖI THƯỢNG NGUỒN ĐƯỢC SỬA:
+//   (d) `.switcher-list .item-box:outlined { border-color: red }` — đây là chỉ
+//       báo cửa sổ được chọn BẰNG BÀN PHÍM trong Alt-Tab, lại dùng literal
+//       `red`. Đổi sang accent + border 2px để đạt tương phản chỉ báo ≥3:1.
+//   (e) `.tile-preview` và `.expo-workspace-thumbnail-frame#active` hard-code
+//       `rgba(120,174,237,…)` / `#78aeed` — xanh dương GNOME, không đến từ bất
+//       kỳ biến nào trong `_colors.scss`. Đổi sang accent token (D-3).
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// 1. EXPO — nền và khung workspace
+// -----------------------------------------------------------------------------
+.expo-background {
+  background-color: $mg-cinnamon-modal-shade;
+}
+
+.workspace-overview-background-shade {
+  background-color: $mg-cinnamon-modal-shade;
+}
+
+.workspace-thumbnails {
+  spacing: 26px;
+}
+
+.workspace-thumbnails-background {
+  padding: $mg-space-2;
+  background-color: $mg-glass-low;
+  border-radius: $mg-radius-lg;
+}
+
+.expo-workspace-thumbnail-frame {
+  border: 1px solid $mg-cinnamon-expo-workspace-border;
+  border-radius: $mg-cinnamon-expo-workspace-radius;
+}
+
+.expo-workspace-thumbnail-frame#active {
+  border-color: $mg-cinnamon-expo-workspace-active-border;
+  border-width: $mg-border-width-medium;
+}
+
+.expo-workspaces-name-entry {
+  height: 1.5em;
+}
+
+// Nút thêm workspace — url() trỏ về assets/.
+.workspace-add-button {
+  background-image: url("assets/add-workspace.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 200px;
+  width: 35px;
+  transition-duration: $mg-duration-base;
+}
+
+.workspace-add-button:hover {
+  background-image: url("assets/add-workspace-hover.svg");
+  transition-duration: $mg-duration-base;
+}
+
+// Nút đóng workspace (dấu ×). `-cinnamon-close-overlap` là property riêng của
+// St, cho phép nút tràn ra ngoài khung thumbnail.
+.workspace-close-button {
+  background-image: url("assets/close.svg");
+  background-size: contain;
+  height: 26px;
+  width: 26px;
+  -cinnamon-close-overlap: 13px;
+}
+
+// -----------------------------------------------------------------------------
+// 2. TILE PREVIEW (kéo cửa sổ để xếp nửa màn hình)
+// -----------------------------------------------------------------------------
+.tile-preview {
+  background-color: rgba($mg-accent, $mg-opacity-hover);
+  border: 1px solid rgba($mg-accent, $mg-opacity-glass-mid);
+  border-radius: $mg-radius-md;
+}
+
+// -----------------------------------------------------------------------------
+// 3. ALT-TAB SWITCHER
+// -----------------------------------------------------------------------------
+#altTabPopup {
+  padding: $mg-space-2;
+  spacing: $mg-space-4;
+}
+
+.switcher-list {
+  background-color: $mg-cinnamon-alt-tab-background;
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-cinnamon-alt-tab-radius;
+  box-shadow: $mg-cinnamon-alt-tab-shadow;
+  padding: $mg-space-4;
+}
+
+.switcher-list-item-container {
+  spacing: $mg-space-3;
+}
+
+.switcher-list .item-box {
+  padding: $mg-space-2;
+  border: 1px solid transparent;
+  border-radius: $mg-radius-md;
+  background-color: transparent;
+  transition-duration: $mg-duration-fast;
+}
+
+.switcher-list .item-box:hover {
+  background-color: $mg-hover;
+}
+
+// Cửa sổ được chọn bằng BÀN PHÍM. Sửa lỗi (d): vendor dùng `border-color: red`.
+.switcher-list .item-box:outlined {
+  border-color: $mg-accent-border;
+  border-width: $mg-border-width-medium;
+  border-radius: $mg-radius-md;
+}
+
+.switcher-list .item-box:selected {
+  border-color: $mg-border-subtle;
+  background-color: $mg-accent-subtle;
+}
+
+.switcher-list .thumbnail-box {
+  padding: 0;
+  spacing: $mg-space-1;
+}
+
+.switcher-list .thumbnail {
+  width: 256px;
+  border-radius: $mg-radius-sm;
+}
+
+// Nền tối phía sau switcher khi xem trước cửa sổ.
+.switcher-preview-backdrop {
+  background-color: $mg-cinnamon-modal-shade;
+}
+
+.switcher-arrow {
+  background-color: transparent;
+  border-color: transparent;
+  color: $mg-text-primary;
+}
+
+// -----------------------------------------------------------------------------
+// 4. Gradient che hai đầu dải thumbnail cuộn được
+//    St có `background-gradient-direction/-start/-end` THẬT (không phải
+//    `linear-gradient()` chuẩn CSS). Phải fade về CÙNG màu nền của
+//    `.switcher-list`, nếu không sẽ thấy mép cứng.
+//    Dùng rgba(...,0) của chính màu nền để fade đúng.
+// -----------------------------------------------------------------------------
+.thumbnail-scroll-gradient-left {
+  background-gradient-direction: horizontal;
+  background-gradient-start: $mg-cinnamon-alt-tab-background;
+  background-gradient-end: rgba($mg-cinnamon-alt-tab-background, 0);
+  border-radius: $mg-cinnamon-alt-tab-radius;
+  border-radius-topright: 0px;
+  border-radius-bottomright: 0px;
+  width: 60px;
+}
+
+.thumbnail-scroll-gradient-right {
+  background-gradient-direction: horizontal;
+  background-gradient-start: rgba($mg-cinnamon-alt-tab-background, 0);
+  background-gradient-end: $mg-cinnamon-alt-tab-background;
+  border-radius: $mg-cinnamon-alt-tab-radius;
+  border-radius-topleft: 0px;
+  border-radius-bottomleft: 0px;
+  width: 60px;
+}

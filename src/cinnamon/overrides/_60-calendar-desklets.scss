@@ -1,0 +1,335 @@
+// =============================================================================
+// MintOS Glass · Dark Glass
+// src/cinnamon/overrides/_60-calendar-desklets.scss
+// -----------------------------------------------------------------------------
+// LỊCH (applet calendar@cinnamon.org, gồm cả ngăn sự kiện) + DESKLET + photoframe.
+//
+// Ghi chú xác minh: `.calendar-today` của theme gốc dùng
+// `box-shadow: inset 0 0 3px #3584e4` (xanh GNOME) — cùng nguồn rò rỉ accent
+// với `_colors.scss:24`. Đổi sang token cinnamon.calendar.today-*.
+// `.desklet:highlight` của theme gốc dùng `#78aeed` (xanh dương nhạt, không
+// phải bất kỳ biến nào trong _colors.scss) → đổi sang accent token.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// 1. Khung lịch
+// -----------------------------------------------------------------------------
+.calendar {
+  margin-top: $mg-space-4;
+  spacing-rows: 2px;
+  spacing-columns: 2px;
+}
+
+.calendar-main-box {
+  margin: $mg-space-2;
+}
+
+.calendar-month-label {
+  font-weight: $mg-w-bold;
+  font-size: 1em;
+  color: $mg-text-primary;
+  padding: $mg-space-1 $mg-space-2;
+}
+
+.calendar-change-month-back,
+.calendar-change-month-forward:rtl {
+  width: $mg-size-icon-sm;
+  height: $mg-size-icon-sm;
+  color: $mg-text-primary;
+  background-image: url("assets/calendar-arrow-left.svg");
+  background-size: contain;
+  border-radius: $mg-radius-sm;
+}
+
+.calendar-change-month-back:hover,
+.calendar-change-month-forward:rtl:hover {
+  background-image: url("assets/calendar-arrow-left-hover.svg");
+  background-color: $mg-hover;
+}
+
+.calendar-change-month-forward,
+.calendar-change-month-back:rtl {
+  width: $mg-size-icon-sm;
+  height: $mg-size-icon-sm;
+  color: $mg-text-primary;
+  background-image: url("assets/calendar-arrow-right.svg");
+  background-size: contain;
+  border-radius: $mg-radius-sm;
+}
+
+.calendar-change-month-forward:hover,
+.calendar-change-month-back:rtl:hover {
+  background-image: url("assets/calendar-arrow-right-hover.svg");
+  background-color: $mg-hover;
+}
+
+// -----------------------------------------------------------------------------
+// 2. Ô ngày
+// -----------------------------------------------------------------------------
+.calendar-day-base {
+  text-align: center;
+  width: 2.4em;
+  height: 2.4em;
+  border-radius: $mg-radius-pill;
+  color: $mg-text-secondary;
+  transition-duration: $mg-duration-fast;
+}
+
+.calendar-day-base:hover {
+  background-color: $mg-hover;
+  color: $mg-text-primary;
+}
+
+.calendar-day-heading {
+  color: $mg-text-tertiary;
+  margin-top: $mg-space-3;
+  height: 1.6em;
+  font-weight: $mg-w-medium;
+}
+
+.calendar-work-day,
+.calendar-nonwork-day {
+  color: $mg-text-primary;
+}
+
+.calendar-other-month-day {
+  color: $mg-text-disabled;
+}
+
+// Ngày hôm nay: viền + nền accent-subtle, chữ vẫn là text.primary để giữ
+// tương phản (KHÔNG tô nền accent đậm — chữ trên đó sẽ phải đổi màu và dễ vỡ).
+.calendar-today {
+  background-color: $mg-cinnamon-calendar-today-background;
+  border: 1px solid $mg-cinnamon-calendar-today-border;
+  border-radius: $mg-cinnamon-calendar-today-radius;
+  color: $mg-text-primary;
+  font-weight: $mg-w-bold;
+}
+
+.calendar-today:hover {
+  background-color: rgba($mg-accent, $mg-opacity-active);
+}
+
+.calendar-not-today:selected {
+  background-color: $mg-accent-subtle;
+  color: $mg-text-primary;
+}
+
+// Ngày được duyệt bằng bàn phím — focus state, không được bỏ.
+.calendar-day-base:focus,
+.calendar-today:focus {
+  @include mg-focus-ring();
+}
+
+// Chấm đánh dấu có sự kiện trong ngày.
+.calendar-day-event-dot-box {
+  margin-top: 1.7em;
+  max-rows: 1;
+}
+
+.calendar-day-event-dot {
+  margin: 1px;
+  border-radius: 2px;
+  width: 4px;
+  height: 4px;
+}
+
+// -----------------------------------------------------------------------------
+// 3. Ngăn sự kiện (bên trái lịch)
+// -----------------------------------------------------------------------------
+.calendar-events-main-box {
+  height: 300px;
+  margin-right: $mg-space-4;
+  min-width: 350px;
+  border-right-width: 1px;
+  border-color: $mg-border-subtle;
+}
+
+.calendar-events-main-box .separator {
+  -margin-horizontal: 1em;
+  -gradient-height: 1px;
+  -gradient-start: transparent;
+  -gradient-end: transparent;
+}
+
+.calendar-events-date-label {
+  text-align: center;
+  font-weight: $mg-w-bold;
+  color: $mg-text-primary;
+}
+
+.calendar-events-scrollbox {
+  margin-top: $mg-space-2;
+}
+
+.calendar-events-no-events-button {
+  margin: $mg-space-1 0;
+  padding: $mg-space-1;
+  border-radius: $mg-radius-md;
+  color: $mg-text-tertiary;
+}
+
+.calendar-events-no-events-button:hover {
+  color: $mg-text-primary;
+  background-color: $mg-hover;
+}
+
+.calendar-events-no-events-icon {
+  color: $mg-text-disabled;
+  icon-size: 128px;
+}
+
+.calendar-events-no-events-label {
+  text-align: center;
+  margin-top: $mg-space-4;
+  font-weight: $mg-w-bold;
+  font-size: 1.364em;
+  color: $mg-text-secondary;
+}
+
+.calendar-event-button {
+  margin: 3px 0;
+  border-radius: $mg-radius-md;
+  border: 1px solid transparent;
+  transition-duration: $mg-duration-fast;
+}
+
+.calendar-event-button:hover {
+  background-color: $mg-hover;
+  border-color: $mg-border-subtle;
+}
+
+.calendar-event-button:focus {
+  @include mg-focus-ring();
+}
+
+.calendar-event-color-strip {
+  width: 1px;
+}
+
+.calendar-event-row-content {
+  margin: 7px;
+}
+
+.calendar-event-summary {
+  color: $mg-text-secondary;
+}
+
+.calendar-event-time-past {
+  color: $mg-text-disabled;
+}
+
+.calendar-event-time-present {
+  color: $mg-text-primary;
+  font-weight: $mg-w-bold;
+  font-size: 1em;
+}
+
+// Sự kiện cả ngày — vendor dùng #78aeed (xanh dương), ngoài bảng màu token.
+// Đổi sang accent để nhất quán một hue nhấn duy nhất (D-3).
+.calendar-event-time-present:all-day {
+  color: $mg-accent;
+  font-weight: $mg-w-bold;
+  font-size: 1em;
+}
+
+.calendar-event-time-future {
+  color: $mg-text-primary;
+  font-weight: $mg-w-bold;
+  font-size: 1em;
+}
+
+// Đếm ngược tới sự kiện: 4 mức ngữ nghĩa, ánh xạ 1:1 sang status tokens.
+.calendar-event-countdown {
+  color: $mg-text-secondary;
+}
+
+.calendar-event-countdown:soon {
+  color: $mg-status-warning;
+}
+
+.calendar-event-countdown:imminent {
+  color: $mg-status-error;
+}
+
+.calendar-event-countdown:current {
+  color: $mg-status-success;
+}
+
+// Nút "về hôm nay" ở đáy ngăn lịch.
+.calendar-today-home-button,
+.calendar-today-home-button-enabled {
+  margin-left: $mg-space-3;
+  padding: $mg-space-2 $mg-space-3;
+  border-radius: $mg-radius-md;
+  color: $mg-text-primary;
+  transition-duration: $mg-duration-fast;
+}
+
+.calendar-today-home-button:hover,
+.calendar-today-home-button-enabled:hover {
+  background-color: $mg-hover;
+}
+
+.calendar-today-home-button-enabled {
+  color: $mg-accent;
+}
+
+.calendar-today-day-label {
+  text-align: center;
+  font-weight: $mg-w-bold;
+  color: $mg-text-primary;
+}
+
+.calendar-today-date-label {
+  font-weight: $mg-w-bold;
+  font-size: 1.364em;
+  color: $mg-text-primary;
+}
+
+// -----------------------------------------------------------------------------
+// 4. DESKLET (widget trên desktop)
+// -----------------------------------------------------------------------------
+.desklet-with-borders {
+  background-color: $mg-cinnamon-desklet-background;
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-cinnamon-desklet-radius;
+  color: $mg-text-primary;
+  padding: $mg-space-3;
+}
+
+.desklet-with-borders-and-header {
+  background-color: $mg-cinnamon-desklet-background;
+  border: 1px solid $mg-border-subtle;
+  border-radius: 0 0 $mg-cinnamon-desklet-radius $mg-cinnamon-desklet-radius;
+  border-top-width: 0;
+  color: $mg-text-primary;
+  padding: $mg-space-3;
+}
+
+.desklet-header {
+  background-color: $mg-cinnamon-desklet-background;
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-cinnamon-desklet-radius $mg-cinnamon-desklet-radius 0 0;
+  color: $mg-text-primary;
+  padding: $mg-space-1;
+}
+
+// Vendor dùng literal `red` cho khung kéo-thả desklet. Đây là chỉ báo "vùng
+// thả hợp lệ", KHÔNG phải lỗi → dùng accent, không dùng error.
+.desklet-drag-placeholder {
+  border: $mg-border-width-medium solid $mg-accent;
+  border-radius: $mg-cinnamon-desklet-radius;
+}
+
+.desklet:highlight {
+  border: $mg-border-width-medium solid $mg-accent;
+  border-radius: $mg-cinnamon-desklet-radius;
+}
+
+.photoframe-box {
+  background-color: $mg-cinnamon-desklet-background;
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-cinnamon-desklet-radius;
+  padding: $mg-space-1;
+}

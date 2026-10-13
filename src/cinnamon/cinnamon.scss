@@ -1,0 +1,17 @@
+// =============================================================================
+// MintOS Glass — Cinnamon shell stylesheet
+// src/cinnamon/cinnamon.scss
+// -----------------------------------------------------------------------------
+// File này biên dịch thành `cinnamon/cinnamon.css` bên trong theme
+// `MintOS-Glass`. Đó là file St nạp khi theme được chọn.
+//
+// Phase 1 ship DUY NHẤT biến thể Dark Glass, nên entry này chỉ trỏ tới
+// `cinnamon-dark.scss`. Tách thành hai file để biến thể Light Glass sau này
+// thêm vào mà KHÔNG đụng kiến trúc (D-2: dark_first, light tokens đã có sẵn
+// trong design/tokens/20-semantic-light.json với `emit:false`).
+//
+// Toàn bộ ghi chú về thứ tự import, ràng buộc của St và các lỗi thượng nguồn
+// đã sửa nằm trong `cinnamon-dark.scss` và `overrides/_00-globals.scss`.
+// =============================================================================
+
+@import "cinnamon-dark";

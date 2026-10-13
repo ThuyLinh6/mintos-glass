@@ -1,0 +1,249 @@
+// =============================================================================
+// MintOS Glass · Dark Glass
+// src/cinnamon/overrides/_10-surfaces.scss
+// -----------------------------------------------------------------------------
+// NỀN TẢNG CHUNG cho mọi bề mặt nổi của shell: menu, tooltip, OSD, entry,
+// scrollbar, selection, focus ring. Các lớp _20..._80 tái sử dụng mixin
+// mg-glass() / mg-edge() / mg-focus-ring() khai báo ở _00-globals.scss.
+//
+// Ba quy tắc bất biến của lớp này:
+//   1. MỌI màu đều là token hoặc rgba() của token. Không có literal hex/rgb.
+//   2. Một rule chỉ được có MỘT box-shadow (giới hạn của St đã xác minh).
+//   3. Không dùng -blur. "Kính" = alpha + gradient + hairline.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// 1. Hộp nội dung menu / popup
+//    `.popup-menu-content` là khung nhìn thấy được; `.menu` chỉ đặt padding.
+//    Vendor: nền đục #242424, radius 16px, border #333333, shadow 6px.
+//    Glass: nền rgba 0.72, hairline rgba, shadow lg (mềm và sâu hơn).
+// -----------------------------------------------------------------------------
+.popup-menu-content {
+  background-color: $mg-cinnamon-menu-background;
+  border: 1px solid $mg-cinnamon-menu-border;
+  border-radius: $mg-cinnamon-menu-radius;
+  box-shadow: $mg-cinnamon-menu-shadow;
+  padding: $mg-cinnamon-menu-padding;
+}
+
+// -----------------------------------------------------------------------------
+// 2. Tooltip — độ nâng thấp, nền gần đục để chữ luôn đọc được
+// -----------------------------------------------------------------------------
+#Tooltip {
+  background-color: $mg-surface-elevated-2;
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-radius-md;
+  box-shadow: $mg-shadow-sm;
+  padding: $mg-space-1 $mg-space-2;
+  margin: $mg-space-1;
+  color: $mg-text-primary;
+  font-size: $mg-fs-ui;
+}
+
+// -----------------------------------------------------------------------------
+// 3. Khung OSD — XỬ LÝ Ở _50-dialogs-osd-notif.scss (mục 11)
+//
+// LƯU Ý XÁC MINH, để không ai thêm lại selector chết:
+//   `.osd-window` KHÔNG tồn tại trong Cinnamon 6.6. Đã grep toàn bộ `js/` và
+//   `files/usr/share/cinnamon/{applets,desklets}` của commit 806c1a4e
+//   (tag 6.6.9): chuỗi "osd-window" xuất hiện 0 lần; cũng không có trong CSS
+//   biên dịch từ vendor sass (452 selector).
+//   `.modal-dialog` cũng KHÔNG tồn tại — lớp dialog thật là `.dialog`
+//   (js/ui/dialog.js:68 `dialog-button-box`, :148 `dialog-button`) cùng các
+//   biến thể `.end-session-dialog`, `.prompt-dialog`, `.run-dialog`,
+//   `.polkit-dialog-*`, `.audio-device-selection-dialog`.
+//   Các OSD thật: `.info-osd`, `.media-keys-osd`, `.workspace-switch-osd`,
+//   `.resize-popup`, `#LookingGlassDialog` (đều mở rộng %osd_base).
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// 4. Ô nhập liệu trong shell (tìm kiếm app menu, đổi tên, prompt)
+//    Giữ nguyên hình học vendor; chỉ đổi màu trạng thái sang token.
+//    Focus dùng viền accent + shadow trong — KHÔNG dùng outline (St không
+//    có outline-color trên StEntry như GTK).
+// -----------------------------------------------------------------------------
+StEntry {
+  color: $mg-text-primary;
+  caret-color: $mg-text-primary;
+  selection-background-color: $mg-accent-strong;
+  selected-color: $mg-text-on-accent;
+}
+
+StEntry:focus,
+.search-entry:focus {
+  color: $mg-text-primary;
+  caret-color: $mg-text-primary;
+  border: 1px solid $mg-accent-border;
+  box-shadow: inset 0 0 0 1px $mg-accent-strong;
+}
+
+StEntry:insensitive {
+  color: $mg-text-disabled;
+}
+
+.search-entry {
+  color: $mg-text-secondary;
+  caret-color: $mg-text-primary;
+  background-color: $mg-field-bg;
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-radius-md;
+  padding: $mg-space-1 $mg-space-2;
+  selection-background-color: $mg-accent-strong;
+  selected-color: $mg-text-on-accent;
+}
+
+.search-entry:hover {
+  border-color: $mg-border-strong;
+}
+
+.search-entry-icon {
+  color: $mg-text-tertiary;
+  icon-size: 1em;
+}
+
+.search-entry:hover .search-entry-icon,
+.search-entry:focus .search-entry-icon {
+  color: $mg-text-secondary;
+}
+
+// -----------------------------------------------------------------------------
+// 5. Scrollbar — mảnh hơn vendor, trong suốt khi không hover
+//    StScrollBar con: `.trough`, `.vhandle`, `.hhandle`.
+// -----------------------------------------------------------------------------
+StScrollBar {
+  padding: 2px;
+}
+
+StScrollBar StBin#trough {
+  background-color: transparent;
+  border-radius: $mg-radius-pill;
+}
+
+StScrollBar StButton#vhandle,
+StScrollBar StButton#hhandle {
+  background-color: $mg-scroll-thumb;
+  border: none;
+  border-radius: $mg-radius-pill;
+}
+
+StScrollBar StButton#vhandle:hover,
+StScrollBar StButton#hhandle:hover {
+  background-color: $mg-scroll-thumb-hover;
+}
+
+StScrollBar StButton#vhandle:active,
+StScrollBar StButton#hhandle:active {
+  background-color: $mg-scroll-thumb-active;
+}
+
+// -----------------------------------------------------------------------------
+// 6. Selection / highlight — accent 600 + chữ on-accent (đã kiểm 7.52:1)
+//
+// CƠ CHẾ THẬT trong St, đã xác minh bằng mã nguồn:
+//   · Màu của vùng bôi đen trong ô nhập liệu do StEntry đọc trực tiếp:
+//     src/st/st-entry.c:283 `caret-size`, :289 `selection-background-color`,
+//     và `selected-color`. Đây là chỗ đặt token, đã làm ở mục 4 phía trên và
+//     ở _30-menus-startmenu.scss mục 6 cho các ô tìm kiếm.
+//   · Pseudo-class `:selected` do st-widget.c:2901 thêm dựa trên
+//     ATK_STATE_SELECTED (cùng chỗ đó thêm `:checked` ở :2913). Nghĩa là nó
+//     chỉ xuất hiện trên widget CÓ state truy cập được là selected — thực tế
+//     là item trong danh sách (`.item-box:selected`, `.candidate-box:selected`,
+//     `.appmenu-sidebar-button:selected`), KHÔNG phải StLabel/StBoxLayout trần.
+// Vì vậy bản đầu tiên của file này có rule `StLabel:selected, StBoxLayout:selected`
+// và đã bị GỠ: nó gần như không bao giờ khớp, tức là CSS chết. Selection được
+// xử lý đúng chỗ, theo từng widget thật.
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// 7. Focus visibility — toàn cục
+//    Vendor dùng `box-shadow: inset 0 0 1px 1px rgba(66,133,244,.7)` (xanh
+//    Google) cho focus. Đổi sang accent mint + dày 2px để đạt tương phản
+//    chỉ báo focus ≥3:1 so với nền liền kề (WCAG 2.2 SC 2.4.11).
+//    Đây là rule CỐ Ý ghi đè hành vi focus của vendor; không được bỏ.
+// -----------------------------------------------------------------------------
+// Danh sách này CHỈ chứa selector đã xác minh là có thật trong Cinnamon 6.6.
+// `.appmenu-item` đã bị LOẠI: grep toàn bộ js/ và files/usr/share/cinnamon/
+// của commit 806c1a4e cho 0 kết quả -> viết ra sẽ là CSS chết.
+.popup-menu-item:focus,
+.menu-application-button-selected:focus,
+.menu-category-button-selected:focus,
+.applet-box:focus,
+.window-list-item-box:focus,
+.grouped-window-list-item-box:focus,
+.calendar-today:focus,
+#notification:focus {
+  box-shadow: inset 0 0 0 2px $mg-accent-strong;
+}
+
+// Bàn phím-only: giữ outline cho control dùng outline (StButton, StEntry)
+StButton:focus,
+StEntry:focus {
+  border-color: $mg-accent-border;
+}
+
+// -----------------------------------------------------------------------------
+// 8. Sửa lỗi tương phản của lớp vendor
+//    Vendor đặt `background-color: $accent_bg_color` + kế thừa `color: white`
+//    cho `.dialog-button:default` (%dialog_button_default) và
+//    `.vkeyboard-key.enter-key`. Với accent mint #2bb67a thì white chỉ đạt
+//    2.60:1 (FAIL). Chữ trên accent phải là gray.950 → 7.52:1 (PASS).
+//    Xem docs/adr + tools/lint/contrast.py.
+// -----------------------------------------------------------------------------
+.dialog .dialog-button:default,
+.vkeyboard-key.enter-key {
+  color: $mg-text-on-accent;
+}
+
+.dialog .dialog-button:default:focus,
+.vkeyboard-key.enter-key:focus {
+  color: $mg-text-on-accent;
+}
+
+// -----------------------------------------------------------------------------
+// 9. Đường phân cách trong menu / panel
+// -----------------------------------------------------------------------------
+.popup-separator-menu-item,
+.popup-separator-menu-item .popup-menu-item {
+  height: 1px;
+  background-color: $mg-border-subtle;
+  border: none;
+  margin: $mg-space-1 0;
+  padding: 0;
+}
+
+.popup-subtitle-menu-item {
+  font-weight: 700;
+  color: $mg-text-secondary;
+}
+
+// -----------------------------------------------------------------------------
+// 10. Icon style mặc định — symbolic để icon đổi màu theo `color`
+// -----------------------------------------------------------------------------
+.popup-menu-arrow,
+.popup-menu-icon {
+  color: $mg-text-tertiary;
+  icon-size: 1em;
+}
+
+// -----------------------------------------------------------------------------
+// 11. Ripple ở góc màn hình (phím Super)
+//     Vendor dùng `background-image: url("assets/corner-ripple.png")` — một PNG
+//     đục không đổi màu được theo scheme. Thay bằng SVG tô bằng currentColor
+//     của St (background-image KHÔNG nhận currentColor, nên dùng SVG có màu
+//     cố định theo scheme, sinh từ token — xem T05).
+// -----------------------------------------------------------------------------
+.ripple-box {
+  width: 52px;
+  height: 52px;
+  background-image: url("assets/corner-ripple.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.ripple-box:rtl {
+  width: 52px;
+  height: 52px;
+  background-image: url("assets/corner-ripple.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+}

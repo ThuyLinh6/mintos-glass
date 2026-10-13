@@ -1,0 +1,313 @@
+// =============================================================================
+// MintOS Glass · Dark Glass
+// src/cinnamon/overrides/_20-panel.scss
+// -----------------------------------------------------------------------------
+// PANEL + applet + system tray + workspace switcher.
+//
+// Baseline vendor (đã build bằng libsass từ vendor/cinnamon-6.6-sass, đo được):
+//   .panel-top/.panel-bottom/.panel-left/.panel-right { background-color: #1a1a1a }
+//   .panel-top   { box-shadow: inset 0 -1px #333333 }   // hairline cạnh dưới
+//   .panel-bottom{ box-shadow: inset 0  1px #333333 }
+//   .applet-box:hover            { background-color: #454545 }  // ĐỤC, không radius
+//   .panel-launchers .launcher:hover { background-color: #454545 }
+//   .applet-cornerbar            { width:8px; background:#454545; border:1px #333333 }
+//
+// Chiều cao panel KHÔNG đặt bằng CSS. Cinnamon lấy chiều cao từ gsetting
+// `org.cinnamon panel-height` (list "1:bottom:0:<px>"). Token
+// $mg-cinnamon-panel-height (30px) được áp ở tầng cấu hình người dùng, xem
+// docs/install + packaging/cinnamon-shell/config/. Đặt `height` trong CSS sẽ
+// xung đột với applet container và làm hỏng layout.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// 1. Thân panel — glass α0.86, KHÔNG blur
+// -----------------------------------------------------------------------------
+// Vendor gộp 4 hướng vào một rule; ta tách ra vì mỗi hướng có hairline khác nhau.
+.panel-top,
+.panel-bottom,
+.panel-left,
+.panel-right {
+  background-color: $mg-cinnamon-panel-background;
+  color: $mg-text-primary;
+  font-weight: $mg-w-medium;
+}
+
+// Hairline ngăn cách panel với nội dung desktop.
+// Panel KHÔNG có drop shadow → được phép dùng inset box-shadow (xem _00-globals).
+.panel-top {
+  @include mg-edge(bottom, $mg-cinnamon-panel-border);
+}
+
+.panel-bottom {
+  @include mg-edge(top, $mg-cinnamon-panel-border);
+}
+
+.panel-left {
+  @include mg-edge(right, $mg-cinnamon-panel-border);
+}
+
+.panel-right {
+  @include mg-edge(left, $mg-cinnamon-panel-border);
+}
+
+// -----------------------------------------------------------------------------
+// 2. Vùng kéo-thả applet (chỉ hiện ở chế độ sửa panel)
+//    Vendor: left=đỏ, center=xanh lá, right=xanh dương, alpha 0.2 — literal rgb.
+//    Ánh xạ sang token trạng thái để không hard-code: left=error,
+//    center=success, right=warning. Ba hue vẫn phân biệt được.
+// -----------------------------------------------------------------------------
+.panelLeft:dnd,
+.panelRight:dnd,
+.panelCenter:dnd {
+  border-radius: $mg-radius-sm;
+}
+
+.panelLeft:dnd {
+  background-color: rgba($mg-status-error, $mg-opacity-hover);
+}
+
+.panelCenter:dnd {
+  background-color: rgba($mg-status-success, $mg-opacity-hover);
+}
+
+.panelRight:dnd {
+  background-color: rgba($mg-status-warning, $mg-opacity-hover);
+}
+
+// Panel placeholder khi người dùng kéo panel sang cạnh khác.
+.panel-dummy {
+  background-color: rgba($mg-status-error, $mg-opacity-glass-low);
+}
+
+.panel-dummy:entered {
+  background-color: rgba($mg-status-error, $mg-opacity-glass-mid);
+}
+
+// Panel bị tô sáng bởi "Highlight panel" trong Cinnamon Settings.
+#panel:highlight {
+  background-color: rgba($mg-status-error, $mg-opacity-glass-low);
+}
+
+// -----------------------------------------------------------------------------
+// 3. Applet box — trạng thái hover/active có radius, kiểu macOS
+// -----------------------------------------------------------------------------
+.applet-box {
+  padding: 0 $mg-space-1;
+  spacing: $mg-space-1;
+  text-align: center;
+  color: $mg-text-primary;
+  border-radius: $mg-cinnamon-panel-launcher-radius;
+  transition-duration: $mg-duration-fast;
+}
+
+.applet-box.vertical {
+  padding: $mg-space-1 0;
+}
+
+.applet-box:hover {
+  background-color: $mg-cinnamon-panel-launcher-hover;
+  color: $mg-text-primary;
+}
+
+.applet-box:active {
+  background-color: $mg-cinnamon-panel-launcher-active;
+}
+
+.applet-box:focus {
+  @include mg-focus-ring();
+}
+
+// Applet yêu cầu chú ý (ví dụ đang ghi đĩa, cập nhật).
+.applet-box:highlight {
+  background-color: rgba($mg-status-error, $mg-opacity-glass-low);
+}
+
+.applet-label {
+  font-weight: $mg-w-medium;
+  color: $mg-text-primary;
+}
+
+.applet-label:hover,
+.applet-box:hover .applet-label {
+  color: $mg-text-primary;
+}
+
+.applet-icon {
+  color: $mg-text-primary;
+  icon-size: $mg-size-icon-sm;
+}
+
+.applet-icon:hover,
+.applet-box:hover .applet-icon {
+  color: $mg-text-primary;
+}
+
+// -----------------------------------------------------------------------------
+// 4. Separator giữa các applet
+// -----------------------------------------------------------------------------
+.applet-separator {
+  padding: 1px $mg-space-1;
+}
+
+.applet-separator.vertical {
+  padding: $mg-space-1 1px;
+}
+
+.applet-separator-line {
+  width: 1px;
+  background: $mg-border-subtle;
+}
+
+.applet-separator-line-vertical {
+  height: 1px;
+  background: $mg-border-subtle;
+}
+
+// -----------------------------------------------------------------------------
+// 5. Cornerbar (nút "hiện desktop" ở góc panel)
+// -----------------------------------------------------------------------------
+.applet-cornerbar {
+  width: 8px;
+  background-color: $mg-glass-low;
+  border: 1px solid $mg-cinnamon-panel-border;
+  border-radius: $mg-radius-sm;
+}
+
+.applet-cornerbar.vertical {
+  height: 8px;
+}
+
+.applet-cornerbar-box {
+  background: none;
+}
+
+.applet-cornerbar-box:hover > .applet-cornerbar {
+  background-color: $mg-hover;
+}
+
+// -----------------------------------------------------------------------------
+// 6. Launcher (applet panel-launchers) — icon ghim trên panel
+// -----------------------------------------------------------------------------
+.panel-launchers {
+  spacing: $mg-space-0;
+}
+
+.panel-launchers .launcher {
+  padding: 0 $mg-space-0;
+  border-radius: $mg-cinnamon-panel-launcher-radius;
+  transition-duration: $mg-duration-fast;
+}
+
+.panel-launchers .launcher:hover {
+  background-color: $mg-cinnamon-panel-launcher-hover;
+}
+
+.panel-launchers.vertical {
+  padding: $mg-space-0 0;
+}
+
+.panel-launchers.vertical .launcher {
+  padding: $mg-space-0 0;
+}
+
+// -----------------------------------------------------------------------------
+// 7. System tray (applet systray) + icon trạng thái hệ thống
+//    St không style được XEmbed icon; chỉ điều khiển spacing/padding.
+// -----------------------------------------------------------------------------
+.systray {
+  padding: 0;
+  spacing: $mg-space-1;
+}
+
+.system-status-icon {
+  icon-size: 1.091em;
+  color: $mg-text-primary;
+}
+
+.system-status-icon:hover {
+  color: $mg-text-primary;
+}
+
+// Badge "có thông báo chưa đọc" trên icon applet.
+.notification-applet-padding {
+  padding: $mg-space-1 0 $mg-space-1 $mg-space-1;
+}
+
+.flashspot {
+  background-color: $mg-text-primary;
+}
+
+.caps-lock-warning-label {
+  text-align: center;
+  padding-bottom: $mg-space-2;
+  color: $mg-status-warning;
+}
+
+// -----------------------------------------------------------------------------
+// 8. Workspace switcher applet (không phải expo)
+// -----------------------------------------------------------------------------
+.panel-top .workspace-switcher,
+.panel-bottom .workspace-switcher {
+  padding: 0 $mg-space-1;
+}
+
+.panel-left .workspace-switcher,
+.panel-right .workspace-switcher {
+  padding: $mg-space-1 0;
+}
+
+.workspace-button {
+  border: 1px solid $mg-border-subtle;
+  border-radius: $mg-radius-sm;
+  width: 2em;
+  color: $mg-text-tertiary;
+  background-color: $mg-surface-hover;
+  transition-duration: $mg-duration-fast;
+}
+
+.workspace-button.vertical {
+  height: 2em;
+}
+
+.workspace-button:outlined {
+  background-color: $mg-accent-subtle;
+  border-color: $mg-accent;
+  color: $mg-text-primary;
+}
+
+.workspace-button:outlined:hover {
+  background-color: rgba($mg-accent, $mg-opacity-active);
+}
+
+.workspace-button:hover {
+  background-color: $mg-surface-active;
+  color: $mg-text-primary;
+}
+
+.workspace-button:shaded {
+  background-color: $mg-surface-sunken;
+}
+
+// Đồ hoạ thu nhỏ các workspace (chế độ "graph").
+.workspace-graph {
+  padding: $mg-space-1;
+  spacing: $mg-space-1;
+}
+
+.workspace-graph .workspace {
+  border: 1px solid $mg-border-strong;
+  border-radius: $mg-radius-xs;
+  background-color: $mg-surface-sunken;
+}
+
+.workspace-graph .workspace:active {
+  border-color: $mg-accent;
+}
+
+.workspace-graph .workspace .windows,
+.workspace-graph .workspace:active .windows {
+  -active-window-background: $mg-border-control;
+  -active-window-border: $mg-border-strong;
+  -inactive-window-background: $mg-border-hairline;
+  -inactive-window-border: $mg-border-subtle;
+}

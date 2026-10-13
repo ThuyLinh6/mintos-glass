@@ -1,0 +1,62 @@
+// =============================================================================
+// MintOS Glass — biến thể DARK GLASS (Phase 1)
+// src/cinnamon/cinnamon-dark.scss
+// -----------------------------------------------------------------------------
+// Đây là entry theo scheme. `cinnamon.scss` chỉ là con trỏ tới file này, để
+// sau này thêm `cinnamon-light.scss` mà KHÔNG phải viết lại kiến trúc:
+//
+//   cinnamon.scss            -> @import "cinnamon-dark"     (Phase 1, mặc định)
+//   cinnamon-light.scss      -> cùng chuỗi import, chỉ đổi tầng token
+//   cinnamon-dark-blur.scss  -> thêm overrides/_90-blur-variant (Phase 2)
+//
+// -----------------------------------------------------------------------------
+// THỨ TỰ IMPORT LÀ BẮT BUỘC — KHÔNG ĐỔI
+// -----------------------------------------------------------------------------
+//  1. overrides/00-globals   THAY THẾ `_colors.scss` của vendor: định nghĩa 25
+//                            biến màu mà vendor dùng, bằng design token, tất cả
+//                            ĐỤC. Phải đứng TRƯỚC vì `_drawing.scss` /
+//                            `_common.scss` đọc các biến đó ngay khi biên dịch.
+//  2. vendor/…/drawing       mixin button()/entry()/panel-button()
+//  3. vendor/…/common        %placeholder (%button, %entry_common, %osd_base…)
+//                            và các rule nền tảng. LƯU Ý: `_common.scss:1-8`
+//                            gán `$base_padding`, `$base_border_radius`, … bằng
+//                            `:` thường (không `!default`) và các %placeholder
+//                            tiêu thụ chúng NGAY TẠI CHỖ ĐỊNH NGHĨA rồi được
+//                            `@extend`. Nên KHÔNG thể ghi đè hình học bằng cách
+//                            đặt biến sớm hơn (bị đè) hay muộn hơn (quá trễ).
+//                            Hình học phải sửa ở tầng override, theo từng
+//                            selector. Đã xác minh bằng build thật.
+//  4. vendor/…/widgets       17 file widget gốc của Cinnamon 6.6
+//  5. overrides/10..80       tầng ghi đè của MintOS Glass — ĐỨNG SAU để thắng
+//                            cascade khi cùng specificity.
+//
+// Vendor được giữ NGUYÊN VĂN (không sửa tay). Mọi khác biệt nằm trong overrides/.
+// Xem vendor/cinnamon-6.6-sass/VENDOR.md cho nguồn + SHA-256 từng file.
+// =============================================================================
+
+// --- Tầng 0: token -> biến vendor ------------------------------------------
+@import "overrides/00-globals";
+
+// --- Tầng 1: theme gốc Cinnamon 6.6 (pristine) -----------------------------
+@import "vendor/cinnamon-6.6-sass/drawing";
+@import "vendor/cinnamon-6.6-sass/common";
+@import "vendor/cinnamon-6.6-sass/widgets";
+
+// --- Tầng 2: ghi đè Dark Glass ---------------------------------------------
+@import "overrides/10-surfaces";
+@import "overrides/20-panel";
+@import "overrides/30-menus-startmenu";
+@import "overrides/40-windowlist-gwl";
+@import "overrides/50-dialogs-osd-notif";
+@import "overrides/60-calendar-desklets";
+@import "overrides/70-expo-scale-alttab";
+@import "overrides/80-keyboard-screensaver-lookingglass";
+
+// --- Tầng 3 (Phase 2, CHƯA BẬT): biến thể blur -----------------------------
+// @import "overrides/90-blur-variant";
+// Lý do chưa bật: `-blur` là property có thật của St (st-theme-node.c:2132)
+// nhưng src/st/st-background-effect.c thực hiện blur_size vòng lặp, mỗi vòng
+// g_malloc(w*h*4) + cogl_framebuffer_read_pixels() (đọc ngược GPU->CPU) +
+// cogl_texture_new_from_data(), cho MỖI LẦN PAINT, và cần
+// CLUTTER_FEATURE_SHADERS_GLSL. Chưa có máy Mint 22.3 để đo chi phí thật
+// (T00 chưa chạy) => KHÔNG ship blur, và KHÔNG mô tả alpha là blur.

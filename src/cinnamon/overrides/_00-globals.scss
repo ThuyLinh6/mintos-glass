@@ -1,0 +1,294 @@
+// =============================================================================
+// MintOS Glass · Dark Glass — Tầng 0: GLOBALS
+// =============================================================================
+//
+// File này THAY THẾ `vendor/cinnamon-6.6-sass/_colors.scss`.
+// Nó ánh xạ 25 biến màu mà toàn bộ theme gốc của Cinnamon 6.6 dùng sang
+// design token của dự án ($mg-*), rồi định nghĩa mixin "glass" dùng chung.
+//
+// -----------------------------------------------------------------------------
+// QUY TẮC 1 — MỌI BIẾN Ở ĐÂY PHẢI LÀ MÀU ĐỤC (opaque).
+// -----------------------------------------------------------------------------
+// Vendor áp dụng darken()/lighten()/mix() lên các biến này. Đã kiểm bằng:
+//
+//   $bg_color        -> darken, lighten, mix, transparentize   (29 lần dùng)
+//   $base_color      -> darken, lighten, transparentize        ( 9 lần dùng)
+//   $fg_color        -> darken, mix, transparentize            (56 lần dùng)
+//   $panel_bg        -> darken, mix, transparentize            (10 lần dùng)
+//   $accent_bg_color -> lighten/darken gián tiếp qua button($style: default)
+//   $error_bg_color  -> mix
+//   $destructive_bg_color, $link_color -> lighten
+//
+// darken()/lighten()/mix() trên màu có alpha cho kết quả khó đoán. Vì vậy:
+// độ trong suốt CHỈ được đưa vào ở tầng override (_10.._80) bằng rgba() tường minh.
+//
+// -----------------------------------------------------------------------------
+// QUY TẮC 2 — KHÔNG hard-code hex trong tầng override.
+// -----------------------------------------------------------------------------
+// Chỉ file này (và chỉ khi token thiếu) mới được phép tham chiếu primitive
+// $mg-color-*. Đã kiểm bằng tools/lint/no_hardcoded_colors.py.
+//
+// -----------------------------------------------------------------------------
+// QUY TẮC 3 — KHÔNG phát ra `-blur`.
+// -----------------------------------------------------------------------------
+// St của Cinnamon CÓ backdrop blur thật (property `-blur`, st-theme-node.c:2132)
+// nhưng chi phí rất cao: src/st/st-background-effect.c chạy `blur_size` vòng lặp,
+// mỗi vòng g_malloc(w*h*4) + cogl_framebuffer_read_pixels() (đọc ngược GPU->CPU)
+// + cogl_texture_new_from_data(), cho MỖI LẦN PAINT.
+//
+// Chưa có kiểm chứng thực tế trên Cinnamon 6.6 (người dùng chưa có máy Mint),
+// nên Dark-Blur KHÔNG được triển khai (theo chỉ đạo phạm vi).
+//
+// "Glass" ở đây là ĐỘ TRONG SUỐT (alpha) + viền hairline + shadow phân tầng.
+// Đây KHÔNG phải blur. Đừng mô tả nó là blur.
+// Các token $mg-cinnamon-*-blur được GIỮ LẠI cho biến thể blur sau này.
+// Đã kiểm bằng tools/lint/st_properties.py (--forbid-blur).
+// =============================================================================
+
+@import "../tokens/tokens";
+
+// -----------------------------------------------------------------------------
+// 1. Nền tảng bề mặt
+// -----------------------------------------------------------------------------
+// Gốc: $bg_color #242424, $base_color #303030, $fg_color white, $panel_bg #1a1a1a
+$bg_color:       $mg-color-gray-850;   // #17181c — bề mặt đặc chính
+$base_color:     $mg-color-gray-800;   // #1c1e22 — nền ô nhập / danh sách
+$fg_color:       $mg-color-gray-0;     // #ffffff — chữ (vendor tự transparentize)
+$panel_bg:       $mg-color-gray-900;   // #121316 — nền panel ĐỤC; tầng _20 phủ rgba lên
+
+// -----------------------------------------------------------------------------
+// 2. Thang bề mặt cho nút / ô nhập / mục được tô sáng
+// -----------------------------------------------------------------------------
+// Vendor dùng 4 bậc này cho toàn bộ trạng thái nút:
+//   normal  = $light_bg_color        (drawing.scss:60)
+//   hover   = $lighter_bg_color      (drawing.scss:72)
+//   active  = $lightest_bg_color     (drawing.scss:73)
+//   checked = $lightest_bg_color     (drawing.scss:74)
+//   insensitive = darken($light_bg_color, 3%)
+// Nên 4 bậc phải đơn điệu tăng dần độ sáng và ĐỤC.
+$light_bg_color:     $mg-color-gray-750;  // #232529  (gốc #393939)
+$light_base_color:   $mg-color-gray-700;  // #2a2c31  (gốc #444444)
+$lighter_bg_color:   $mg-color-gray-600;  // #3a3d43  (gốc #454545)
+$lightest_bg_color:  $mg-color-gray-500;  // #55585f  (gốc #656565)
+
+// -----------------------------------------------------------------------------
+// 3. Accent — D-3: xanh Mint
+// -----------------------------------------------------------------------------
+// $accent_color    : dùng cho viền/nền KHÔNG kèm chữ (ripple, tile-preview,
+//                    border expo, chữ ngày hôm nay trong lịch)
+// $accent_bg_color : dùng cho nền CÓ kèm chữ (nút default, phím Enter trên
+//                    bàn phím ảo, selection-background-color, border windowlist)
+//
+// KIỂM TƯƠNG PHẢN (tools/lint/contrast.py, WCAG 2.1):
+//   $fg_color (#ffffff) trên mint-600 (#2bb67a) = 2.60:1  -> FAIL AA
+//   gray-950 (#0b0c0e) trên mint-600 (#2bb67a) = 7.52:1  -> PASS AA
+// Nên tầng override ĐỔI MÀU CHỮ trên các nền accent sang $mg-text-on-accent.
+// Xem _10-surfaces.scss mục "accent-text-fix".
+$accent_color:     $mg-color-mint-400;  // #6ee7bd
+$accent_bg_color:  $mg-color-mint-600;  // #2bb67a
+
+// -----------------------------------------------------------------------------
+// 4. Trạng thái ngữ nghĩa
+// -----------------------------------------------------------------------------
+$error_color:            $mg-color-red-400;    // #ff7b73 (gốc #e4705b)
+$error_bg_color:         $mg-color-red-600;    // #e04b43 (gốc #c01c28)
+$success_color:          $mg-color-mint-300;   // #8ff0c4 (gốc #8ff0a4)
+$success_bg_color:       $mg-color-mint-700;   // #1f8f5f (gốc #26a269)
+$destructive_color:      $mg-color-red-400;    // #ff7b73 (gốc #ff7b63)
+$destructive_bg_color:   $mg-color-red-600;    // #e04b43 (gốc #c01c28)
+$warning_color:          $mg-color-amber-500;  // #ffbd2e (gốc #f8e45c)
+$warning_bg_color:       $mg-color-amber-600;  // #d99a1f (gốc #cd9309)
+
+$notification_badge_bg_color: $mg-color-red-500;  // #ff5f57 (gốc #e74b37)
+
+$link_color: $mg-color-mint-400;   // #6ee7bd (gốc #1c71d8) — link trong dark glass
+
+// -----------------------------------------------------------------------------
+// 5. Viền, shadow, chữ mờ
+// -----------------------------------------------------------------------------
+// $borders_color: vendor chỉ transparentize(), không darken/lighten -> vẫn giữ ĐỤC
+// để kết quả darken-free nhưng dự đoán được; viền rgba thật nằm ở tầng override.
+$borders_color:  $mg-color-gray-700;   // #2a2c31 (gốc #333333)
+$shadow_color:   $mg-color-black;      // vendor tự transparentize khi dùng
+
+// Giữ nguyên CÔNG THỨC của vendor (mix/transparentize) để quan hệ giữa các màu
+// không bị phá; chỉ đổi màu đầu vào.
+$large_icon_color:    transparentize($fg_color, 0.6);
+$light_text_color:    mix($fg_color, $bg_color, 65%);
+$insensitive_fg_color: mix($fg_color, $bg_color, 40%);
+
+// =============================================================================
+// 6. Biến nội bộ của MintOS Glass (không phải biến vendor)
+// =============================================================================
+
+// Viền hairline thật (rgba) — dùng cho mép trên của bề mặt nâng, mô phỏng viền kính.
+$mg-glass-hairline:      $mg-border-hairline;   // rgba(255,255,255,0.08)
+$mg-glass-hairline-top:  $mg-border-highlight;  // rgba(255,255,255,0.10)
+$mg-glass-border:        $mg-border-subtle;     // rgba(255,255,255,0.12)
+$mg-glass-border-strong: $mg-border-strong;     // rgba(255,255,255,0.20)
+$mg-focus-ring:          $mg-border-focus;      // rgba(110,231,189,0.85)
+
+// Bề mặt glass (rgba) — đây là phần "trong suốt" thật sự.
+$mg-glass-low:   $mg-surface-glass-low;    // rgba(18,19,22,0.55)
+$mg-glass-mid:   $mg-surface-glass-mid;    // rgba(23,24,28,0.72)
+$mg-glass-high:  $mg-surface-glass-high;   // rgba(28,30,34,0.86)
+$mg-elevated-1:  $mg-surface-elevated-1;   // rgba(23,24,28,0.92)
+$mg-elevated-2:  $mg-surface-elevated-2;   // rgba(28,30,34,0.96)
+
+// Nền tương tác (rgba trắng) — hover/active trên bề mặt tối.
+$mg-hover:   $mg-surface-hover;    // rgba(255,255,255,0.07)
+$mg-active:  $mg-surface-active;   // rgba(255,255,255,0.12)
+$mg-accent-subtle: $mg-status-accent-subtle;  // rgba(61,220,151,0.16)
+
+// Shadow phân tầng: dùng TRỰC TIẾP tên token ($mg-shadow-sm/md/lg/xl).
+// Token đã sinh ra giá trị box-shadow hoàn chỉnh, ví dụ:
+//   $mg-shadow-lg == 0 10px 28px rgba(0, 0, 0, 0.44)
+// KHÔNG khai báo alias trùng tên token — SCSS sẽ tự tham chiếu chính nó.
+
+// Accent dạng semantic, cho tầng override dùng thay vì biến vendor.
+$mg-accent:         $mg-status-accent;          // #3ddc97
+$mg-accent-hover:   $mg-status-accent-hover;    // #6ee7bd
+$mg-accent-strong:  $mg-status-accent-active;   // #2bb67a — nền accent CÓ kèm chữ
+$mg-accent-border:  $mg-border-focus;           // rgba(110,231,189,0.85)
+
+// Scrollbar shell. Token scrollbar hiện có là namespace `gtk.*` (Agent T07);
+// Cinnamon dùng StScrollBar nên cần alpha riêng, ánh xạ từ border tokens đã có
+// để không phát minh giá trị mới.
+$mg-scroll-thumb:        $mg-border-strong;    // rgba(255,255,255,0.20)
+$mg-scroll-thumb-hover:  $mg-border-control;   // rgba(255,255,255,0.36)
+$mg-scroll-thumb-active: $mg-text-secondary;   // rgba(255,255,255,0.66)
+
+// Nền ô nhập liệu trong shell (trũng hơn bề mặt).
+$mg-field-bg: $mg-surface-sunken;              // #0b0c0e
+
+// -----------------------------------------------------------------------------
+// TẠM THỜI — TYPOGRAPHY. Xem GitHub issue "font.weight-* emit sai đơn vị px".
+//
+// BẰNG CHỨNG NGUỒN (đã đọc, không suy đoán):
+//   src/st/st-theme-node.c:2680 `font_weight_from_term()` yêu cầu
+//   `term->content.num->type == NUM_GENERIC` (số TRẦN, không đơn vị); nếu là
+//   NUM_LENGTH_PX thì return FALSE → khai báo bị BỎ QUA trong im lặng.
+//   => `font-weight: 700px;` KHÔNG có tác dụng gì trên St.
+//
+//   `tools/tokens/generate.py:215`: `unit = "" if leaf in UNITLESS_KEYS else
+//   PX_KEY_OVERRIDE.get(leaf, "px")` — `UNITLESS_KEYS = {"blur"}` và
+//   `NS_UNIT` không có nhánh "font", nên `font.weight-*` bị gắn "px".
+//   Đồng thời `font.size-sm-pt: 9` / `size-lg-pt: 12` là giá trị POINT
+//   nhưng emit thành `9px` / `12px` — sai đơn vị (St hỗ trợ `pt`,
+//   st-theme-node.c:1019 `case POINTS: num->val * multiplier * (resolution/72.)`).
+//
+// Sinh ra hiện tại:
+//   $mg-font-weight-regular: 400px;  $mg-font-weight-medium: 500px;
+//   $mg-font-weight-bold: 700px;
+//   $mg-font-size-sm-pt: 9px;        $mg-font-size-lg-pt: 12px;
+//
+// TẤT CẢ 5 biến trên KHÔNG được dùng ở tầng override. Khi Agent design-system
+// sửa generator + regenerate, xoá khối này và thay bằng token.
+// Đã khoá bằng tools/lint/no_hardcoded_colors.py (mục FORBIDDEN_TOKEN_REFS).
+// -----------------------------------------------------------------------------
+$mg-w-regular: 400;
+$mg-w-medium:  500;
+$mg-w-bold:    700;
+
+// Kích thước chữ của shell, theo `em` (font-relative — St hỗ trợ, xem
+// get_length_from_term `case FONT_RELATIVE`). Dùng em để scale theo cỡ chữ
+// hệ thống người dùng (accessibility: không khoá cứng px).
+$mg-fs-ui:    1em;
+$mg-fs-ui-lg: 1.1em;
+$mg-fs-title: 1.2em;
+$mg-fs-small: 0.9em;
+
+// -----------------------------------------------------------------------------
+// TẠM THỜI — MOTION. `design/tokens/40-motion.json` KHÔNG BAO GIỜ được emit.
+//
+// BẰNG CHỨNG NGUỒN: `tools/tokens/generate.py:605-616` chỉ flatten
+// `10-primitives.json`, `30-component.json` và `20-semantic-<scheme>.json`
+// vào pipeline phân giải. `40-motion.json` có trong TOKEN_FILES (dòng 50, tức
+// CÓ tham gia tính lock) nhưng không được đưa vào `resolved`, nên
+// `duration.*` và `cinnamon_transition.*` biến mất khỏi MỌI stylesheet sinh ra.
+// `make tokens-check` vẫn báo OK → CI hiện không bắt được.
+//
+// Giá trị dưới đây chép 1:1 từ 40-motion.json để không phát minh số mới.
+// St chỉ hỗ trợ `transition-duration` (không có timing-function) — đã ghi trong
+// chính `_doc` của file motion đó. Xoá khối này khi generator được sửa.
+// -----------------------------------------------------------------------------
+// RÀNG BUỘC NGHIÊM NGẶT — ĐÃ XÁC MINH BẰNG MÃ NGUỒN, RẤT DỄ SAI:
+//
+//   src/st/st-theme-node.c:2317 `st_theme_node_get_transition_duration()`
+//     -> :2332 gọi `st_theme_node_lookup_double(node, "transition-duration", ...)`
+//     -> :841  `if (term->type != TERM_NUMBER ||
+//                   term->content.num->type != NUM_GENERIC) continue;`
+//
+//   Nghĩa là St CHỈ CHẤP NHẬN SỐ TRẦN (NUM_GENERIC). Docstring :2315 ghi rõ
+//   giá trị trả về là "transition duration in MILLISECONDS".
+//
+//   => `transition-duration: 150;`    -> HOẠT ĐỘNG (150 ms)
+//   => `transition-duration: 150ms;`  -> BỊ BỎ QUA TRONG IM LẶNG (NUM_TIME_MS)
+//
+// Đây NGƯỢC với CSS chuẩn, nên KHÔNG được thêm đơn vị `ms` cho Cinnamon.
+// Bằng chứng theme gốc tự mâu thuẫn: `_expo.scss:15,19` viết `150` (đúng),
+// còn `_common.scss:114` viết `100ms` (SAI -> transition của %button /
+// .popup-menu-item trong theme gốc thực tế KHÔNG chạy).
+//
+// Vì vậy 5 biến dưới đây là SỐ TRẦN, dù `40-motion.json` khai báo đơn vị ms.
+// (GTK3/GTK4 thì NGƯỢC LẠI: bắt buộc phải có `ms`. Generator hiện dùng một
+// `NS_UNIT["duration"] = "ms"` chung cho mọi target — cần override theo target.)
+// Đã khoá bằng tools/lint/st_properties.py (kiểm tra CSS ĐÃ BIÊN DỊCH).
+$mg-duration-instant: 0;
+$mg-duration-fast:    90;    // motion.duration.fast, dùng cho panel/applet/menu
+$mg-duration-base:    160;   // motion.duration.base, mặc định
+$mg-duration-menu:    180;   // motion.duration.menu
+$mg-duration-slow:    240;
+$mg-duration-dialog:  300;   // motion.duration.dialog
+
+// =============================================================================
+// 7. Mixin dùng chung
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// RÀNG BUỘC ĐÃ XÁC MINH: St chỉ hỗ trợ MỘT box-shadow mỗi rule.
+// `st_theme_node_lookup_shadow()` trả về đúng MỘT `StShadow *`
+// (src/st/st-theme-node.c:3348-3400), không phải danh sách. Vì vậy
+// `box-shadow: inset 0 1px 0 A, 0 10px 28px B;` là KHÔNG HỢP LỆ.
+//
+// Hệ quả thiết kế: viền kính (hairline) phải dùng `border`, KHÔNG dùng inset
+// box-shadow, khi rule đó đã có drop shadow. Chỉ những bề mặt KHÔNG có drop
+// shadow (panel) mới được dùng inset box-shadow làm hairline.
+// -----------------------------------------------------------------------------
+
+/// Bề mặt glass nâng: nền rgba + border hairline + MỘT drop shadow.
+/// $bg     : màu nền rgba (token surface.*)
+/// $radius : bán kính (token radius.*)
+/// $shadow : giá trị box-shadow (token shadow.*) hoặc `none`
+/// $border : màu border rgba (token border.*) hoặc `none`
+@mixin mg-glass($bg: $mg-glass-mid, $radius: $mg-radius-lg, $shadow: $mg-shadow-lg, $border: $mg-glass-border) {
+  background-color: $bg;
+  border-radius: $radius;
+  @if $border != none {
+    border: 1px solid $border;
+  }
+  @if $shadow != none {
+    box-shadow: $shadow;
+  }
+}
+
+/// Hairline bằng inset box-shadow — CHỈ dùng khi rule không cần drop shadow.
+/// $side: top | bottom | left | right
+@mixin mg-edge($side: bottom, $color: $mg-glass-hairline) {
+  @if $side == top         { box-shadow: inset 0 1px 0 $color; }
+  @else if $side == bottom { box-shadow: inset 0 -1px 0 $color; }
+  @else if $side == left   { box-shadow: inset 1px 0 0 $color; }
+  @else if $side == right  { box-shadow: inset -1px 0 0 $color; }
+}
+
+/// Viền 1px rgba cho bề mặt nổi trên nền tối.
+@mixin mg-hairline($color: $mg-glass-border) {
+  border: 1px solid $color;
+}
+
+/// Vòng focus thấy rõ (tiêu chí V8 / a11y: focus_visible_required = true).
+/// Dùng inset để không chiếm thêm 1px layout — quan trọng vì St không có
+/// box-sizing và padding/border ảnh hưởng trực tiếp tới kích thước widget.
+@mixin mg-focus-ring($color: $mg-focus-ring) {
+  box-shadow: inset 0 0 0 2px $color;
+}

@@ -433,6 +433,41 @@ T01 (scaffold+CI) ──► T02 (tokens+generator) ──┬──► T03 (spike
 
 ---
 
+### T17 · Kiến trúc System Settings + đề xuất Control Center
+- **Owner:** Agent 6 (Settings & Control Center UI)
+- **Phụ thuộc:** khảo sát Cinnamon 6.6.9; phối hợp Agent 3 (T06 GTK3 core),
+  Agent 2 (T04 Cinnamon shell/applet), Agent 5 (T15 icon theme)
+- **Lý do task này chưa từng có trong plan:** work-breakdown gốc coi giao diện
+  `cinnamon-settings` là hệ quả của T06 (GTK3 core) nên không có task riêng. Khảo sát
+  của Agent 6 cho thấy **không đúng như vậy**: Settings có ba tầng trang với ba chủ
+  sở hữu khác nhau, có 3 hook CSS thật (một cái bị khoá), và Cinnamon 6.6 **không có**
+  thành phần quick-settings nào để làm Control Center. Những sự kiện đó cần một nơi
+  ghi lại có kiểm tra, không thể chỉ nằm trong commit message.
+- **Được phép tạo:**
+  ```
+  docs/design-system/settings-architecture.md
+  docs/proposals/control-center.md
+  tests/fixtures/cinnamon-settings-hooks.txt
+  tools/lint/settings_arch.py
+  tests/lint/test_settings_arch.py
+  ```
+- **Cấm:** `src/gtk-3.0/sass/**` (thuộc T06/T09), `src/cinnamon/**` (thuộc T04),
+  `src/icons/**` (thuộc T15), `design/tokens/**`, và **mọi file applet của Cinnamon**.
+- **Done khi:**
+  1. Ghi được **ba tầng trang** của Settings kèm bằng chứng file:line, và nói rõ tầng
+     nào theme với tới được, tầng nào không.
+  2. Liệt kê **đúng** hook CSS có thật, mỗi cái kèm bằng chứng; phân biệt hook mở,
+     hook bị khoá ở priority cao hơn, và class GTK chung (không phải hook riêng).
+  3. Ghi lại bẫy **GtkBuilder id không phải widget name trong GTK3**, kèm bằng chứng
+     từ `gtkwidget.c`.
+  4. Control Center: **không build applet mới** ở task này (quyết định của người dùng
+     2026-10-13). Phải giao **đề xuất** kèm danh sách thành phần bundled đã xác minh,
+     API thật của chúng, và rủi ro. Không có nút giả. Không có lệnh cài package.
+  5. Có lint kiểm tra **tài liệu khớp fixture hai chiều** — để số liệu trong tài liệu
+     không trôi ra khỏi bằng chứng.
+
+---
+
 ## 2. Phân công theo agent (tóm tắt)
 
 | Agent | Vai trò | Task | Số file sở hữu |
@@ -441,6 +476,7 @@ T01 (scaffold+CI) ──► T02 (tokens+generator) ──┬──► T03 (spike
 | B | Design Systems | T02 | 16 |
 | C | Cinnamon shell | T03, T04 | 22 |
 | D | Visual / Assets | T05, T07, T15, T16 | 4 nhóm asset (Cinnamon SVG, GTK3 asset, icon theme, wallpaper) |
+| — | Settings / Control Center | T17 | 2 tài liệu + 1 fixture + lint |
 | E | GTK core + WM | T06, T08 | 10 |
 | F | Apps (Nemo/Mint) | T09 | 7 |
 | G | GTK4 / libadwaita | T10 | 11 |

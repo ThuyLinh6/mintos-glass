@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="Góc nóng / Tổng quan">
+  <!-- MintOS Glass · Agent 6 · icon cinnamon-settings · lưới 24x24 ·
+       nét #7c8087 mang hình dạng, chi tiết màu #3ddc97 theo category ·
+       màu từ src/cinnamon/tokens/_tokens.scss -->
+  <path d="M4.6 4.6h6.2M4.6 4.6v6.2" fill="none" stroke="#3ddc97" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="13.2" y="4.6" width="6.2" height="6.2" rx="1.2" ry="1.2" fill="none" stroke="#7c8087" stroke-width="1.5"/>
+  <rect x="4.6" y="13.2" width="6.2" height="6.2" rx="1.2" ry="1.2" fill="none" stroke="#7c8087" stroke-width="1.5"/>
+  <rect x="13.2" y="13.2" width="6.2" height="6.2" rx="1.2" ry="1.2" fill="none" stroke="#a5a9b0" stroke-width="1.5"/>
+</svg>

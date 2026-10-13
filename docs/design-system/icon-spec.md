@@ -267,6 +267,69 @@ và phá tính nhất quán.
 
 ---
 
+## 8bis. Họ icon `cs-*` của System Settings (Agent 6)
+
+47 icon cho `cinnamon-settings` nằm trong `scalable/apps/` nhưng là **một họ thiết
+kế riêng**, khác 16 icon app ở mục 4.3.
+
+### Vì sao KHÔNG dùng squircle
+
+| | 16 icon app | 47 icon `cs-*` |
+|---|---|---|
+| Bản chất | app **khởi chạy được** | **mục trong cùng một app** (Settings) |
+| Hiện ở đâu | menu, dock, desktop — cỡ lớn | lưới trang chính **lẫn** list/sidebar — cả cỡ nhỏ |
+| Ngôn ngữ | squircle đặc màu + glyph | **line icon** + một chi tiết màu |
+
+Squircle + glyph bên trong sẽ **nhoè ở 16-24px**: hai lớp hình (khối nền và nét
+glyph) cùng bị scale xuống thì mất tương phản giữa chúng. Line icon chỉ có một lớp
+nên sống sót ở cỡ nhỏ. Đây là cùng lý do `mimetypes/` và `places/` đã dùng line icon.
+
+### Cấu trúc màu
+
+- **Nét `$mg-color-gray-400` MANG HÌNH DẠNG** — đã đo 3.97:1 trên nền trắng và
+  4.68:1 trên nền tối (mục 4.1), nên hình dạng đọc được trên cả hai nền.
+- **Một chi tiết màu theo category** — chỉ là **mã phân loại**, không phải thứ người
+  dùng dựa vào để nhận ra icon.
+
+| Category | Hue | Token |
+|---|---|---|
+| Appearance | `#3ddc97` | `$mg-status-accent` |
+| Preferences | `#3b9dff` | `$mg-color-blue-500` |
+| Hardware | `#ffbd2e` | `$mg-color-amber-500` |
+| Administration | `#ff5f57` | `$mg-status-error` |
+
+**Mỗi icon mang ĐÚNG MỘT hue.** Hai hue trong một icon sẽ phá mã phân loại — khoá
+bằng `test_settings_category_hues_are_the_four_documented_ones`.
+
+Chi tiết màu **không cần** đạt 3:1 vì nó không mang nghĩa (đúng lập luận mục 4.4:
+WCAG 1.4.11 áp dụng cho phần đồ hoạ **mang nghĩa**). Phần mang nghĩa là nét
+`gray-400`, và nó đạt chuẩn trên cả hai nền.
+
+### Ràng buộc hình học
+
+Không rect đặc nào trong họ `cs-*` được có cạnh ngắn ≥ 12 đơn vị — đó là ngưỡng
+phân biệt "chi tiết accent" với "squircle phủ lưới". Khoá bằng
+`test_settings_icons_are_line_style_not_squircle`. Bản đầu của test này phân biệt
+bằng **thứ tự thẻ** và đã bắt nhầm bốn icon hợp lệ (`cs-applets`, `cs-themes`,
+`cs-panel`, `cs-cat-hardware`); thứ tự thẻ không nói lên được điều gì về squircle,
+**kích thước** mới nói được.
+
+### Nguồn tên và ranh giới trung thực
+
+Tên trích bằng máy theo **cấu trúc bảng** trong `cinnamon-settings.py`
+(`CATEGORIES`, `CONTROL_CENTER_MODULES`, `STANDALONE_MODULES`) và từ `SidePage(...)`
+trong 31 `modules/cs_*.py` — **không grep thô**, vì grep thô khớp cả
+`cs-category-view` vốn là **tên CSS class** (`cinnamon-settings.py:288`), không phải
+tên icon. Bảng đầy đủ, kể cả 15 tên của app khác **cố ý không vẽ**, ở
+`src/icons/MintOS-Glass/MANIFEST.md` mục 4bis.
+
+Category của 3 panel C và 9 trang standalone lấy từ **cột 4 thật** của các bảng đó.
+Category của 31 module Python thì **không truy ra được từ nguồn** (upstream gán qua
+`sidepage.cat` nhưng cơ chế gán không nằm trong `modules/*.py`) → nhóm theo ngữ
+nghĩa, và đó là **quyết định thiết kế của dự án**, không phải tuyên bố về upstream.
+
+---
+
 ## 9. Thêm icon mới — quy trình
 
 1. Kiểm tra icon đó **đã có** trong `Inherits` chưa và có thật sự cần nhận diện

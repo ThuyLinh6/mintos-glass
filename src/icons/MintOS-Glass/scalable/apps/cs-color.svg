@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="Màu sắc">
+  <!-- MintOS Glass · Agent 6 · icon cinnamon-settings · lưới 24x24 ·
+       nét #7c8087 mang hình dạng, chi tiết màu #ffbd2e theo category ·
+       màu từ src/cinnamon/tokens/_tokens.scss -->
+  <circle cx="9.6" cy="10.4" r="4.4" fill="none" stroke="#7c8087" stroke-width="1.5"/>
+  <circle cx="14.4" cy="10.4" r="4.4" fill="none" stroke="#a5a9b0" stroke-width="1.5"/>
+  <circle cx="12" cy="14.6" r="4.4" fill="none" stroke="#ffbd2e" stroke-width="1.5"/>
+</svg>

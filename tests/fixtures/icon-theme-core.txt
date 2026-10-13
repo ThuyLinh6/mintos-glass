@@ -173,3 +173,99 @@ symbolic/status/dialog-error-symbolic
 symbolic/places/folder-symbolic
 symbolic/places/user-trash-symbolic
 symbolic/places/user-home-symbolic
+
+// ---------------------------------------------------------------------------
+// APPS — 47 icon `cs-*` cho System Settings / Control Center của Cinnamon
+// (Agent 6 bổ sung; đây chính là mục P2 mà T15 đã ghi là "chưa có, fallback về
+// Mint-Y" trong MANIFEST.md mục 5).
+//
+// NGUỒN TÊN — trích bằng máy từ linuxmint/Cinnamon @ 6.6.9
+// (commit 806c1a4e8cd23e528d3446b9e3cf5a3c7a3ddf18),
+// files/usr/share/cinnamon/cinnamon-settings/:
+//   CATEGORIES                cột "icon"           ->  4 tên cs-cat-*
+//   CONTROL_CENTER_MODULES    cột 3                 ->  3 tên cs-*
+//   STANDALONE_MODULES        cột 3 (chỉ lấy cs-*)  ->  9 tên cs-*
+//   modules/cs_*.py           SidePage(...)         -> 31 tên cs-*
+// Tổng 47. Đã đối chiếu hai chiều với tệp trên đĩa.
+//
+// LOẠI TRỪ một dương tính giả: chuỗi `cs-category-view` cũng khớp mẫu "cs-*" khi
+// grep thô, nhưng nó là TÊN CSS STYLE CLASS (cinnamon-settings.py:288
+// `context.add_class("cs-category-view")`), KHÔNG phải tên icon. Đã kiểm bằng cách
+// trích theo cấu trúc bảng chứ không grep thô, và xác nhận nó không xuất hiện
+// trong CATEGORIES / CONTROL_CENTER_MODULES / STANDALONE_MODULES / SidePage nào.
+// KHÔNG được tạo cs-category-view.svg.
+//
+// KHÔNG vẽ 12 tên icon KHÔNG bắt đầu bằng cs- mà cinnamon-settings.py cũng tham
+// chiếu: mintreport, mintsysadm, mintlocale, mintlocale-im, nvidia-settings,
+// gdm-settings, fingwit, dnfdragora, gpk-prefs, octopi, pamac-manager,
+// system-software-install, yumex, org.gnome.DiskUtility,
+// gnome-online-accounts-gtk. Đó là NHẬN DIỆN CỦA APP KHÁC (System Information,
+// Driver Manager của Nvidia, trình quản lý gói của Fedora/Arch/openSUSE…). Vẽ lại
+// chúng là vi phạm nguyên tắc đã áp dụng ở T15: không vẽ lại logo/nhận diện app
+// bên thứ ba. Chúng fallback về Mint-Y hoặc về icon do chính app đó cài.
+//
+// MÀU THEO CATEGORY: mỗi icon dùng nét gray-400 MANG HÌNH DẠNG cộng MỘT chi tiết
+// màu theo category — mint=Appearance, blue=Preferences, amber=Hardware,
+// red=Administration. Category của 3 panel C và 9 trang standalone lấy từ CỘT 4
+// THẬT của CONTROL_CENTER_MODULES / STANDALONE_MODULES trong cinnamon-settings.py.
+// Riêng 31 module Python: upstream gán category qua thuộc tính `sidepage.cat`
+// (cinnamon-settings.py:356-359) nhưng cơ chế GÁN không nằm trong modules/*.py
+// nên không truy ra được từ nguồn -> nhóm theo ngữ nghĩa. ĐÓ LÀ QUYẾT ĐỊNH THIẾT
+// KẾ CỦA DỰ ÁN, không phải tuyên bố về cách upstream phân loại. Ghi rõ để không
+// ai tưởng bảng màu này suy ra từ mã nguồn.
+// ---------------------------------------------------------------------------
+
+// --- APPEARANCE (Appearance) ---
+apps/cs-applets
+apps/cs-backgrounds
+apps/cs-cat-appearance
+apps/cs-desklets
+apps/cs-desktop
+apps/cs-desktop-effects
+apps/cs-extensions
+apps/cs-fonts
+apps/cs-nightlight
+apps/cs-overview
+apps/cs-panel
+apps/cs-screensaver
+apps/cs-themes
+
+// --- PREFERENCES (Preferences) ---
+apps/cs-actions
+apps/cs-cat-prefs
+apps/cs-date-time
+apps/cs-default-applications
+apps/cs-details
+apps/cs-general
+apps/cs-gestures
+apps/cs-input-method
+apps/cs-keyboard
+apps/cs-language
+apps/cs-mouse
+apps/cs-notifications
+apps/cs-privacy
+apps/cs-sound
+apps/cs-startup-programs
+apps/cs-universal-access
+apps/cs-user
+apps/cs-windows
+apps/cs-workspaces
+
+// --- HARDWARE (Hardware) ---
+apps/cs-bluetooth
+apps/cs-cat-hardware
+apps/cs-color
+apps/cs-display
+apps/cs-network
+apps/cs-power
+apps/cs-printer
+apps/cs-tablet
+apps/cs-thunderbolt
+
+// --- ADMINISTRATION (Administration) ---
+apps/cs-cat-admin
+apps/cs-drivers
+apps/cs-firewall
+apps/cs-login
+apps/cs-sources
+apps/cs-user-accounts

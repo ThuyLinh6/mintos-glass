@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="Bluetooth">
+  <!-- MintOS Glass · Agent 6 · icon cinnamon-settings · lưới 24x24 ·
+       nét #7c8087 mang hình dạng, chi tiết màu #ffbd2e theo category ·
+       màu từ src/cinnamon/tokens/_tokens.scss -->
+  <path d="M9.4 7.8l5.6 4.2-3 2.6V4.6l3 2.6-5.6 4.2" fill="none" stroke="#7c8087" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="12" cy="12" r="8.6" fill="none" stroke="#ffbd2e" stroke-width="1.4"/>
+</svg>

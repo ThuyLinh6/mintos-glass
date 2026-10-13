@@ -1,7 +1,8 @@
 # MANIFEST — Icon theme MintOS-Glass (T15)
 
 **Owner:** Agent D (Visual/Assets) · **Task:** T15
-**Thư mục:** `src/icons/MintOS-Glass/` · **75 icon SVG + `index.theme`**
+**Thư mục:** `src/icons/MintOS-Glass/` · **122 icon SVG + `index.theme`**
+**Cập nhật (Agent 6):** thêm 47 icon `cs-*` cho System Settings — xem mục 4bis.
 **Quy chuẩn thiết kế:** `docs/design-system/icon-spec.md`
 **Xác minh bằng:** `tools/lint/icon_theme.py` · `tests/lint/test_icon_theme.py`
 **Hợp đồng tập lõi:** `tests/fixtures/icon-theme-core.txt`
@@ -15,7 +16,7 @@ src/icons/MintOS-Glass/
 ├── index.theme            # khai báo theme, Directories, Inherits
 ├── MANIFEST.md            # tệp này
 ├── scalable/              # icon đầy đủ màu, Type=Scalable 16..512
-│   ├── apps/       (16)
+│   ├── apps/       (63)   # 16 icon app + 47 icon cs-* của Settings
 │   ├── places/     (14)
 │   ├── devices/     (7)
 │   ├── mimetypes/   (9)
@@ -27,7 +28,7 @@ src/icons/MintOS-Glass/
     └── status/      (3)
 ```
 
-**9 thư mục, 75 tệp, không thư mục rỗng.** Cả 9 đều có mặt trong `Directories`
+**9 thư mục, 122 tệp, không thư mục rỗng.** Cả 9 đều có mặt trong `Directories`
 của `index.theme` và đều có section riêng — lint kiểm hai chiều.
 
 Dùng `scalable/<context>` (convention của icon theme thuần SVG) thay vì
@@ -175,6 +176,104 @@ mục 4.4; ràng buộc này được khoá bằng bài
 
 ---
 
+## 4bis. 47 icon `cs-*` cho System Settings (Agent 6 bổ sung)
+
+Yêu cầu Scope A của Agent 6: *"Biểu tượng danh mục đồng bộ với icon theme của
+MintOS Glass."* Đây là phần hiện thực yêu cầu đó, và cũng là mục P2 mà chính T15
+đã ghi là "chưa có" ở bản đầu của MANIFEST này.
+
+### Nguồn tên — trích bằng máy theo cấu trúc bảng, không grep thô
+
+Từ `linuxmint/Cinnamon` @ 6.6.9 (`806c1a4e8cd23e528d3446b9e3cf5a3c7a3ddf18`),
+`files/usr/share/cinnamon/cinnamon-settings/`:
+
+| Nguồn | Số tên |
+|---|---|
+| `CATEGORIES` cột `"icon"` | **4** — `cs-cat-appearance`, `cs-cat-prefs`, `cs-cat-hardware`, `cs-cat-admin` |
+| `modules/cs_*.py` → `SidePage(label, icon, …)` | **31** |
+| `CONTROL_CENTER_MODULES` cột 3 | **3** — `cs-network`, `cs-color`, `cs-tablet` |
+| `STANDALONE_MODULES` cột 3, chỉ lấy `cs-*` | **9** |
+| **Tổng** | **47** |
+
+### Một dương tính giả đã loại
+
+Chuỗi **`cs-category-view`** cũng khớp mẫu `cs-*` khi grep thô, nhưng nó là **TÊN
+CSS STYLE CLASS**, không phải tên icon — `cinnamon-settings.py:288`:
+`context.add_class("cs-category-view")`. Đã xác nhận nó **không** xuất hiện trong
+`CATEGORIES` / `CONTROL_CENTER_MODULES` / `STANDALONE_MODULES` / bất kỳ `SidePage`
+nào. **Không tạo `cs-category-view.svg`.**
+
+### 15 tên KHÔNG vẽ, có lý do
+
+`cinnamon-settings.py` cũng tham chiếu: `mintreport`, `mintsysadm`, `mintlocale`,
+`mintlocale-im`, `nvidia-settings`, `gdm-settings`, `fingwit`, `dnfdragora`,
+`gpk-prefs`, `octopi`, `pamac-manager`, `system-software-install`, `yumex`,
+`org.gnome.DiskUtility`, `gnome-online-accounts-gtk`.
+
+Đó là **nhận diện của app khác** (System Information, Nvidia, trình quản lý gói của
+Fedora/Arch/openSUSE…). Vẽ lại chúng vi phạm nguyên tắc ở mục 7: không vẽ lại
+logo/nhận diện app bên thứ ba. Chúng fallback về Mint-Y hoặc về icon do chính app
+đó cài.
+
+### Ngôn ngữ thiết kế: line icon, KHÔNG squircle
+
+47 icon này **cố ý khác** 16 icon app ở mục 4:
+
+- 16 icon app là **app khởi chạy được** → squircle đặc màu, hiện ở cỡ lớn.
+- 47 icon `cs-*` là **mục trong cùng một app** (Settings), hiện ở **cả** lưới trang
+  chính **lẫn** list/sidebar ở cỡ nhỏ. Squircle + glyph bên trong sẽ **nhoè ở
+  16-24px**.
+
+Nên dùng đúng ngôn ngữ T15 đã thiết lập cho `mimetypes/` và `places/`: **nét
+`$mg-color-gray-400` mang hình dạng** (đã đo 3.97:1 trên nền trắng và 4.68:1 trên
+nền tối — đọc được trên cả hai), cộng **một chi tiết màu theo category**. Hình
+dạng do nét trung tính mang, nên phần màu chỉ là mã phân loại chứ không phải thứ
+người dùng dựa vào để nhận ra icon.
+
+| Category | Hue | Token | Số icon |
+|---|---|---|---|
+| Appearance | mint `#3ddc97` | `$mg-status-accent` | 13 |
+| Preferences | xanh `#3b9dff` | `$mg-color-blue-500` | 19 |
+| Hardware | hổ phách `#ffbd2e` | `$mg-color-amber-500` | 9 |
+| Administration | đỏ `#ff5f57` | `$mg-color-red-500` | 6 |
+
+### Ranh giới trung thực về cách gán category
+
+- Category của **3 panel C** và **9 trang standalone** lấy từ **cột 4 thật** của
+  `CONTROL_CENTER_MODULES` / `STANDALONE_MODULES` (`network`/`color`/`wacom` =
+  `hardware`, `bluetooth`/`printer` = `hardware`, `drivers`/`firewall`/`login`/
+  `sources`/`user-accounts` = `admin`, `language`/`input-method` = `prefs`).
+- Category của **31 module Python**: upstream gán qua thuộc tính `sidepage.cat`
+  (`cinnamon-settings.py:356-359` so với `category["id"]`), nhưng **cơ chế gán
+  không nằm trong `modules/*.py`** nên không truy ra được từ nguồn. Việc nhóm 31
+  icon này theo ngữ nghĩa là **QUYẾT ĐỊNH THIẾT KẾ CỦA DỰ ÁN**, không phải tuyên bố
+  về cách upstream phân loại.
+
+### Danh sách 47 icon
+
+**Danh mục (4):** `cs-cat-appearance` · `cs-cat-prefs` · `cs-cat-hardware` · `cs-cat-admin`
+
+**Appearance (12):** `cs-themes` · `cs-backgrounds` · `cs-desktop-effects` ·
+`cs-fonts` · `cs-panel` · `cs-desklets` · `cs-applets` · `cs-extensions` ·
+`cs-nightlight` · `cs-screensaver` · `cs-desktop` · `cs-overview`
+
+**Preferences (18):** `cs-general` · `cs-keyboard` · `cs-mouse` · `cs-sound` ·
+`cs-notifications` · `cs-date-time` · `cs-default-applications` ·
+`cs-startup-programs` · `cs-actions` · `cs-gestures` · `cs-workspaces` ·
+`cs-windows` · `cs-privacy` · `cs-universal-access` · `cs-user` · `cs-details` ·
+`cs-language` · `cs-input-method`
+
+**Hardware (8):** `cs-display` · `cs-power` · `cs-thunderbolt` · `cs-network` ·
+`cs-color` · `cs-tablet` · `cs-printer` · `cs-bluetooth`
+
+**Administration (5):** `cs-drivers` · `cs-firewall` · `cs-login` · `cs-sources` ·
+`cs-user-accounts`
+
+*(4 + 12 + 18 + 8 + 5 = 47. Bốn icon `cs-cat-*` là icon CỦA danh mục nên đếm riêng;
+các icon còn lại đếm theo category mà chi tiết màu của chúng thể hiện.)*
+
+---
+
 ## 5. Icon CHƯA có, và chúng fallback về đâu
 
 Ghi rõ để không ai tưởng theme này đủ. **Tất cả** mục dưới đây fallback qua
@@ -184,7 +283,7 @@ Mint-Y chứ không phải của MintOS Glass.
 | Chưa có | Số lượng ước tính | Fallback | Ghi chú |
 |---|---|---|---|
 | **Icon panel / status của applet** | ~40 | Mint-Y | **CỐ Ý KHÔNG LÀM.** Xem mục 6. |
-| Icon 31 module của Cinnamon Settings (`cs-actions`, `cs-applets`, `cs-backgrounds`, …) | 31 | Mint-Y | Đã đếm thật: có **31** file `cinnamon-settings-*.desktop` trong Cinnamon 6.6.9, mỗi file một icon `cs-*`. Làm bộ này là việc của vòng mở rộng P2. |
+| ~~Icon của Cinnamon Settings (`cs-*`)~~ | ~~31~~ → **47** | — | **ĐÃ LÀM XONG (Agent 6).** Con số 31 ở lần khảo sát đầu là ĐẾM SAI: 31 là số file `cinnamon-settings-*.desktop` (mỗi module một launcher), còn số TÊN ICON `cs-*` thật là **47** = 4 danh mục + 31 module Python + 3 panel C + 9 trang standalone. Đã trích bằng máy theo cấu trúc bảng, không grep thô. Xem mục 4bis. |
 | Icon app bên thứ ba (Firefox, LibreOffice, VLC, GIMP, …) | hàng trăm | `.desktop` của app tự nhúng icon, rồi Mint-Y | App cài qua `.deb`/Flatpak thường mang icon riêng; theme không nên và không thể thay. Xem mục 7 về thương hiệu. |
 | `symbolic` cho `apps/`, `devices/`, `mimetypes/` | ~30 | Mint-Y (có đủ bộ symbolic) | Chỉ làm symbolic cho actions/places/status — ba nhóm hay bị GTK xin bản symbolic nhất (panel, menu, toolbar). |
 | Mimetype hiếm (`application-x-7z-compressed`, `text-x-python`, …) | hàng trăm | Mint-Y | 9 mimetype trong tập lõi là những loại gặp nhiều nhất trong list view của Nemo. |
@@ -295,13 +394,46 @@ Không có máy Mint nên **không thể** xác nhận, và **không tuyên bố
 
 | Chưa kiểm chứng | Điều kiện để kiểm |
 |---|---|
-| Cinnamon/Nemo có **nhận diện** theme này trong danh sách icon không | Cài vào `~/.local/share/icons/MintOS-Glass/`, chạy `gtk-update-icon-cache`, mở Settings → Themes → Icons |
+| Cinnamon/Nemo có **nhận diện** theme này trong danh sách icon không | **Đã thu hẹp đáng kể — xem ngay dưới bảng.** Còn lại: chạy thật trên máy Mint để xác nhận end-to-end |
 | `Inherits` có fallback đúng như suy luận từ spec không | Bỏ thử một icon khỏi theme, xem nó có hiện bằng hình Mint-Y không |
 | GTK có tô lại icon `-symbolic` đúng màu chữ không | Xem toolbar Nemo ở theme sáng và theme tối |
 | SVG có raster sắc ở 16px không (nét 1.5 có bị mờ/nhoè không) | Xem list view của Nemo ở icon size 16 |
 | librsvg trên Mint 22.3 có hỗ trợ hết các path/arc đã dùng không | Xem từng icon; arc `a` và `A` là phần rủi ro nhất |
 | Icon có hiện đúng trong hộp thoại chọn tệp của app GTK không | Mở File → Open trong xed |
 | `Size=24` có phải lựa chọn tối ưu cho `Type=Scalable` không, hay nên là 48/64 | So ở 16px và 256px |
+
+### Điều kiện để được LIỆT KÊ trong Settings → Themes → Icons: ĐÃ XÁC MINH TỪ MÃ
+
+`cs_themes.py:144-157` duyệt thư mục và chấp nhận một thư mục là icon theme khi và
+chỉ khi: (1) tên không nằm trong `THEMES_BLACKLIST`; (2) `<thư-mục>/index.theme`
+**tồn tại**; (3) đọc **từng dòng** — gặp dòng **bắt đầu bằng** `Hidden=true` thì
+loại, gặp dòng **bắt đầu bằng** `Directories=` thì nhận.
+
+Đối chiếu `index.theme` của theme này với đúng vòng lặp đó:
+
+| Điều kiện | Kết quả |
+|---|---|
+| có `index.theme` | ✅ |
+| có dòng **bắt đầu bằng** `Directories=` (không thụt lề) | ✅ dòng 39 |
+| không dòng nào bắt đầu bằng `Hidden=true` | ✅ |
+| `mintos-glass` không nằm trong `THEMES_BLACKLIST` | ✅ |
+
+**Parser đọc THEO DÒNG chứ không dùng GKeyFile**, nên một khoá `Directories=` bị
+thụt lề hoặc nằm sau `Hidden=true` sẽ làm theme biến mất khỏi danh sách mà không có
+lỗi nào được ghi ra. Đây là ràng buộc thật, không phải lý thuyết — và là lý do
+`index.theme` của theme này KHÔNG thụt lề dòng `Directories=`.
+
+Cũng đã xác minh `ICON_FOLDERS` (`cs_themes.py:26-29`) = `~/.icons`, rồi
+`GLib.get_user_data_dir()/icons` (= `~/.local/share/icons`), rồi các thư mục hệ
+thống — **đúng thứ tự** đường cài đặt đã ghi ở mục 9.1.
+
+**Một xác nhận quan trọng cho `Inherits`:** `THEMES_BLACKLIST` (`cs_themes.py:35-44`)
+chứa `gnome`, `hicolor`, `adwaita`, `adwaita-dark`, `highcontrast`, `epapirus`,
+`ubuntu-mono*`, `humanity*`, với comment nói rõ chúng *"not meant to be used as a
+theme. Provides icons to inheriting themes."* Nghĩa là blacklist chỉ ẩn chúng khỏi
+**bộ chọn**, **không** vô hiệu hoá chúng làm **đích kế thừa**. Nên chuỗi
+`Inherits=Mint-Y,Adwaita,gnome,hicolor` vẫn hoạt động đầy đủ dù ba trong bốn tên đó
+không bao giờ hiện ra cho người dùng chọn.
 
 Điểm rủi ro cao nhất là **kích thước nhỏ**: lưới 24 với nét 1.5 khi scale xuống
 16px cho nét ~1px, có thể mờ. Đây là lý do cần kiểm bằng mắt trên máy thật trước

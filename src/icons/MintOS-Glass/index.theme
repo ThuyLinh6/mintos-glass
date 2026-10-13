@@ -4,7 +4,9 @@ Comment=MintOS Glass icon theme. SVG-first, drawn on a 24x24 grid, colours taken
 # ---------------------------------------------------------------------------
 # Inherits là CHUỖI FALLBACK, không phải trang trí.
 #
-# Theme này chỉ có 75 icon cốt lõi (xem MANIFEST.md). Mọi icon KHÁC — hàng nghìn
+# Theme này có 122 icon cốt lõi: 75 icon hệ thống (T15) + 47 icon cs-* cho
+# System Settings (Agent 6). Vẫn là một tập NHỎ so với hàng nghìn icon mà
+# Mint-Y có. Mọi icon KHÁC — hàng nghìn
 # icon của app bên thứ ba, icon panel, icon mimetype hiếm — sẽ được lấy từ chuỗi
 # kế thừa. Icon Theme Spec của freedesktop quy định việc tìm kiếm đi lần lượt qua
 # các theme trong Inherits rồi mới tới hicolor, nên một icon thiếu ở đây KHÔNG

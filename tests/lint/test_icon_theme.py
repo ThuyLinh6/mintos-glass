@@ -255,8 +255,13 @@ class TestCoreCoverage(unittest.TestCase):
         self.want = il.load_fixture(FIXTURE)
 
     def test_fixture_is_not_empty(self):
-        self.assertEqual(len(self.want), 75,
-                         f"fixture có {len(self.want)} mục, mong 75 — nếu chủ đích đổi "
+        # 75 icon hệ thống của T15 + 47 icon cs-* cho System Settings (Agent 6).
+        # Con số 47 KHÔNG phải 31: lần khảo sát đầu đếm 31 file
+        # `cinnamon-settings-*.desktop` (mỗi module một launcher) rồi tưởng đó là số
+        # icon. Số TÊN icon cs-* thật = 4 danh mục + 31 module + 3 panel C + 9 trang
+        # standalone = 47, trích theo cấu trúc bảng trong cinnamon-settings.py.
+        self.assertEqual(len(self.want), 122,
+                         f"fixture có {len(self.want)} mục, mong 122 — nếu chủ đích đổi "
                          "thì cập nhật MANIFEST.md và icon-spec.md cùng lúc")
 
     def test_every_core_icon_exists(self):
@@ -528,6 +533,18 @@ class TestInkContrastOnBothBackdrops(unittest.TestCase):
                         "quy tắc ở icon-spec.md mục 4.1")
         self.assertGreater(self._ratio(accent, "#121316"), 3.0)
 
+    def app_squircles(self):
+        """16 icon APP (khởi chạy được) — squircle đặc màu.
+
+        47 icon `cs-*` nằm CÙNG thư mục scalable/apps/ nhưng là LINE ICON, không có
+        squircle. Bản đầu của test dưới đây gộp cả hai họ nên đòi mọi tệp phải có
+        `<rect fill=…>` và đỏ ở cs-actions.svg. Hai họ có ràng buộc tương phản KHÁC
+        nhau (squircle: glyph trên nền đặc; line icon: nét trên nền bất kỳ) nên phải
+        tách.
+        """
+        return sorted(p for p in (THEME / "scalable" / "apps").glob("*.svg")
+                      if not p.stem.startswith("cs-"))
+
     def test_every_app_icon_glyph_pair_meets_3_to_1(self):
         """Đo lại toàn bộ 12 cặp glyph/nền đã công bố trong icon-spec.md mục 4.3.
 
@@ -535,7 +552,7 @@ class TestInkContrastOnBothBackdrops(unittest.TestCase):
         SVG, để tài liệu không thể trôi ra khỏi tài nguyên.
         """
         pairs = []
-        for p in sorted((THEME / "scalable" / "apps").glob("*.svg")):
+        for p in self.app_squircles():
             txt = p.read_text(encoding="utf-8")
             m = re.search(r'<rect[^>]*\bfill="(#[0-9a-f]{6})"', txt)
             if not m:
@@ -550,6 +567,60 @@ class TestInkContrastOnBothBackdrops(unittest.TestCase):
                 self.assertGreaterEqual(self._ratio(g, bg), 3.0,
                                         f"{name}: glyph {g} trên nền {bg} dưới 3:1 "
                                         "(WCAG 1.4.11 cho đối tượng đồ hoạ)")
+
+    def test_settings_icons_are_line_style_not_squircle(self):
+        """47 icon cs-* phải là LINE ICON: có nét ink, KHÔNG có squircle đặc màu.
+
+        Lý do thiết kế (MANIFEST mục 4bis): cs-* hiện trong lưới trang chính LẪN
+        list/sidebar ở cỡ nhỏ; squircle + glyph bên trong sẽ nhoè ở 16-24px.
+        """
+        ink = il.token_hex("mg-color-gray-400")
+        css = sorted((THEME / "scalable" / "apps").glob("cs-*.svg"))
+        self.assertEqual(len(css), 47, f"số icon cs-* khác 47: {len(css)}")
+        for p in css:
+            txt = p.read_text(encoding="utf-8")
+            with self.subTest(icon=p.name):
+                self.assertIn(ink, txt, "icon cs-* phải có nét ink mang hình dạng")
+                # Phân biệt bằng HÌNH HỌC, không bằng mẫu chuỗi.
+                #
+                # Bản đầu của bài này dùng regex "rect fill=<hex> rồi tới
+                # path/circle/rect" và đã BẮT NHẦM mọi CHI TIẾT ACCENT nhỏ:
+                # cs-applets (3 ô 2x2), cs-themes (2 ô 3.4x3.4), cs-cat-hardware
+                # (lõi chip 3.6x3.6), cs-panel (thanh panel 15.2x3.8). Những chi
+                # tiết đó HỢP LỆ — chúng chính là mã màu category theo thiết kế ở
+                # MANIFEST mục 4bis. Thứ tự thẻ không nói lên được đó có phải
+                # squircle hay không.
+                #
+                # Squircle thật sự là một rect ĐẶC phủ gần hết lưới 24x24 (16 icon
+                # app dùng x=2 y=2 width=20 height=20 rx=5.5). Nên tiêu chí đúng là
+                # KÍCH THƯỚC của rect đặc, không phải thứ tự thẻ.
+                for m in re.finditer(r"<rect\b[^>]*>", txt):
+                    a = dict(re.findall(r'([\w-]+)="([^"]*)"', m.group(0)))
+                    if not a.get("fill", "none").startswith("#"):
+                        continue          # fill="none" -> khung nét, không phải khối đặc
+                    w = float(a.get("width", "0"))
+                    h = float(a.get("height", "0"))
+                    self.assertLess(min(w, h), 12.0,
+                                    f"{p.name} có rect đặc {w}x{h} — phủ gần hết lưới, "
+                                    "tức là squircle, trái với ngôn ngữ line icon của "
+                                    "họ cs-*")
+
+    def test_settings_category_hues_are_the_four_documented_ones(self):
+        """Mỗi icon cs-* mang đúng MỘT hue category. Bảng hue ở MANIFEST mục 4bis."""
+        hues = {il.token_hex("mg-status-accent"), il.token_hex("mg-color-blue-500"),
+                il.token_hex("mg-color-amber-500"), il.token_hex("mg-color-red-500")}
+        ink = il.token_hex("mg-color-gray-400")
+        hi = il.token_hex("mg-color-gray-300")
+        for p in sorted((THEME / "scalable" / "apps").glob("cs-*.svg")):
+            found = {h.lower() for h in re.findall(r"#[0-9a-f]{6}", p.read_text(encoding="utf-8"))}
+            used_hues = found & hues
+            with self.subTest(icon=p.name):
+                self.assertEqual(len(used_hues), 1,
+                                 f"{p.name} phải mang đúng MỘT hue category, đang có "
+                                 f"{sorted(used_hues)} — nhiều hue thì mã phân loại "
+                                 "category mất nghĩa")
+                self.assertTrue(found <= (hues | {ink, hi}),
+                                f"{p.name} dùng màu ngoài bảng đã duyệt: {sorted(found - hues - {ink, hi})}")
 
     def test_line_icons_use_the_ink_colour(self):
         ink = il.token_hex("mg-color-gray-400")
